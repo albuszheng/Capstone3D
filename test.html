@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Three框架</title>
+    <script src="js/three.js" data-ke-src="js/three.js"></script>
+    <script src="js/OrbitControls.js"></script>
+    <script src="js/TrackballControls.js"></script>
+    <style type="text/css">
+        #canvas-frame {
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            height: 600px;
+            background-color: #EEEEEE;
+        }
+
+    </style>
+    <script>
+        var renderer;
+        var width;
+        var height;
+        function initThree() {
+            width = document.getElementById('canvas-frame').clientWidth;
+            height = document.getElementById('canvas-frame').clientHeight;
+            renderer = new THREE.WebGLRenderer({
+                antialias : true
+            });
+            renderer.setSize(width, height);
+            document.getElementById('canvas-frame').appendChild(renderer.domElement);
+            renderer.setClearColor(0xFFFFFF, 1.0);
+        }
+
+
+
+        var camera;
+        function initCamera() {
+            camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+            camera.position.x = 0;
+            camera.position.y = 1000;
+            camera.position.z = 0;
+            camera.up.x = 0;
+            camera.up.y = 0;
+            camera.up.z = 5;
+            camera.lookAt({
+                x : 0,
+                y : 0,
+                z : 0
+            });
+            var controls = new THREE.OrbitControls(camera);
+            controls.autoRotate = true;//设置平面自动旋转
+        }
+
+        var scene;
+        function initScene() {
+            scene = new THREE.Scene();
+        }
+
+        var light;
+        function initLight() {
+            light = new THREE.DirectionalLight(0xFF0000, 1.0, 0);
+            light.position.set(100, 100, 200);
+            scene.add(light);
+        }
+
+        var cube;
+        function initObject() {
+
+            var geometry = new THREE.CubeGeometry(100,100,100);
+            var material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+            cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+
+//            var loader = new THREE.JSONLoader();
+//            loader.load(
+//                    // resource URL
+//                    'model/monster.js',
+//                    // Function when resource is loaded
+//                    function ( geometry, materials ) {
+//                        var material = new THREE.MultiMaterial( materials );
+//                        var object = new THREE.Mesh( geometry, material );
+//                        scene.add( object );
+//                    }
+//            );
+        }
+
+        function addModelToScene( geometry, materials )
+        {
+            // geometry = new THREE.CubeGeometry(100,100,100);
+            // var texture = new THREE.ImageUtils.loadTexture('images/checkerboard.jpg');
+            //var material = new THREE.MeshBasicMaterial({ map: texture });
+            var material = new THREE.MeshFaceMaterial( materials/*{ color: 'red', wireframe: true } */);
+            cube = new THREE.Mesh( geometry, material );
+            cube.scale.set(40,40,40);
+            cube.position.set(0,60,0);
+            scene.add( cube );
+        }
+
+        function render()
+        {
+//            renderer.clear();
+//            renderer.render(scene, camera);
+//            requestAnimationFrame(render);
+//            requestAnimationFrame(render);
+//            cube.rotation.x += 0.1;
+//            cube.rotation.y += 0.1;
+//            renderer.render(scene, camera);
+
+//            camera.position.x =camera.position.x +1;
+
+//            var txtFov = document.getElementById("txtFov").value;
+//            var fov = parseFloat(txtFov);
+//            camera.fov = fov;
+//            camera.updateProjectionMatrix();
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(render);
+        }
+        function threeStart() {
+            initThree();
+            initCamera();
+            initScene();
+            initLight();
+            initObject();
+            render();
+
+
+        }
+
+    </script>
+</head>
+
+<body onload="threeStart();">
+<div id="canvas-frame"></div>
+<!--<div>-->
+    <!--Fov:<input type="text" value="45" id="txtFov"/>(0到180的值)-->
+<!--</div>-->
+</body>
+</html>
