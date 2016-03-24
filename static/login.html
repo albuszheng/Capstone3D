@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css"/>
+    <link rel="stylesheet" href="css/website.css" type="text/css"/>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.js"></script>
+</head>
+<body>
+
+<header>
+    <div class="navbar navbar-default" role="navigation">
+        <div class="container">
+            <ul class="nav navbar-nav pull-right list-inline" id="index-right-nav">
+                <li>
+                    <a href="">首页</a>
+                </li>
+                <li class="divider"></li>
+                <li>
+                    <a href="">注册</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</header>
+
+<div class="container" id="login-form">
+    <form class="form-horizontal" method="POST" action="">
+        <div class="form-group">
+            <p id="title" class="col-sm-offset-1 col-sm-10">账号登录</p>
+        </div>
+        <div class="divider"></div>
+        <div class="form-group">
+            <label for="id" class="col-sm-2 control-label">账号</label>
+            <div class="col-sm-7">
+                <input type="text" class="form-control" id="id" name="id" placeholder="请输入账号">
+            </div>
+            <div class="col-sm-3"></div>
+        </div>
+        <div class="form-group">
+            <label for="password" class="col-sm-2 control-label">密码</label>
+            <div class="col-sm-7">
+                <input type="password" class="form-control" id="password" name="password" placeholder="请输入密码">
+            </div>
+            <div class="col-sm-3"></div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-7">
+                <button type="submit" class="btn btn-success-outline" id="login-btn">登录</button>
+            </div>
+            <div class="col-sm-3"></div>
+        </div>
+    </form>
+</div>
+</body>
+</html>

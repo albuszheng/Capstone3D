@@ -1,0 +1,93 @@
+.navbar-default {
+    line-height: 90px;
+    min-height: 90px;
+}
+
+.navbar-default > .container {
+    background: url("../img/nav.png") no-repeat center;
+}
+
+#index-right-nav {
+    padding-top: 45px;
+    margin-right: 14px;
+    font-size: 20px;
+}
+
+#index-right-nav > li.divider {
+    height: 14px;
+    margin: 0 0 0 9px;
+    border-left: 2px solid #014c8c;
+}
+
+#title {
+    font-size: 20px;
+    border-left: 3px solid #5cb85c;
+}
+
+.form-horizontal > .divider {
+    width: 66%;
+    margin-left: 24%;
+    padding-top: 15px;
+    border-bottom: 1px solid #c1e2b3;
+}
+
+#login-form,
+#register-form {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+#login-btn,
+#register-btn {
+    width: 100%;
+    font-size: 18px;
+}
+
+.form-group {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    margin-left: 20%;
+    margin-right: 10%;
+}
+
+.form-group > label {
+    text-align: right;
+}
+
+.form-group > label > span {
+    color: #c9302c;
+    font-size: 18px;
+}
+
+.form-group > .hint {
+    padding-top: .5rem;
+    font-size: 15px;
+    text-align: left;
+    /*visibility: hidden;*/
+}
+
+.form-group > p {
+    margin-top: 15px;
+    text-align: left;
+    font-size: 16px;
+}
+
+.form-group > div > button {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.dropdown-menu {
+    line-height: 45px;
+    min-width: 120px;
+    margin-top: -18px;
+}
+
+.dropdown-menu > li {
+    padding-left: 12px;
+}
+
+.dropdown-menu > .divider {
+    border-bottom: 1px solid #c1e2b3;
+}
+
