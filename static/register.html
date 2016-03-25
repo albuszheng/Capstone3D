@@ -11,89 +11,76 @@
 <body>
 
 <header>
-    <div class="navbar navbar-default" role="navigation">
-        <div class="container">
-            <ul class="nav navbar-nav pull-right list-inline" id="index-right-nav">
-                <li>
-                    <a href="">首页</a>
-                </li>
-                <li class="divider"></li>
-                <li>
-                    <a href="">登录</a>
-                </li>
-            </ul>
-        </div>
-    </div>
+    <img src="img/nav.png">
 </header>
 
 <div class="container" id="register-form">
-    <form class="form-horizontal" method="POST" action="">
-        <div class="form-group">
-            <p id="title" class="col-sm-offset-1 col-sm-10">账号注册</p>
-        </div>
-        <div class="divider"></div>
-        <div class="form-group">
-            <label for="id" class="col-sm-2 control-label"><span>*</span>账号</label>
-            <div class="col-sm-5">
-                <input type="text" class="form-control" id="id" name="id" placeholder="请输入账号">
+    <div class="form-title">
+        <p id="title" class="col-sm-10">创建账户</p>
+    </div>
+    <div class="form-divider"></div>
+    <div class="jumbotron">
+        <form class="form-horizontal" method="POST" action="">
+            <div class="form-group">
+                <label for="id" class="col-sm-2 control-label"><span>*</span>用户名</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="id" name="id" placeholder="请输入用户名">
+                </div>
             </div>
-            <div class="col-sm-5 hint">不超过20个字符,只能包含数字和英文字母</div>
-        </div>
-        <div class="form-group">
-            <label for="username" class="col-sm-2 control-label"><span>*</span>昵称</label>
-            <div class="col-sm-5">
-                <input type="text" class="form-control" id="username" name="username" placeholder="请输入昵称">
+            <div class="form-group">
+                <label for="username" class="col-sm-2 control-label"><span>*</span>昵称</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="username" name="username" placeholder="请输入昵称">
+                </div>
             </div>
-            <div class="col-sm-5 hint"></div>
-        </div>
-        <div class="form-group">
-            <label for="password" class="col-sm-2 control-label"><span>*</span>密码</label>
-            <div class="col-sm-5">
-                <input type="password" class="form-control" id="password" name="password" placeholder="请输入密码">
+            <div class="form-group">
+                <label for="password" class="col-sm-2 control-label"><span>*</span>密码</label>
+                <div class="col-sm-9">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="请输入密码">
+                </div>
             </div>
-            <div class="col-sm-5 hint"></div>
-        </div>
-        <div class="form-group">
-            <label for="password_confirm" class="col-sm-2 control-label"><span>*</span>确认密码</label>
-            <div class="col-sm-5">
-                <input type="password" class="form-control" id="password_confirm" name="password_confirm"
-                       placeholder="请再次输入密码">
+            <div class="form-group">
+                <label for="password_confirm" class="col-sm-2 control-label"><span>*</span>确认</label>
+                <div class="col-sm-9">
+                    <input type="password" class="form-control" id="password_confirm" name="password_confirm"
+                           placeholder="请再次输入密码">
+                </div>
             </div>
-            <div class="col-sm-5 hint"></div>
-        </div>
-        <div class="form-group">
-            <label for="sex" class="col-sm-2 control-label">性别</label>
-            <div class="col-sm-1">
-                <label class="radio-inline">
-                    <input type="radio" id="male" name="sex" value="0" checked>男
-                </label>
+            <div class="form-group">
+                <label for="sex" class="col-sm-2 control-label">性别</label>
+                <div class="col-sm-1">
+                    <label class="radio-inline">
+                        <input type="radio" id="male" name="sex" value="0" checked>男
+                    </label>
+                </div>
+                <div class="col-sm-1">
+                    <label class="radio-inline">
+                        <input type="radio" id="female" name="sex" value="1">女
+                    </label>
+                </div>
+                <div class="col-sm-8"></div>
             </div>
-            <div class="col-sm-1">
-                <label class="radio-inline">
-                    <input type="radio" id="female" name="sex" value="1">女
-                </label>
+            <div class="form-group">
+                <label for="birthday" class="col-sm-2 control-label">出生日期</label>
+                <div class="col-sm-9">
+                    <input type="date" class="form-control" id="birthday" name="birthday" value="1980-01-01">
+                </div>
             </div>
-            <div class="col-sm-8"></div>
-        </div>
-        <div class="form-group">
-            <label for="birthday" class="col-sm-2 control-label">出生日期</label>
-            <div class="col-sm-5">
-                <input type="date" class="form-control" id="birthday" name="birthday" value="1980-01-01">
+            <div class="form-group">
+                <p id="remark" class="col-sm-offset-2 col-sm-5">注: *为必填项</p>
+                <div class="col-sm-5"></div>
             </div>
-            <div class="col-sm-5"></div>
-        </div>
-        <div class="form-group">
-            <p id="remark" class="col-sm-offset-2 col-sm-5">注: *为必填项</p>
-            <div class="col-sm-5"></div>
-        </div>
-        <div class="form-group">
-            <div class="col-sm-offset-2 col-sm-5">
-                <button type="submit" class="btn btn-success-outline" id="register-btn">创建账户</button>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-9">
+                    <button type="submit" class="btn btn-success-outline" id="register-btn">创建账户</button>
+                </div>
             </div>
-            <div class="col-sm-5"></div>
-        </div>
-
-    </form>
+        </form>
+    </div>
+    <div class="form-footer">
+        <p>已经拥有账户?</p>
+        <a>登录</a>
+    </div>
 </div>
 </body>
 </html>
