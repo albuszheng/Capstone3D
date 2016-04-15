@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Creating components</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Creating components" id="aid-2OM4A1"><div class="titlepage"><div><div><h1 class="title"><a id="ch13lvl1sec87"></a>Creating components</h1></div></div></div><p>A component <a id="id561" class="indexterm"></a>is a reusable object that should contain only logic, and it is callable from every point of the app. In a component, we put all the functions that are usable in more than one place of the app.</p><p>Technically, a component extends <code class="literal">yii\base\Component</code> that implements the property, event and behavior features. We can have two kinds of component: component and application component. The only difference between them is that the second has to be also configured in the configuration file of the app in the <code class="literal">components</code> property and it is available as a property from the <code class="literal">Yii::$app</code> object. Examples of application components are <code class="literal">db</code>, <code class="literal">user</code>, and so on.</p><p>Usually, components are stored in the <code class="literal">components</code> folder starting from the root folder of the project.</p><p>Let's see how to create a simple custom component:</p><div class="informalexample"><pre class="programlisting">namespace app\components;
+ 
+use Yii;
+use yii\base\Component;
+ 
+class MyComponent extends Component
+{
+..
+..
+}</pre></div><p>We can instantiate this component as follows:</p><div class="informalexample"><pre class="programlisting">$myCmp = new \app\components\MyComponent();</pre></div><p>Then, we will have a new instance of the <code class="literal">MyComponent</code> object.</p><p>If we want to render this component into the application component and access to it through <code class="literal">Yii::$app-&gt;myComponent</code>, we must update the configuration file, <code class="literal">web.php</code>, at <code class="literal">basic/config</code>:</p><div class="informalexample"><pre class="programlisting">'components' =&gt; [
+    ..
+    ..
+        'myComponent' =&gt; [
+            'class' =&gt; '\app\components\MyComponent'
+        ],
+]</pre></div><p>At this point, we can call <code class="literal">myComponent</code> using:</p><div class="informalexample"><pre class="programlisting">Yii:$app-&gt;myComponent</pre></div><div class="note" title="Note"><h3 class="title"><a id="note77"></a>Note</h3><p>Remember that an application component is a single and shared instance of the same object.</p></div><p>We can make custom<a id="id562" class="indexterm"></a> initializations when a component is instantiated by overriding the <code class="literal">init()</code> method of the component.</p><p>A concrete example of the component (or the application component, according to our needs) could be sending an SMS to the SMS gateway for the app.</p><p>The component could be:</p><div class="informalexample"><pre class="programlisting">namespace app\components;
+
+use Yii;
+use yii\base\Component;
+ 
+class SmsGateway extends Component
+{
+    public function send($to, $text)
+    {
+        ..
+        ..
+        ..
+    }
+}</pre></div><p>This example is suitable to use this component as an application component:</p><div class="informalexample"><pre class="programlisting">'components' =&gt; [
+    ..
+    ..
+        'smsgw' =&gt; [
+            'class' =&gt; '\app\components\SmsGateway
+        ],
+]</pre></div><p>That is usable directly from:</p><div class="informalexample"><pre class="programlisting">Yii:$app-&gt;smsgw-&gt;send('+3913456789', 'hello world!');</pre></div><p>Another common example for an application component could be an object to send push notifications to mobile devices, which is made in the same way as the previous SMS gateway object.</p><div class="section" title="Example &ndash; creating a component that creates a backup of the MySQL database and sends an e-mail to the administrator"><div class="titlepage"><div><div><h2 class="title"><a id="ch13lvl2sec56"></a>Example &ndash; creating a component that creates a backup of the MySQL database and sends an e-mail to the administrator</h2></div></div></div><p>This example will show a common task concerning the creation of backup copies for the main database and the alert messages that the administrator receives once complete.</p><p>A backup will be taken using the command line MySQL tool.</p><p>Maintenance <a id="id563" class="indexterm"></a>operations should be executed in a console environment since they can be scheduled (every day, every week, two days a week, and so on), and they could cause a web server timeout (usually, if an operation is not finished, the web server will return a timeout error after 30 seconds) if this operation takes longer than the maximum time available. So we will start by creating a console controller in the advanced template that we previously installed.</p><p>Remember that the project root folder for the advanced template is <code class="literal">yiiadv</code>.</p><p>Create a new component in <code class="literal">Maintenance.php</code> at <code class="literal">yiiadv/common/components</code> with this content:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace common\components;
+ 
+use Yii;
+use yii\base\Component;
+ 
+class Maintenance extends Component
+{
+    public function launchBackup($database, $username, $password, $pathDestSqlFile)
+    {
+        $cmd = sprintf('mysqldump -u %s -p%s %s &gt; %s', $username, $password, $database, $pathDestSqlFile);
+        $outputLines = [];
+        exec($cmd, $outputLines, $exitCode);
+
+        return ['cmd' =&gt; $cmd, 'exitCode' =&gt; $exitCode, 'outputLines' =&gt; $outputLines];        
+    }
+}
+?&gt;</pre></div><p>The <code class="literal">launchBackup()</code> method will launch <code class="literal">mysqldump</code> (which should be installed in the system) by passing the username, password, database, and the destination file path where the SQL output of this command is to be stored.</p><p>Then, it will return an array with these values: command, exit code of command, and its possible output text. Now let's create the console controller that we will use to launch the command. We could also launch it from a web controller, for example after clicking on a button.</p><p>Let's create the<a id="id564" class="indexterm"></a> console controller in <code class="literal">MaintenanceController.php</code> at <code class="literal">yiiadv/console/controllers</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace console\controllers;
+
+use \yii\console\Controller;
+use \yii\helpers\Console;
+use \common\components\Maintenance;
+
+class MaintenanceController extends Controller
+{
+    public function actionBackupDatabase()
+    {
+        $tmpfname = tempnam(sys_get_temp_dir(), 'FOO');
+        $obj = new Maintenance();
+        $ret = $obj-&gt;launchBackup('username', 'password', 'database_name', $tmpfname);
+
+        if($ret['exitCode'] == 0)
+        {
+            $this-&gt;stdOut("OK\n");        
+            $this-&gt;stdOut(sprintf("Backup successfully stored in: %s\n", $tmpfname));        
+        }
+        else
+        {
+            $this-&gt;stdOut("ERR\n");
+        }
+        
+        // equivalent to return 0;
+        return $ret['exitCode'];
+    }
+    
+}
+
+?&gt;</pre></div><p>Let's make some considerations:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">We could set the <code class="literal">launchBackup()</code> method of the maintenance component as static by avoiding to create an instance of the object; however, if we keep it nonstatic, we could also use it as application component. Otherwise, if we mark the method as static, and then use it as application component when calling the static method <code class="literal">launchBackup()</code> from the object, we will receive a warning from PHP.</li><li class="listitem">We could move the file creation inside the <code class="literal">launchBackup()</code> method because in this case it is a temporary file, but generally we could use a specific file path.</li><li class="listitem">We could avoid passing database info and get it from Yii parameters, if we store them in the parameters file.</li></ul></div><p>A more complete<a id="id565" class="indexterm"></a> action is to back up and send an e-mail to the administrator, containing the backup result and eventually, if needed, also the backup file:</p><div class="informalexample"><pre class="programlisting">    public function actionBackupDatabaseAndSendEmail()
+    {
+        $tmpfname = tempnam(sys_get_temp_dir(), 'FOO'); // good
+        $obj = new Maintenance();
+        $ret = $obj-&gt;launchBackup('username', 'password', 'database_name', $tmpfname);
+
+        $emailAttachment = null;
+        if($ret['exitCode'] == 0)
+        {
+            $this-&gt;stdOut("OK\n");        
+            $this-&gt;stdOut(sprintf("Backup successfully stored in: %s\n", $tmpfname));
+            
+            $textEmail = 'Backup database successful! Find it in attachment';
+            $emailAttachment = $tmpfname;
+        }
+        else
+        {
+            $this-&gt;stdOut("ERR\n");
+                    
+            $textEmail = 'Error in backup database! Check it!';
+        }
+        
+        $emailMsg = Yii::$app-&gt;mailer-&gt;compose()
+            -&gt;setFrom('from@example.com')
+            -&gt;setTo('to@example.com')
+            -&gt;setSubject('Backup database')
+            -&gt;setTextBody($textEmail);
+            
+        if($emailAttachment!=null) $emailMsg-&gt;attach($emailAttachment, ['fileName' =&gt; 'backup_db.sql']);
+        $emailMsg-&gt;send();            
+        
+        // equivalent to return 0;
+        return $ret['exitCode'];
+    }</pre></div></div></div></body></html>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Multiple models in the same view</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Multiple models in the same view" id="aid-1R42S1"><div class="titlepage"><div><div><h1 class="title"><a id="ch07lvl1sec56"></a>Multiple models in the same view</h1></div></div></div><p>Often, we can find many<a id="id353" class="indexterm"></a> models of same or different class in a single view. First of all, remember that Yii2 encapsulates all the views' form attributes in the same container, named the same as the model class name. Therefore, when the controller receives the data, these will all be organized in a key of the <code class="literal">$_POST</code> array named the same as the model class name.</p><p>If the model class name is <code class="literal">Customer</code>, every form input name attribute will be <code class="literal">Customer[attributeA_of_model]</code> This is built with: <code class="literal">$form-&gt;field($model, 'attributeA_of_model')-&gt;textInput()</code>.</p><p>In the case of multiple models of the same class, the container will again be named as the model class name but every attribute of each model will be inserted in an array, such as:</p><div class="informalexample"><pre class="programlisting">Customer[0][attributeA_of_model_0]
+Customer[0][attributeB_of_model_0]
+&hellip;
+&hellip;
+&hellip;
+Customer[n][attributeA_of_model_n]
+Customer[n][attributeB_of_model_n]</pre></div><p>These are built with:</p><div class="informalexample"><pre class="programlisting">$form-&gt;field($model, '[0]attributeA_of_model')-&gt;textInput();
+$form-&gt;field($model, '[0]attributeB_of_model')-&gt;textInput();
+&hellip;
+&hellip;
+&hellip;
+$form-&gt;field($model, '[n]attributeA_of_model')-&gt;textInput();
+$form-&gt;field($model, '[n]attributeB_of_model')-&gt;textInput();</pre></div><div class="note" title="Note"><h3 class="title"><a id="note49"></a>Note</h3><p>Notice that the array key information is inserted in the attribute name!</p></div><p>So, when data is passed to <a id="id354" class="indexterm"></a>the controller, <code class="literal">$_POST['Customer']</code> will be an array composed by the <code class="literal">Customer</code> models and every key of this array, for example, <code class="literal">$_POST['Customer'][0]</code> is a model of the <code class="literal">Customer</code> class.</p><div class="section" title="Example &ndash; saving multiple customers at the same time"><div class="titlepage"><div><div><h2 class="title"><a id="ch07lvl2sec37"></a>Example &ndash; saving multiple customers at the same time</h2></div></div></div><p>Now let's see how<a id="id355" class="indexterm"></a> to save three customers at once. We will create three containers, one for each model class that will contain some fields of the <code class="literal">Customer</code> model.</p><p>Create a view in <code class="literal">basic/views/customers/createMultipleModels.php</code> that contains a block of input fields repeated for every model passed from the controller:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+use yii\helpers\Html;
+use yii\widgets\ActiveForm;
+
+/* @var $this yii\web\View */
+/* @var $model app\models\Room */
+/* @var $form yii\widgets\ActiveForm */
+?&gt;
+
+&lt;div class="room-form"&gt;
+
+    &lt;?php $form = ActiveForm::begin(); ?&gt;
+
+    &lt;div class="model"&gt;
+      
+      &lt;?php for($k=0;$k&lt;sizeof($models);$k++) { ?&gt;
+          &lt;?php $model = $models[$k]; ?&gt;
+          &lt;hr /&gt;
+          &lt;label&gt;Model #&lt;?php echo $k+1 ?&gt;&lt;/label&gt;
+          &lt;?= $form-&gt;field($model, "[$k]name")-&gt;textInput() ?&gt;
+          &lt;?= $form-&gt;field($model, "[$k]surname")-&gt;textInput() ?&gt;
+          &lt;?= $form-&gt;field($model, "[$k]phone_number")-&gt;textInput() ?&gt;
+      &lt;?php } ?&gt;
+        
+    &lt;/div&gt;
+
+&lt;hr /&gt;
+
+    &lt;div class="form-group"&gt;
+      &lt;?= Html::submitButton('Save', ['class' =&gt; 'btn btn-primary']) ?&gt;
+    &lt;/div&gt;
+
+    &lt;?php ActiveForm::end(); ?&gt;
+
+&lt;/div&gt;</pre></div><p>For each model all the fields will have the same validator rules of the <code class="literal">Customer</code> class, and every single model object will be validated separately.</p><p>Next create a new <a id="id356" class="indexterm"></a>action in the customers controller in <code class="literal">basic/controllers/CustomersController.php</code>, named <code class="literal">actionCreateMultipleModels</code>. If the <code class="literal">$_POST['Customer']</code> content is set, and if they are all validated and finally redirected to the grid action, it will save them all together; otherwise it will create three models of the <code class="literal">Customer</code> class:</p><div class="informalexample"><pre class="programlisting">    public function actionCreateMultipleModels()
+    {
+        $models = [];
+        
+        if(isset($_POST['Customer']))
+        {
+             $validateOK = true;
+            
+            foreach($_POST['Customer'] as $postObj)
+            {
+                $model = new Customer();
+                $model-&gt;attributes = $postObj;
+                $models[] = $model;
+
+                $validateOK = ($validateOK &amp;&amp; ($model-&gt;validate()));               
+            }
+            
+            // All models are validated and will be saved
+            if($validateOK)
+            {
+                foreach($models as $model)
+                {
+                    $model-&gt;save();
+                }
+                
+                // Redirect to grid after save
+                return $this-&gt;redirect(['grid']);
+            }
+        }
+        else
+        {
+            for($k=0;$k&lt;3;$k++)
+            {
+                $models[] = new Customer();
+            }    
+        }
+        
+        return $this-&gt;render('createMultipleModels', ['models' =&gt; $models]);
+    }</pre></div><p>It can be useful to create<a id="id357" class="indexterm"></a> models in the controller because a large number of them and other validation checks are configured here.</p><p>Browse to <code class="literal">http://hostname/basic/web/customers/create-multiple-models</code> to see the complete page:</p><div class="mediaobject"><img src="../Images/image00280.jpeg" alt="Example &ndash; saving multiple customers at the same time"/><div class="caption"><p>Multiple models in the same view</p></div></div><p style="clear:both; height: 1em;"> </p></div></div></body></html>

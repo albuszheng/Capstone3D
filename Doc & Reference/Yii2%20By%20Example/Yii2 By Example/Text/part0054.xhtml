@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Displaying and filtering ActiveRecord relational data in a grid's column</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Displaying and filtering ActiveRecord relational data in a grid's column"><div class="titlepage" id="aid-1JFUC2"><div><div><h1 class="title"><a id="ch06lvl1sec48"></a>Displaying and filtering ActiveRecord relational data in a grid's column</h1></div></div></div><p>Let's now focus on<a id="id300" class="indexterm"></a> relational data in GridView, a common topic that is easily solved by itself.</p><p>Think about the reservations grid, which has two relational fields: <code class="literal">room_id</code> and <code class="literal">customer_id</code>, referring respectively to room and customer tables. What if we want to immediately display the customer's surname, or room number?</p><p>At this point, our goal is to display relational data, for example, the customer's surname instead of <code class="literal">customer_id</code> in GridView. Fields that refer to related data are expressed with the <code class="literal">relation</code> attribute.</p><p>In the reservation grid view, <code class="literal">customer</code> is the relation to get a related customer and <code class="literal">surname</code> is the field to keep.</p><p>Therefore, to display the customer's surname, it is enough to insert this column (as a string) in the reservations grid view:</p><div class="informalexample"><pre class="programlisting">    'customer.surname'</pre></div><p>This is equivalent to:</p><div class="informalexample"><pre class="programlisting">    [
+        'attribute' =&gt; 'customer.surname'
+    ]</pre></div><p>A column <a id="id301" class="indexterm"></a>named <code class="literal">surname</code> will be displayed. If we want to change column name to <code class="literal">Customer</code>, we use this:</p><div class="informalexample"><pre class="programlisting">    [
+        'header' =&gt; 'Customer',
+        'attribute' =&gt; 'customer.surname'
+    ]</pre></div><div class="note" title="Note"><h3 class="title"><a id="note42"></a>Note</h3><p>We could use custom properties to get data, for example, <code class="literal">getnameAndSurname</code> to get the personal details of a specific customer.</p><p>Insert a new property in the <code class="literal">Customer</code> model:</p><div class="informalexample"><pre class="programlisting">public function getNameAndSurname() {
+     return $this-&gt;name.' '.$this-&gt;surname;
+}</pre></div><p>Then this will be the column in the GridView:</p><div class="informalexample"><pre class="programlisting">     [
+        'header' =&gt; 'Customer',
+        'attribute' =&gt; 'customer.nameAndSurname'
+    ]</pre></div></div><p>We now want to filter the <code class="literal">Customer</code> column. Since the <code class="literal">customer.surname</code> attribute is not in the <code class="literal">rules()</code> method of the <code class="literal">Reservation</code> model, we need to extend this class to handle extra attributes.</p><p>So, create a new class named <code class="literal">ReservationSearch</code> in <code class="literal">basic/models/ReservationSearch.php</code> with the following content:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+class ReservationSearch extends app\models\Reservation
+{
+    public function attributes()
+    {
+        // add related fields to searchable attributes
+        return array_merge(parent::attributes(), ['customer.surname']);
+    }
+    
+    public function rules()
+    {
+        // add related rules to searchable attributes
+        return array_merge(parent::rules(),[ ['customer.surname', 'safe'] ]);
+    }    
+    
+}</pre></div><p>This extension<a id="id302" class="indexterm"></a> simply adds a new attribute and a new rule attached to this attribute. The name of the attribute is <code class="literal">customer.surname</code>.</p><p>We now have to change the <code class="literal">actionGrid()</code> action in <code class="literal">ReservationsController</code> to make a connection to the <code class="literal">customer</code> table that permits us to filter based on the customer's surname.</p><p>This is the content of <code class="literal">actionGrid()</code> of <code class="literal">ReservationsController</code> in <code class="literal">basic/controllers/ReservationsController.php</code>:</p><div class="informalexample"><pre class="programlisting">    public function actionGrid()
+    {
+        $query = \app\models\Reservation::find();
+
+        $searchModel = new \app\models\ReservationSearch();
+        if(isset($_GET['ReservationSearch']))
+        {
+            $searchModel-&gt;load( \Yii::$app-&gt;request-&gt;get() );
+            
+            $query-&gt;joinWith(['customer']);
+            $query-&gt;andFilterWhere(
+                ['LIKE', 'customer.surname', $searchModel-&gt;getAttribute('customer.surname')]
+            );
+            
+            $query-&gt;andFilterWhere([
+                'id' =&gt; $searchModel-&gt;id,
+                'customer_id' =&gt; $searchModel-&gt;customer_id,
+                'room_id' =&gt; $searchModel-&gt;room_id,
+                'price_per_day' =&gt; $searchModel-&gt;price_per_day,
+            
+            ]);
+        }
+        
+        $dataProvider = new \yii\data\ActiveDataProvider([
+            'query' =&gt; $query,
+            'pagination' =&gt; [
+                'pageSize' =&gt; 10,
+            ],
+        ]);
+        
+        
+        return $this-&gt;render('grid', [ 'dataProvider' =&gt; $dataProvider, 'searchModel' =&gt; $searchModel ]);
+        
+    }</pre></div><div class="note" title="Note"><h3 class="title"><a id="note44"></a>Note</h3><p>Be careful to ensure that <code class="literal">$searchModel</code> is instanced from the <code class="literal">ReservationSearch</code> class, as much as <code class="literal">$_GET</code>, parameter used to get data is instanced from <code class="literal">ReservationSearch</code> instead of <code class="literal">Reservation</code> (because it has changed class).</p></div><p>Filtering an action<a id="id303" class="indexterm"></a> on the customer's surname in <code class="literal">actionGrid()</code> is made using these lines of code:</p><div class="informalexample"><pre class="programlisting">            $query-&gt;joinWith(['customer']);
+            $query-&gt;andFilterWhere(
+                ['LIKE', 'customer.surname', $searchModel-&gt;getAttribute('customer.surname')]
+            );</pre></div><p>We make a join and if the <code class="literal">customer.surname</code> attribute is not null, then there will be a new filter. Browse to <code class="literal">http://hostname/basic/reservations/grid</code> and type <code class="literal">Fo</code> in the <span class="strong"><strong>Customer</strong></span> column filter. You should see this:</p><div class="mediaobject"><img src="../Images/image00274.jpeg" alt="Displaying and filtering ActiveRecord relational data in a grid's column"/><div class="caption"><p>Filtering using relational data</p></div></div><p style="clear:both; height: 1em;"> </p></div></body></html>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Creating static pages</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Creating static pages" id="aid-MSDG1"><div class="titlepage"><div><div><h1 class="title"><a id="ch02lvl1sec18"></a>Creating static pages</h1></div></div></div><p>All websites contain <a id="id106" class="indexterm"></a>static pages, whose content is static.</p><p>To create a static page in a common way, we need to:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Create a function (<code class="literal">action</code>) to execute action in <code class="literal">Controller</code></li><li class="listitem">Create a view for static content</li></ul></div><p>Append the following action to <code class="literal">Controller</code>:</p><div class="informalexample"><pre class="programlisting">public function actionInfo()
+{
+    return $this-&gt;render('info');
+}</pre></div><p>Then, create a view in <code class="literal">views/controller/action-name.php</code>. This procedure is simple but too long and redundant.</p><p>Yii2 provides a quick alternative, adding static pages to the <code class="literal">actions()</code> method of <code class="literal">Controller</code> as follows:</p><div class="informalexample"><pre class="programlisting">public function actions()
+{
+  return [
+    'pages' =&gt; [
+    'class' =&gt; 'yii\web\ViewAction',
+    ],
+  ];
+}</pre></div><p>With this simple declaration, we can put all static content under <code class="literal">views/controllerName/pages</code>.</p><p>Finally, we can point to the URL with route <code class="literal">controller_name/page</code> and the <code class="literal">view</code> parameter with the name of a view file such as <code class="literal">http://hostname/basic/web/index.php?r=controllerName/pages&amp;view=name_of_view</code>.</p><div class="section" title="Example &ndash; add a contact page"><div class="titlepage"><div><div><h2 class="title"><a id="ch02lvl2sec15"></a>Example &ndash; add a contact page</h2></div></div></div><p>After we have learned <a id="id107" class="indexterm"></a>how to create a static page, it is time to write a contact page.</p><p>Let's put a short static content in <code class="literal">views/site/pages/contact.php</code> as follows:</p><div class="informalexample"><pre class="programlisting">To contact us, please write to info@example.com</pre></div><p>Then, let's add a <code class="literal">page</code> attribute in the return array from the <code class="literal">actions()</code> method of <code class="literal">Controller</code>. To simplify, we will use <code class="literal">SiteController</code> that has this default implementation of the <code class="literal">actions()</code> method:</p><div class="informalexample"><pre class="programlisting">  public function actions()
+  {
+    return [
+    'error' =&gt; [
+       'class' =&gt; 'yii\web\ErrorAction',
+    ],
+    'captcha' =&gt; [
+      'class' =&gt; 'yii\captcha\CaptchaAction',
+      'fixedVerifyCode' =&gt; YII_ENV_TEST ? 'testme' : null,
+    ],
+  ];
+  }</pre></div><p>After the last<a id="id108" class="indexterm"></a> attribute, we will append the <code class="literal">page</code> attribute, and the following will be the result:</p><div class="informalexample"><pre class="programlisting">  public function actions()
+  {
+    return [
+    'error' =&gt; [
+      'class' =&gt; 'yii\web\ErrorAction',
+    ],
+    'captcha' =&gt; [
+      'class' =&gt; 'yii\captcha\CaptchaAction',
+      'fixedVerifyCode' =&gt; YII_ENV_TEST ? 'testme' : null,
+    ],
+    'pages' =&gt; [
+      'class' =&gt; 'yii\web\ViewAction',
+    ],
+  ];
+  }</pre></div><p>Now, every request to <code class="literal">site/pages/</code> is routed using the <code class="literal">ViewAction</code> class, which handles it simply by rendering static content of relative view.</p><p>Test it by clicking on <code class="literal">http://hostname/basic/web/index.php?r=site/pages&amp;view=contact</code>, and we should see this:</p><div class="mediaobject"><img src="../Images/image00249.jpeg" alt="Example &ndash; add a contact page"/></div><p style="clear:both; height: 1em;"> </p><p>We can customize the last part of the route with these changes:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">The attribute name of array returned from the <code class="literal">actions()</code> method of <code class="literal">Controller</code></li><li class="listitem">Set the <code class="literal">viewPrefix</code> attribute of the <code class="literal">ViewAction</code> class declaration with the first part of the URL that we want to use to reach the pages</li><li class="listitem">Change the name of the subfolder under <code class="literal">views/controllerName</code></li></ul></div><p>For example, we want to use <code class="literal">static</code> as the last part of the URL to reach static pages in <code class="literal">SiteController</code>.</p><p>We want to point to <code class="literal">http://hostname/basic/web/index.php?r=site/static&amp;view=contact</code> to display the contact view.</p><p>This will be the <code class="literal">ViewAction</code> node in the array from the <code class="literal">actions()</code> method of <code class="literal">SiteController</code>:</p><div class="informalexample"><pre class="programlisting">    'static' =&gt; [
+    'class' =&gt; 'yii\web\ViewAction',
+    'viewPrefix' =&gt; 'static'
+    ],  </pre></div><p>We must also <a id="id109" class="indexterm"></a>change the name of the static pages subfolder, renaming it from <code class="literal">views/site/pages</code> to <code class="literal">views/site/static</code>, and we can point to <code class="literal">http://hostname/basic/web/index.php?r=site/static&amp;view=contact</code>.</p></div></div></body></html>

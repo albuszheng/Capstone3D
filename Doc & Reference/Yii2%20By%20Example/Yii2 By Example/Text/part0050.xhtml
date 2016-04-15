@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>DataProvider for grids</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="DataProvider for grids" id="aid-1FLS41"><div class="titlepage"><div><div><h1 class="title"><a id="ch06lvl1sec44"></a>DataProvider for grids</h1></div></div></div><p>GridView<a id="id281" class="indexterm"></a> is the widget <a id="id282" class="indexterm"></a>provided by Yii2 to display data in a grid layout.</p><p>This widget requires that data used as an input source is an extension of the abstract class <code class="literal">yii\data\BaseDataProvider</code>.</p><p>To deal with a data source, DataProvider supplies some additional actions to handle pagination and sorting.</p><p>
+<code class="literal">BaseDataProvider</code> has a method named <code class="literal">getModels()</code> that returns a list of items for the current page. This means that we could also use DataProvider to paginate data from a source and display it as we need to.</p><p>By default, the framework has three core classes that extend <code class="literal">yii\data\BaseDataProvider</code>:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">yii\data\ActiveDataProvider</code></li><li class="listitem"><code class="literal">yii\data\ArrayDataProvider</code></li><li class="listitem"><code class="literal">yii\data\SqlDataProvider</code></li></ul></div><p>The first one, <code class="literal">ActiveDataProvider</code>, uses a <code class="literal">yii\db\Query</code> instance from ActiveRecord as a data source. The parameter array is passed to the constructor and the <code class="literal">yii\db\Query</code> object is filled out in the <code class="literal">query</code> attribute:</p><div class="informalexample"><pre class="programlisting">// build an ActiveDataProvider with an empty query and a pagination with 35 items for page
+$provider = new \yii\data\ActiveDataProvider([
+    'query' =&gt; Room::find(),
+    'pagination' =&gt; [
+        'pageSize' =&gt; 35,
+    ],
+]);
+
+// get all rooms in current page
+$rooms = $provider-&gt;getModels();</pre></div><p>
+<code class="literal">ActiveDataProvider</code> is the most used DataProvider, since it depends directly on ActiveRecord, the best way to interact with databases.</p><p>The second point, <code class="literal">ArrayDataProvider</code>, uses an array of items that can be sorted or paginated as a data source. This provider is employed when data can not be represented with ActiveRecord, for example, when they are taken from another data source, such as a JSON REST service or RSS feed.</p><p>The primary difference between <code class="literal">ActiveDataProvider</code> is that all data should be immediately passed to a construct:</p><div class="informalexample"><pre class="programlisting">// build an ArrayDataProvider with an empty query and a pagination with 40 items for page
+$provider = new \yii\data\ArrayDataProvider([
+    'allModels' =&gt; Room::find()-&gt;all(),
+    'pagination' =&gt; [
+        'pageSize' =&gt; 40,
+    ],
+]);
+
+// get all rooms in current page
+$rooms = $provider-&gt;getModels();</pre></div><p>In this snippet, we <a id="id283" class="indexterm"></a>took data from an ActiveRecord to show the differences between <code class="literal">ActiveDataProvider</code> and <code class="literal">ArrayDataProvider</code>. For this last provider, all the modes should be passed to the constructor.</p><p>So, if the <code class="literal">Room</code> table has 10,000 records, with <code class="literal">ActiveDataProvider</code> 35 items at a time will be loaded, while through <code class="literal">ArrayDataProvider</code> they will be loaded all from scratch (with big performance issues).</p><p>The last one, <code class="literal">SqlDataProvider</code>, uses a SQL query as a data source. If we create pagination with this provider, we will need to also pass the <code class="literal">totalCount</code> attribute to the constructor to inform DataProvider how many records the SQL query should return:</p><div class="informalexample"><pre class="programlisting">// return total items count for this sql query
+$itemsCount = \Yii::$app-&gt;db-&gt;createCommand('SELECT COUNT(*) FROM room')-&gt;queryScalar();
+
+// build a SqlDataProvider with a pagination with 10 items for page
+
+$dataProvider = new \yii\data\SqlDataProvider([
+    'sql' =&gt; 'SELECT * FROM room',
+    'totalCount' =&gt; $itemsCount,
+    'pagination' =&gt; [
+            'pageSize' =&gt; 10,
+    ],
+]);
+
+// get the user records in the current page
+$models = $dataProvider-&gt;getModels();</pre></div></div></body></html>

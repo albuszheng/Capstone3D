@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>A summarized footer row in a grid</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="A summarized footer row in a grid" id="aid-1KEEU1"><div class="titlepage"><div><div><h1 class="title"><a id="ch06lvl1sec49"></a>A summarized footer row in a grid</h1></div></div></div><p>One feature of GridView is that it shows<a id="id304" class="indexterm"></a> summarized or statistical data, usually as a footer row or first row, to get the data immediately (instead of scrolling down the page to the bottom of the grid).</p><p>A column of the GridView widget has an attribute named <code class="literal">footer</code> to identify the last row of the current pagination. A value filled in this attribute will be placed in the last row of the grid.</p><p>By default, showing the footer is disabled; to enable the footer, it is enough to set  the attribute <code class="literal">showFooter</code> of GridView to <code class="literal">true</code>. Then, we need to insert data in the 'footer' attribute of the column that we want to show.</p><p>For example, we want to display the average price per day of rooms.</p><p>Add this code at the top of the grid view in <code class="literal">basic/views/reservations/grid.php</code> to calculate the average of price per day:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+use yii\grid\GridView;
+use yii\helpers\Html;
+?&gt;
+
+&lt;h2&gt;Reservations&lt;/h2&gt;
+
+&lt;?php 
+$sumOfPricesPerDay = 0;
+$averagePricePerDay = 0;
+
+if(count($dataProvider-&gt;getModels()) &gt; 0)
+{
+    foreach($dataProvider-&gt;getModels() as $m) $sumOfPricesPerDay += $m-&gt;price_per_day;
+    $averagePricePerDay = $sumOfPricesPerDay / sizeof($dataProvider-&gt;getModels());
+}  
+?&gt;
+
+&lt;?php 
+$roomsFilterData = yii\helpers\ArrayHelper::map( app\models\Room::find()-&gt;all(), 'id', function($model, $defaultValue) {
+    return sprintf('Floor: %d - Number: %d', $model-&gt;floor, $model-&gt;room_number);
+});
+?&gt;
+
+&lt;?= app\components\GridViewReservation::widget([
+    'dataProvider' =&gt; $dataProvider,
+    'filterModel' =&gt; $searchModel,
+    'showFooter' =&gt; true,
+    'columns' =&gt; [
+        'id',
+        
+        [
+            'header' =&gt; 'Room',
+            'filter' =&gt; Html::activeDropDownList($searchModel, 'room_id', $roomsFilterData, ['prompt' =&gt; '--- all']),
+            'content' =&gt; function($model) {
+                return $model-&gt;room-&gt;floor;
+            }
+        ],
+
+        [
+            'header' =&gt; 'Customer',
+            'attribute' =&gt; 'customer.surname',
+        ],
+        
+        [
+            'attribute' =&gt; 'price_per_day',
+            'footer' =&gt; Yii::$app-&gt;formatter-&gt;asCurrency($resultQueryAveragePricePerDay, 'EUR')
+        ],
+        
+        'date_from',
+        'date_to',
+        
+        [
+            'class' =&gt; 'yii\grid\ActionColumn',
+            'template' =&gt; '{delete}',
+            'header' =&gt; 'Actions',
+        ],        
+    ],
+]) ?&gt;</pre></div><p>Be careful! In this<a id="id305" class="indexterm"></a> example, <code class="literal">count</code> is made using the models of the current pagination. If the grid is composed of more pages, it will only show the average value for the current page!</p><p>This count can consider all records (also filtered ones), making the calculation based not only on the models <a id="id306" class="indexterm"></a>of the current pagination but also on the result of a query. Add the average count in <code class="literal">actionGrid()</code> of <code class="literal">ReservationsController</code>:</p><div class="informalexample"><pre class="programlisting">    public function actionGrid()
+    {
+        $query = \app\models\Reservation::find();
+
+        $searchModel = new \app\models\ReservationSearch();
+        if(isset($_GET['ReservationSearch']))
+        {
+            $searchModel-&gt;load( \Yii::$app-&gt;request-&gt;get() );
+            
+            $query-&gt;joinWith(['customer']);
+            $query-&gt;andFilterWhere(
+                ['LIKE', 'customer.surname', $searchModel-&gt;getAttribute('customer.surname')]
+            );
+            
+            $query-&gt;andFilterWhere([
+                'id' =&gt; $searchModel-&gt;id,
+                'customer_id' =&gt; $searchModel-&gt;customer_id,
+                'room_id' =&gt; $searchModel-&gt;room_id,
+                'price_per_day' =&gt; $searchModel-&gt;price_per_day,
+            
+            ]);
+            
+        }
+        $resultQueryAveragePricePerDay = $query-&gt;average('price_per_day');
+
+        $dataProvider = new \yii\data\ActiveDataProvider([
+            'query' =&gt; $query,
+            'pagination' =&gt; [
+                'pageSize' =&gt; 10,
+            ],
+        ]);
+        
+        return $this-&gt;render('grid', [ 'dataProvider' =&gt; $dataProvider, 'searchModel' =&gt; $searchModel, 'resultQueryAveragePricePerDay' =&gt; $resultQueryAveragePricePerDay ]);
+        
+    }</pre></div><p>The average is<a id="id307" class="indexterm"></a> calculated from the <code class="literal">average()</code> method of the <code class="literal">$query</code> object (so the filter will be considered, if it is filled out) and passed to the view, so the code at the top of the view to execute calculation is no longer needed because we have correctly moved it to the Controller action.</p><p>Then change the <code class="literal">footer</code> content of the <code class="literal">price_per_day</code> column:</p><div class="informalexample"><pre class="programlisting">        [
+            'attribute' =&gt; 'price_per_day',
+            'footer' =&gt; sprintf('Average: %0.2f', $resultQueryAveragePricePerDay)
+        ],</pre></div><p>Now the average count will be independent of pagination.</p><div class="section" title="Example &ndash; extending GridView to customize the footer row in a grid"><div class="titlepage"><div><div><h2 class="title"><a id="ch06lvl2sec31"></a>Example &ndash; extending GridView to customize the footer row in a grid</h2></div></div></div><p>In a highly customized <a id="id308" class="indexterm"></a>GridView, it is required to <a id="id309" class="indexterm"></a>show data in positions not handled by default by GridView, or it is required to apply specific changes (such as merging a column).</p><p>In either of these cases and when it is impossible to create the desired output with attributes of GridView, it will be necessary to subclass the GridView widget.</p><p>The GridView widget has specific methods to render different parts of it: <code class="literal">renderTableBody()</code>, <code class="literal">renderTableFooter()</code>, <code class="literal">renderTableHeader()</code>, <code class="literal">renderTableRow()</code>, and so on.</p><p>Think about the previous example. Now, we also want to gather the first three columns in the footer to display the <code class="literal">Average</code> label, the unique value in the <code class="literal">price_per_day</code> column, and the last four columns with an empty space.</p><p>Create a new component that extends the <code class="literal">yii\grid\GridView</code> widget in <code class="literal">basic/components/GridViewReservation.php</code> with this content:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace app\components;
+
+use Yii;
+use yii\web\Controller;
+use yii\grid\GridView;
+
+class GridViewReservation extends GridView
+{
+    public function renderTableFooter()
+    {
+        // Search column for 'price_per_day'
+        $columnPricePerDay = null;
+        foreach($this-&gt;columns as $column)
+        {
+            if(get_class($column) == 'yii\grid\DataColumn')
+            {
+                if($column-&gt;attribute == 'price_per_day') $columnPricePerDay = $column;
+            }
+        }
+        
+        $html = '&lt;tfoot&gt;&lt;tr&gt;';
+        $html .= '&lt;td colspan="3"&gt;&lt;b&gt;Average:&lt;/b&gt;&lt;/td&gt;';
+        $html .= $columnPricePerDay-&gt;renderFooterCell();
+        $html .= '&lt;td colspan="4"&gt;&lt;i&gt;this space is intentionally empty&lt;/i&gt;&lt;/td&gt;';
+        $html .= '&lt;/tr&gt;&lt;/tfoot&gt;';
+        
+        
+        return $html;
+    }
+}</pre></div><p>This component<a id="id310" class="indexterm"></a> just extends <code class="literal">yii\grid\GridView</code> and <a id="id311" class="indexterm"></a>overrides the <code class="literal">renderTableFooter()</code> method to make the required customization (mainly merging cells). The only logic in this code is to find the <code class="literal">price_per_day</code> column, cycling the array of columns given by <code class="literal">$this-&gt;columns</code>, where <code class="literal">$this</code> refers to the GridView object.</p></div></div></body></html>

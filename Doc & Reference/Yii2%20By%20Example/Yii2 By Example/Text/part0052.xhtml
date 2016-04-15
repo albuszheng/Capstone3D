@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Custom columns in a grid</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Custom columns in a grid"><div class="titlepage" id="aid-1HIT82"><div><div><h1 class="title"><a id="ch06lvl1sec46"></a>Custom columns in a grid</h1></div></div></div><p>As mentioned in the<a id="id286" class="indexterm"></a> previous paragraph, the <code class="literal">columns</code> property of the <a id="id287" class="indexterm"></a>GridView widget is mainly filled with strings.</p><p>When we need to apply a specific format, such as currency or date/time, we can append this specification to the column name with a colon and the type used for formatting, as <code class="literal">currency</code> or <code class="literal">datetime</code>.</p><p>But the most general form of a GridView column is an object of the <code class="literal">yii\grid\Column</code> class, derived by the <code class="literal">yii\grid\DataColumn</code> class.</p><p>A GridView column extended by the <code class="literal">yii\grid\Column</code> class is rendered using an array with the following keys:</p><div class="informalexample"><pre class="programlisting">        [
+// can be omitted, as it is the default
+'class' =&gt; 'yii\grid\DataColumn',
+
+        'attribute',    // name of model attribute
+        'format',         // format use to display data
+        'header',        // header of column
+        'footer',        // footer of column
+        'visible',        // flag to set visibility
+        'content'         // callback to print data
+        ],</pre></div><p>There are also other <a id="id288" class="indexterm"></a>parameters but these ones are the most<a id="id289" class="indexterm"></a> used.</p><div class="section" title="Example &ndash; displaying a reservations list by clicking on a customer grid row"><div class="titlepage"><div><div><h2 class="title"><a id="ch06lvl2sec30"></a>Example &ndash; displaying a reservations list by clicking on a customer grid row</h2></div></div></div><p>We are now ready to <a id="id290" class="indexterm"></a>create a customer grid that contains a reference to the linked reservation list in every row. First of all, make sure that the structure and the data for the customer and reservation tables is the following:</p><div class="informalexample"><pre class="programlisting">--
+-- Structure of Table `customer`
+--
+
+CREATE TABLE IF NOT EXISTS `customer` (
+  `id` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  `surname` varchar(50) NOT NULL,
+  `phone_number` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+);
+
+--
+-- Data Dump of Table `customer`
+--
+
+INSERT INTO `customer` (`id`, `name`, `surname`, `phone_number`) VALUES
+(1, 'James', 'Foo', '+39-12345678'),
+(2, 'Bar', 'Johnson', '+47-98438923');
+
+--
+-- Structure of Table `reservation`
+--
+
+CREATE TABLE IF NOT EXISTS `reservation` (
+  `id` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  `room_id` int(11) NOT NULL,
+  `customer_id` int(11) NOT NULL,
+  `price_per_day` decimal(20,2) NOT NULL,
+  `date_from` date NOT NULL,
+  `date_to` date NOT NULL,
+  `reservation_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `room_id` (`room_id`),
+  KEY `customer_id` (`customer_id`)
+);
+
+--
+-- Data Dump of table `reservation`
+--
+
+INSERT INTO `reservation` (`id`, `room_id`, `customer_id`, `price_per_day`, `date_from`, `date_to`, `reservation_date`) VALUES
+(1, 2, 1, 90.00, '2015-04-01', '2015-05-06', '2015-05-24 22:45:37'),
+(2, 2, 1, 48.00, '2019-08-27', '2019-08-31', '2015-05-24 22:45:37'),
+(3, 1, 2, 105.00, '2015-09-24', '2015-10-06', '2015-06-03 00:21:14');</pre></div><p>Create a new controller<a id="id291" class="indexterm"></a> named <code class="literal">CustomersController</code> in <code class="literal">basic/controllers/CustomersController.php</code> with the <code class="literal">actionGrid</code> action to display a list in the grid view:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace app\controllers;
+
+use Yii;
+use yii\web\Controller;
+use app\models\Customer;
+use yii\data\ActiveDataProvider;
+
+class CustomersController extends Controller
+{
+    public function actionGrid()
+    {
+        $query = Customer::find();
+        
+        $dataProvider = new ActiveDataProvider([
+            'query' =&gt; $query,
+            'pagination' =&gt; [
+                'pageSize' =&gt; 10,
+            ],
+        ]);
+        
+        return $this-&gt;render('grid', [ 'dataProvider' =&gt; $dataProvider ]);
+        
+    }
+}</pre></div><p>This action <code class="literal">actionGrid</code> simply creates a data provider with all the data from the customer (unfiltered) and <a id="id292" class="indexterm"></a>with a pagination that displays ten items on a page. Finally, render the grid view.</p><p>This is the content of the grid view in <code class="literal">basic/views/customers/grid.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+use yii\grid\GridView;
+use yii\helpers\Html;
+?&gt;
+
+&lt;h2&gt;Customers&lt;/h2&gt;
+
+&lt;?= GridView::widget([
+    'dataProvider' =&gt; $dataProvider,
+    'columns' =&gt; [
+        'id',
+        'name',
+        'surname',
+        'phone_number',
+        
+        [
+            'header' =&gt; 'Reservations',
+            'content' =&gt; function ($model, $key, $index, $column) {
+                return Html::a('Reservations', ['reservations/grid', 'Reservation[customer_id]' =&gt; $model-&gt;id]);
+            }
+        ],
+        
+        [
+            'class' =&gt; 'yii\grid\ActionColumn',
+            'template' =&gt; '{delete}',
+            'header' =&gt; 'Actions',
+        ],        
+    ],
+]) ?&gt;</pre></div><p>The last two columns require particular explanation.</p><p>The penultimate one, <code class="literal">Reservation</code>, displays a link to give you access to the list of all customer reservations. We have put <code class="literal">Reservations</code> as the header and filled the <code class="literal">content</code> property with dynamic data passed from the callback function, which returns an HTML link to the <code class="literal">reservations/index</code> route with a parameter indicating <code class="literal">customer_id</code> selected.</p><p>The last column headed <code class="literal">Actions</code> displays the ActionColumn with the single action <code class="literal">delete</code> to remove the selected record.</p><p>Point your browser to <code class="literal">http://hostname/basic/customers/grid</code> and you should have the following output:</p><div class="mediaobject"><img src="../Images/image00271.jpeg" alt="Example &ndash; displaying a reservations list by clicking on a customer grid row"/><div class="caption"><p>The Customers grid using the GridView widget</p></div></div><p style="clear:both; height: 1em;"> </p><div class="note" title="Note"><h3 class="title"><a id="note39"></a>Note</h3><p>The language used in GridView is configured in <code class="literal">basic/config/web.php</code> with the <code class="literal">language</code> property. This property has a global effect on every core widget.</p></div><p>We can complete <a id="id293" class="indexterm"></a>this example by just putting a counter near the <code class="literal">Reservations</code> link to indicate the number of reservations for each customer.</p><p>For this purpose, we need to add a new relation named <code class="literal">getReservationsCount</code> to the Customer model in <code class="literal">basic/models/Customer.php</code>, which returns the number of reservations linked to the customer:</p><div class="informalexample"><pre class="programlisting">    public function getReservationsCount()
+    {
+      return $this-&gt;hasMany(\app\models\Reservation::className(), ['customer_id' =&gt; 'id'])-&gt;count();
+    }</pre></div><p>Now we can modify the penultimate column with:</p><div class="informalexample"><pre class="programlisting">        [
+            'header' =&gt; 'Reservations',
+            'content' =&gt; function ($model, $key, $index, $column) {
+                $title = sprintf('Reservations (%d)', $model-&gt;reservationsCount);
+                return Html::a($title, ['reservations/grid', 'Reservation[customer_id]' =&gt; $model-&gt;id]);
+            }
+        ],</pre></div><p>If we refresh our browser now, we will see near the <code class="literal">Reservations</code> anchor link, the correct number of reservations for that customer appears.</p><p>This example<a id="id294" class="indexterm"></a> represents the complete reservations list displayed when a user clicks on the link <code class="literal">Reservations</code>.</p><p>Create <code class="literal">ReservationsController</code> as a new file in <code class="literal">basic/controllers/ReservationsController.php</code> with an action <code class="literal">grid</code> and the following content:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace app\controllers;
+
+use Yii;
+use yii\web\Controller;
+use app\models\Reservation;
+use yii\data\ActiveDataProvider;
+
+class ReservationsController extends Controller
+{
+    public function actionGrid()
+    {
+        $query = Reservation::find();
+        
+        if(isset($_GET['Reservation']))
+        {
+            $query-&gt;andFilterWhere([
+                'customer_id' =&gt; isset($_GET['Reservation']['customer_id'])?$_GET['Reservation']['customer_id']:null,
+            ]);
+        }
+        
+        $dataProvider = new ActiveDataProvider([
+            'query' =&gt; $query,
+            'pagination' =&gt; [
+                'pageSize' =&gt; 10,
+            ],
+        ]);
+        
+        return $this-&gt;render('grid', [ 'dataProvider' =&gt; $dataProvider ]);
+        
+    }
+}</pre></div><p>In this controller, we <a id="id295" class="indexterm"></a>applied an <code class="literal">andFilterWhere</code> condition to query whether <code class="literal">$_GET['Reservation']</code> is set. The <code class="literal">andFilterWhere()</code>method will apply a filter passed as a parameter only if the condition is not empty. So if<code class="literal"> $_GET['Reservation']['customer_id']</code> is not set, the <code class="literal">andFilterWhere()</code> condition parameter will have a null value and will not be appended to any other query condition.</p></div></div></body></html>

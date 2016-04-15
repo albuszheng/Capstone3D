@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Mixing ACF and RBAC</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Mixing ACF and RBAC" id="aid-1VSLM1"><div class="titlepage"><div><div><h1 class="title"><a id="ch08lvl1sec61"></a>Mixing ACF and RBAC</h1></div></div></div><p>ACF contains a <a id="id396" class="indexterm"></a>property named <code class="literal">role</code> that is usually filled with <code class="literal">?</code> to indicate that access is available for all users, and <code class="literal">@</code> to indicate that access is restricted to authenticated ones. But there is a third option that refers its content to the role name of the RBAC system.</p><p>For each controller, therefore, it is enough to overwrite <code class="literal">behaviors()</code> by specifying the roles that can access the actions inside the controller and then to associate users to the role, in order to allow or deny access.</p><div class="section" title="Example &ndash; managing users' roles to access rooms, reservations, and customers"><div class="titlepage"><div><div><h2 class="title"><a id="ch08lvl2sec42"></a>Example &ndash; managing users' roles to access rooms, reservations, and customers</h2></div></div></div><p>In this example, we will <a id="id397" class="indexterm"></a>show you how to manage the access to the controller actions using ACF and RBAC.</p><p>We will use the <code class="literal">foo</code> user to simulate an authenticated user for <code class="literal">RoomsController</code>. The first thing to do is to extend the <code class="literal">behaviors()</code> method of <code class="literal">RoomsController</code> in <code class="literal">basic/controller/RoomsController.php</code> with this content:</p><div class="informalexample"><pre class="programlisting">Use yii\filters\AccessControl;
+
+    public function behaviors()
+    {
+        return [
+            'access' =&gt; [
+                'class' =&gt; AccessControl::className(),
+                'rules' =&gt; [
+                    [
+                        'allow' =&gt; true,
+                        'actions' =&gt; ['create'],
+                        'roles' =&gt; ['operator'],
+                    ],
+                    [
+                        'allow' =&gt; true,
+                        'actions' =&gt; ['index'],
+                    ],                    
+                ],
+                
+            ],
+        ];
+    }</pre></div><p>With this code, we will guarantee access to the <code class="literal">create</code> action only to users with the <code class="literal">operator</code> role, while the <code class="literal">index</code> action access is given to all users and all other actions are denied to everyone.</p><p>So, if we try to browse to <code class="literal">http://hostname/basic/web/rooms/create</code>, we should see an error page with a forbidden error. This is because we are trying to access a page with insufficient permissions.</p><p>Now, we can execute the authentication simply by going to <code class="literal">http://hostname/basic/web/my-authentication/login</code> and typing <code class="literal">foo</code> as the username and <code class="literal">foopassword</code> as the password, since we already created a user with these credentials in the database in the previous chapter. We should see a successfully logged in page.</p><p>The last thing to <a id="id398" class="indexterm"></a>do is to assign the <code class="literal">operator</code> role to the <code class="literal">foo</code> user. We can use the authorization manager just created in <code class="literal">http://hostname/basic/web/authorization-manager/index</code>. Now, click on the cell referring to the <code class="literal">foo</code> user and the <code class="literal">operator</code> role. In this way, we have assigned the <code class="literal">operator</code> role to the <code class="literal">foo</code> user.</p><p>Finally, we can refresh the rooms creation page at <code class="literal">http://hostname/basic/web/rooms/create</code>. We can see now the create action page of the rooms controller.</p></div></div></body></html>

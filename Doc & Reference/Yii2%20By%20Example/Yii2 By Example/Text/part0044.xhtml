@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Working with relationships</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Working with relationships"><div class="titlepage" id="aid-19UOO2"><div><div><h1 class="title"><a id="ch05lvl1sec38"></a>Working with relationships</h1></div></div></div><p>ActiveRecord <a id="id243" class="indexterm"></a>provides us with skills to work with relationships between database tables. Yii2 employs two methods to establish the relationship between the current and other ActiveRecord classes: <code class="literal">hasOne</code> and <code class="literal">hasMany</code>, which return an ActiveQuery based on the multiplicity of the relationship.</p><p>The first method <code class="literal">hasOne()</code> returns at most one related record that matches the criteria set by this relationship, and <code class="literal">hasMany()</code> returns multiple related records that match the criteria set by this relationship.</p><p>Both methods require that the first parameter is the class name of the related ActiveRecord and that the second parameter is the pair of primary keys that are involved in the relationship: the first key is relative to a foreign ActiveRecord and the second key is related to the current ActiveRecord.</p><p>Usually, <code class="literal">hasOne()</code> and <code class="literal">hasMany()</code> are accessed from properties that identify which object (or objects) will be returned.</p><p>The <a id="id244" class="indexterm"></a>method in this example is:</p><div class="informalexample"><pre class="programlisting">class Room extends ActiveRecord
+{
+    public function getReservations()
+    {
+return $this-&gt;hasMany(Reservation::className(), ['room_id' =&gt; 'id']);
+    }
+}</pre></div><p>By calling <code class="literal">$room-&gt;reservations</code>, framework will execute this query:</p><div class="informalexample"><pre class="programlisting">SELECT * FROM `reservation` WHERE `room_id` = id_of_room_model</pre></div><p>The use of the <code class="literal">hasOne()</code> method is similar, and as an example will look like this:</p><div class="informalexample"><pre class="programlisting">class Reservation extends ActiveRecord
+{
+    public function getRoom()
+    {
+return $this-&gt;hasOne(Room::className(), ['id' =&gt; 'room_id']);
+    }
+}</pre></div><p>Calling <code class="literal">$reservation-&gt;room</code>, framework will execute this query:</p><div class="informalexample"><pre class="programlisting">SELECT * FROM `room` WHERE `id` = reservation_id</pre></div><p>Remember that when we call a property that contains the <code class="literal">hasOne()</code> or <code class="literal">hasMany()</code> methods, a SQL query will be executed and its response will be cached. So, the next time that we call the property, a SQL query will not be executed and the last cached response will be released.</p><p>This approach to get related data is called <a id="id245" class="indexterm"></a><span class="strong"><strong>lazy loading</strong></span>, which means that data is loaded only when it is effectively requested.</p><p>Now let's write an example to display the last reservation details about a room. Create a reservations model class using Gii if you have not done so before.</p><p>First of all, we need some data to work with. Insert this record in the <code class="literal">customer</code> table:</p><div class="informalexample"><pre class="programlisting">INSERT INTO `customer` (`id` ,`name` ,`surname` ,`phone_number`) VALUES ( NULL , 'James', 'Foo', '+39-12345678');</pre></div><p>In the <code class="literal">reservation</code> table, insert these records:</p><div class="informalexample"><pre class="programlisting">INSERT INTO `reservation` (`id`, `room_id`, `customer_id`, `price_per_day`, `date_from`, `date_to`, `reservation_date`) VALUES (NULL, '2', '1', '90', '2015-04-01', '2015-05-06', NULL), (NULL, '2', '1', '48', '2019-08-27', '2019-08-31', CURRENT_TIMESTAMP);</pre></div><p>Open the room <a id="id246" class="indexterm"></a>model in <code class="literal">basic/models/Room.php</code> and append this property declaration at the bottom of the file:</p><div class="informalexample"><pre class="programlisting">    public function getLastReservation()
+    {
+        return $this-&gt;hasOne(
+          Reservation::className(),
+          ['room_id' =&gt; 'id']
+          )
+          -&gt;orderBy('id');
+    }</pre></div><p>As said before, <code class="literal">hasOne()</code> and <code class="literal">hasMany()</code> return an ActiveQuery instance. We can append any methods to complete the relationship as we have done before by appending the <code class="literal">orderBy()</code> method to get the first record.</p><p>Create a new action named <code class="literal">actionLastReservationByRoomId($room_id)</code> in the <code class="literal">Rooms</code> controller, with the following content:</p><div class="informalexample"><pre class="programlisting">    public function actionLastReservationByRoomId($room_id)
+    {
+        $room = Room::findOne($room_id);
+        
+        // equivalent to
+        // SELECT * FROM reservation WHERE room_id = $room_id
+        $lastReservation = $room-&gt;lastReservation;
+        
+        // next times that we will call $room-&gt;reservation, no sql query will be executed.
+        
+        return $this-&gt;render('lastReservationByRoomId', ['room' =&gt; $room, 'lastReservation' =&gt; $lastReservation]);
+    }
+    Finally, create the view in basic/views/rooms/lastReservationByRoomId.php with this content:&lt;table class="table"&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Room Id&lt;/th&gt;
+        &lt;td&gt;&lt;?php echo $lastReservation['room_id'] ?&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Customer Id&lt;/th&gt;
+        &lt;td&gt;&lt;?php echo $lastReservation['customer_id'] ?&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Price per day&lt;/th&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asCurrency($lastReservation['price_per_day'], 'EUR') ?&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Date from&lt;/th&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asDate($lastReservation['date_from'], 'php:Y-m-d') ?&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Date to&lt;/th&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asDate($lastReservation['date_to'], 'php:Y-m-d') ?&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Reservation date&lt;/th&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asDate($lastReservation['reservation_date'], 'php:Y-m-d H:i:s') ?&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/table&gt;</pre></div><p>Point your <a id="id247" class="indexterm"></a>browser to <code class="literal">http://hostname/basic/web/rooms/last-reservation-by-room-id?room_id=2</code> to visualize this frame:</p><div class="mediaobject"><img src="../Images/image00266.jpeg" alt="Working with relationships"/><div class="caption"><p>A visualization of the last reservation of a room with id = 2</p></div></div><p style="clear:both; height: 1em;"> </p><p>Only the last reservation inserted in the database will be displayed.</p><p>What about displaying all the last reservations for each room in a single table?</p><p>Here, the lazy <a id="id248" class="indexterm"></a>loading approach will have performance issues because for every room, it will execute a single SQL query to get data for the last reservation. This is a code snippet in the view:</p><div class="informalexample"><pre class="programlisting">for($roomsList as $room)
+{
+    // SELECT * FROM reservation WHERE room_id = $room-&gt;id
+      $lastReservation = $room-&gt;lastReservation;
+}</pre></div><p>In order to complete the script's execution, it will execute as many related SQL queries as the number of rooms, and when the number of rooms grows, this solution will not be efficient anymore.</p><p>The Yii2 framework provides another type of loading data, named eager loading, to solve this kind of problem.</p><p>Eager loading is applied using the <code class="literal">with()</code> method of ActiveQuery. This method's parameters can be either one or multiple strings, or a single array of relation names and the optional callbacks to customize the relationships.</p><p>When we get a rooms list, if we apply the <code class="literal">with()</code> method to the query, a second SQL query will automatically be executed and this will return the list of the last reservations for each room.</p><p>With this example, we will get a rooms list and a list of the <code class="literal">lastReservation</code> relation for each room entry. In this way, when we refer to <code class="literal">$room-&gt;lastReservation</code>, no other SQL query will be executed:</p><div class="informalexample"><pre class="programlisting">// SELECT * FROM `room`
+// SELECT * FROM `reservation` WHERE `room_id` IN ( room_id list from previous select ) ORDER BY `id` DESC
+$rooms = Room::find()
+-&gt;with('lastReservation')
+-&gt;all();
+
+// no query will be executed
+$lastReservation = $rooms[0]-&gt;lastReservation;</pre></div><p>Let's write a complete example to get a full list of the last reservations for each room. In <code class="literal">basic/controllers/RoomsController.php</code>, append a new action named <code class="literal">actionLastReservationForEveryRoom()</code>:</p><div class="informalexample"><pre class="programlisting">    public function actionLastReservationForEveryRoom()
+    {
+            $rooms = Room::find()
+            -&gt;with('lastReservation')
+            -&gt;all();
+        
+            return $this-&gt;render('lastReservationForEveryRoom', ['rooms' =&gt; $rooms]);
+    }</pre></div><p>This action <a id="id249" class="indexterm"></a>will pass a list of rooms named <code class="literal">lastReservationForEveryRoom</code> to the view, together with the <code class="literal">lastReservation</code> relation loaded using the eager loading.</p><p>Create a view named <code class="literal">lastReservationForEveryRoom.php</code> in <code class="literal">basic/views/rooms/lastReservationForEveryRoom.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;table class="table"&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Room Id&lt;/th&gt;
+        &lt;th&gt;Customer Id&lt;/th&gt;
+        &lt;th&gt;Price per day&lt;/th&gt;
+        &lt;th&gt;Date from&lt;/th&gt;
+        &lt;th&gt;Date to&lt;/th&gt;
+        &lt;th&gt;Reservation date&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;?php foreach($rooms as $room) { ?&gt;
+    &lt;?php $lastReservation = $room-&gt;lastReservation; ?&gt;
+    &lt;tr&gt;
+        &lt;td&gt;&lt;?php echo $lastReservation['room_id'] ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo $lastReservation['customer_id'] ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asCurrency($lastReservation['price_per_day'], 'EUR') ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asDate($lastReservation['date_from'], 'php:Y-m-d') ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asDate($lastReservation['date_to'], 'php:Y-m-d') ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asDate($lastReservation['reservation_date'], 'php:Y-m-d H:i:s') ?&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;?php } ?&gt;
+&lt;/table&gt;</pre></div><p>In this view, the<a id="id250" class="indexterm"></a> last reservation data will be displayed for each room. Since the first room has no reservations, an empty row will be displayed. This is the result:</p><div class="mediaobject"><img src="../Images/image00267.jpeg" alt="Working with relationships"/><div class="caption"><p>Last reservation for every room</p></div></div><p style="clear:both; height: 1em;"> </p><div class="note" title="Note"><h3 class="title"><a id="note31"></a>Note</h3><p>There are two variants to the <code class="literal">with()</code> method: <code class="literal">joinWith()</code> and <code class="literal">innerJoinWith()</code>, which apply a left join or an inner join to a primary query.</p><p>For example, this is the use of <code class="literal">joinWith()</code> with:</p><div class="informalexample"><pre class="programlisting">            $rooms = Room::find()
+            -&gt;leftJoinWith('lastReservation')
+            -&gt;all();</pre></div><p>The preceding code snippet is equivalent to:</p><div class="informalexample"><pre class="programlisting">SELECT `room`.* FROM `room` LEFT JOIN `reservation` ON `room`.`id` = `reservation`.`room_id` ORDER BY `id` DESC
+
+SELECT * FROM `reservation` WHERE `room_id` IN ( room_id list from previous sql respone ) ORDER BY `id` DESC</pre></div><p>Remember that the inner join selects all rows from both tables as long as there is a match between the columns in both tables; instead, the left join returns all rows from the left table (room), with the matching rows in the right table (reservation). The result is NULL in the right side when there is no match.</p></div><p>Sometimes it happens that we need more than one level of relationship between tables. For example, we could find a customer related to a room. In this case, starting from the room, we pass through the reservation and go from the reservation to the customer.</p><p>The relationship here will be:</p><div class="informalexample"><pre class="programlisting">room -&gt; reservation -&gt; customer</pre></div><p>If we want to find out the customer object from the room object, just type:</p><div class="informalexample"><pre class="programlisting">$customer = $room-&gt;customer;</pre></div><p>Generally, we have more levels of relationship, but in this case only two (reservation and customer).</p><p>Yii2 allows us to <a id="id251" class="indexterm"></a>specify a junction table using the <code class="literal">via()</code> or <code class="literal">viaTable()</code> method. The first one, <code class="literal">via()</code>, is based on an existing relationship in the model, and it supports two parameters:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Relation name</li><li class="listitem">A PHP callback parameter to customize the associated relation</li></ul></div><p>The second method, <code class="literal">viaTable()</code>, is based on direct access to a physical table in the database and supports three parameters:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">The first parameter is a relation or table name</li><li class="listitem">The second parameter is the link associated with the primary model</li><li class="listitem">The third parameter is a PHP callback to customize the associated relation</li></ul></div><div class="section" title="Example &ndash; using a relationship to connect rooms, reservations, and customers"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec27"></a>Example &ndash; using a relationship to connect rooms, reservations, and customers</h2></div></div></div><p>In this example, we will look at how<a id="id252" class="indexterm"></a> to build a single view that displays the rooms, reservations, and customers lists at the same time; when a user clicks on the <span class="strong"><strong>Detail</strong></span> button of rooms record, the  reservations list will be filtered with data linked to that room. In the same way, when a user clicks on the <span class="strong"><strong>Detail</strong></span> button of a reservations record, the customers list will be filtered with data linked to that reservation.</p><p>If no parameter is passed (a condition that occurs when a page is called for the first time), either the rooms, reservations, or customers list contains a full record of data from the respective tables.</p><p>Start writing <code class="literal">actionIndexWithRelationships</code> in <code class="literal">basic/controllers/RoomsController.php</code>. This is the task list for this action:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Check which parameter of detail has been passed (<code class="literal">room_id</code> identifies that the reservations list has to be filled in with the data filtered using <code class="literal">room_id</code>, while <code class="literal">reservation_id</code> identifies that the customers list has to be filled with the data filtered using <code class="literal">reservation_id</code>)</li><li class="listitem">Fill in three models: <code class="literal">roomSelected</code>, <code class="literal">reservationSelected</code>, and <code class="literal">customerSelected</code> to display the details and fill in three arrays of models: <code class="literal">rooms</code>, <code class="literal">reservations</code>, and <code class="literal">customers</code></li></ul></div><p>This is the <a id="id253" class="indexterm"></a>complete content of<code class="literal"> actionIndexWithRelationships</code>:</p><div class="informalexample"><pre class="programlisting">     public function actionIndexWithRelationships()
+    {
+        // 1. Check what parameter of detail has been passed
+        $room_id = Yii::$app-&gt;request-&gt;get('room_id', null);
+        $reservation_id = Yii::$app-&gt;request-&gt;get('reservation_id', null);
+        $customer_id = Yii::$app-&gt;request-&gt;get('customer_id', null);
+        
+        // 2. Fill three models: roomSelected, reservationSelected and customerSelected and
+        //    Fill three arrays of models: rooms, reservations and customers;
+        $roomSelected = null;
+        $reservationSelected = null;
+        $customerSelected = null;
+        
+        if($room_id != null)
+        {
+            $roomSelected = Room::findOne($room_id);
+            
+            $rooms = array($roomSelected);
+            $reservations = $roomSelected-&gt;reservations;
+            $customers = $roomSelected-&gt;customers;
+        }
+        else if($reservation_id != null)
+        {
+            $reservationSelected = Reservation::findOne($reservation_id);
+            
+            $rooms = array($reservationSelected-&gt;room);
+            $reservations = array($reservationSelected);
+            $customers = array($reservationSelected-&gt;customer);
+        }
+        else if($customer_id != null)
+        {
+            $customerSelected = Customer::findOne($customer_id);
+            
+            $rooms = $customerSelected-&gt;rooms;
+            $reservations = $customerSelected-&gt;reservations;
+            $customers = array($customerSelected);
+        }
+        else
+        {
+            $rooms = Room::find()-&gt;all();
+            $reservations = Reservation::find()-&gt;all();
+            $customers = Customer::find()-&gt;all();
+        }
+        
+        return $this-&gt;render('indexWithRelationships', ['roomSelected' =&gt; $roomSelected, 'reservationSelected' =&gt; $reservationSelected, 'customerSelected' =&gt; $customerSelected, 'rooms' =&gt; $rooms, 'reservations' =&gt; $reservations, 'customers' =&gt; $customers]);
+    }</pre></div><div class="note" title="Note"><h3 class="title"><a id="note34"></a>Note</h3><p>Remember to add the <code class="literal">use</code> keyword for <code class="literal">Customer</code> and <code class="literal">Reservation</code> classes at the top of the <code class="literal">RoomsController</code> file:</p><div class="informalexample"><pre class="programlisting">use app\models\Reservation;
+use app\models\Customer;</pre></div></div><p>The second part of <a id="id254" class="indexterm"></a>the action body requires more attention, because there are filled in selected models and list models in this specific position.</p><p>Only one parameter at a time can be selected between <code class="literal">$room_id</code>, <code class="literal">$reservation_id</code>, and <code class="literal">$customer_id</code>. When one of these three parameters is selected, three arrays of the <code class="literal">Room</code>, <code class="literal">Reservation</code>, and <code class="literal">Customer</code> model will be filled in, using the relationships in the model. For this purpose, models must have all the relationships employed in the previous code.</p><p>Let's make sure that all the relationships exist in the models.</p><p>The <code class="literal">Room</code> model in <code class="literal">basic/models/Room.php</code> must have both <code class="literal">getReservations()</code> and <code class="literal">getCustomers()</code> defined, which both use the <code class="literal">via()</code> method to handle the second level of relationship:</p><div class="informalexample"><pre class="programlisting">    public function getReservations()
+    {
+            return $this-&gt;hasMany(Reservation::className(), ['room_id' =&gt; 'id']);
+    }
+public function getCustomers()
+    {
+            return $this-&gt;hasMany(Customer::className(), ['id' =&gt; 'customer_id'])-&gt;via('reservations');
+    }</pre></div><p>The <code class="literal">Reservation</code> model in <code class="literal">basic/models/Reservation.php</code> must have <code class="literal">getCustomer()</code> and <code class="literal">getRoom()</code>, both returning a single related model:</p><div class="informalexample"><pre class="programlisting">    public function getRoom()
+    {
+            return $this-&gt;hasOne(Room::className(), ['id' =&gt; 'room_id']);
+    }
+
+    public function getCustomer()
+    {
+            return $this-&gt;hasOne(Customer::className(), ['id' =&gt; 'customer_id']);
+    }</pre></div><p>Finally, the <code class="literal">Customer</code> model<a id="id255" class="indexterm"></a> in <code class="literal">basic/models/Customer.php</code> must have <code class="literal">getReservations()</code> and <code class="literal">getRooms()</code>, which use the <code class="literal">via()</code> method to handle the second level of relationship:</p><div class="informalexample"><pre class="programlisting">    public function getReservations()
+    {
+            return $this-&gt;hasMany(Reservation::className(), ['customer_id' =&gt; 'id']);
+    }
+    
+    public function getRooms()
+    {
+            return $this-&gt;hasMany(Room::className(), ['id' =&gt; 'room_id'])-&gt;via('reservations');
+    }</pre></div><p>Now write a view file in <code class="literal">basic/view/rooms/indexWithRelationships.php</code>. We will split the HTML page into three parts (three tables), using the CSS provided by Bootstrap (which we will examine widely in the next few chapters).</p><p>The first table will be for the rooms list, the second table for the reservations list, and the last one for the customers list:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+use yii\helpers\Url;
+?&gt;
+
+&lt;a class="btn btn-danger" href="&lt;?php echo Url::to(['index-with-relationships']) ?&gt;"&gt;Reset&lt;/a&gt;
+
+&lt;br /&gt;&lt;br /&gt;
+&lt;div class="row"&gt;
+    &lt;div class="col-md-4"&gt;
+        &lt;legend&gt;Rooms&lt;/legend&gt;
+        &lt;table class="table"&gt;
+            &lt;tr&gt;
+                &lt;th&gt;#&lt;/th&gt;
+                &lt;th&gt;Floor&lt;/th&gt;
+                &lt;th&gt;Room number&lt;/th&gt;
+                &lt;th&gt;Price per day&lt;/th&gt;
+            &lt;/tr&gt;
+            &lt;?php foreach($rooms as $room) { ?&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;a class="btn btn-primary btn-xs" href="&lt;?php echo Url::to(['index-with-relationships', 'room_id' =&gt; $room-&gt;id]) ?&gt;"&gt;detail&lt;/a&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;?php echo $room['floor'] ?&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;?php echo $room['room_number'] ?&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asCurrency($room['price_per_day'], 'EUR') ?&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;?php } ?&gt;
+        &lt;/table&gt;
+        
+        &lt;?php if($roomSelected != null) { ?&gt;
+            &lt;div class="alert alert-info"&gt;
+                &lt;b&gt;You have selected Room #&lt;?php echo $roomSelected-&gt;id ?&gt;&lt;/b&gt;
+            &lt;/div&gt;
+        &lt;?php } else { ?&gt;
+            &lt;i&gt;No room selected&lt;/i&gt;
+        &lt;?php } ?&gt;
+    &lt;/div&gt;
+    
+    &lt;div class="col-md-4"&gt;
+        &lt;legend&gt;Reservations&lt;/legend&gt;
+        &lt;table class="table"&gt;
+            &lt;tr&gt;
+                &lt;th&gt;#&lt;/th&gt;
+                &lt;th&gt;Price per day&lt;/th&gt;
+                &lt;th&gt;Date from&lt;/th&gt;
+                &lt;th&gt;Date to&lt;/th&gt;
+            &lt;/tr&gt;
+            &lt;?php foreach($reservations as $reservation) { ?&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;a class="btn btn-primary btn-xs" href="&lt;?php echo Url::to(['index-with-relationships', 'reservation_id' =&gt; $reservation-&gt;id]) ?&gt;"&gt;detail&lt;/a&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asCurrency($reservation['price_per_day'], 'EUR') ?&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asDate($reservation['date_from'], 'php:Y-m-d') ?&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asDate($reservation['date_to'], 'php:Y-m-d') ?&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;?php } ?&gt;
+        &lt;/table&gt;
+        
+        &lt;?php if($reservationSelected != null) { ?&gt;
+            &lt;div class="alert alert-info"&gt;
+                &lt;b&gt;You have selected Reservation #&lt;?php echo $reservationSelected-&gt;id ?&gt;&lt;/b&gt;
+            &lt;/div&gt;
+        &lt;?php } else { ?&gt;
+            &lt;i&gt;No reservation selected&lt;/i&gt;
+        &lt;?php } ?&gt;
+         
+    &lt;/div&gt;
+    &lt;div class="col-md-4"&gt;
+        &lt;legend&gt;Customers&lt;/legend&gt;
+        &lt;table class="table"&gt;
+            &lt;tr&gt;
+                &lt;th&gt;#&lt;/th&gt;
+                &lt;th&gt;Name&lt;/th&gt;
+                &lt;th&gt;Surname&lt;/th&gt;
+                &lt;th&gt;Phone&lt;/th&gt;
+            &lt;/tr&gt;
+            &lt;?php foreach($customers as $customer) { ?&gt;
+            &lt;tr&gt;
+                &lt;td&gt;&lt;a class="btn btn-primary btn-xs" href="&lt;?php echo Url::to(['index-with-relationships', 'customer_id' =&gt; $customer-&gt;id]) ?&gt;"&gt;detail&lt;/a&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;?php echo $customer['name'] ?&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;?php echo $customer['surname'] ?&gt;&lt;/td&gt;
+                &lt;td&gt;&lt;?php echo $customer['phone_number'] ?&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;?php } ?&gt;
+        &lt;/table&gt;
+        
+        &lt;?php if($customerSelected != null) { ?&gt;
+            &lt;div class="alert alert-info"&gt;
+                &lt;b&gt;You have selected Customer #&lt;?php echo $customerSelected-&gt;id ?&gt;&lt;/b&gt;
+            &lt;/div&gt;
+        &lt;?php } else { ?&gt;
+            &lt;i&gt;No customer selected&lt;/i&gt;
+        &lt;?php } ?&gt;        
+    &lt;/div&gt;   
+&lt;/div&gt;</pre></div><p>Test the code by pointing<a id="id256" class="indexterm"></a> your browser to <code class="literal">http://hostname/basic/rooms/index-with-relationships</code>. This should be the result of trying to filter a room on the second floor:</p><div class="mediaobject"><img src="../Images/image00268.jpeg" alt="Example &ndash; using a relationship to connect rooms, reservations, and customers"/><div class="caption"><p>Rooms with relationships between reservations and customers</p></div></div><p style="clear:both; height: 1em;"> </p></div></div></body></html>

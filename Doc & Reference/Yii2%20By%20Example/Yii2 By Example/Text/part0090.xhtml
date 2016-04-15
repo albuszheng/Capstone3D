@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Implementing and executing cron jobs</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Implementing and executing cron jobs" id="aid-2LQIK1"><div class="titlepage"><div><div><h1 class="title"><a id="ch12lvl1sec84"></a>Implementing and executing cron jobs</h1></div></div></div><p>The main usage of console <a id="id544" class="indexterm"></a>applications consists in the execution of periodic tasks <a id="id545" class="indexterm"></a>using cron job (on Linux or Unix machines).</p><p>We can use console applications to send massive e-mails to perform system maintenance or to check a specific status of the application.</p><p>In the next example, we will see how to send an e-mail with a summary of the reservations made in the current date.</p><div class="section" title="Example &ndash; sending an e-mail with new reservations of the day"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec54"></a>Example &ndash; sending an e-mail with new reservations of the day</h2></div></div></div><p>This example illustrates how to <a id="id546" class="indexterm"></a>send an e-mail with a summary of new daily reservations.</p><p>First of all, let's configure the <code class="literal">mailer</code> component in <code class="literal">console/config/main.php</code>, if it is not already configured.</p><p>It is enough to pass a few parameters to the component:</p><div class="informalexample"><pre class="programlisting">    'components' =&gt; [
+    ..
+    ..
+
+        'mailer' =&gt; [
+            'class' =&gt; 'yii\swiftmailer\Mailer',
+            'viewPath' =&gt; '@common/mail',
+            // send all mails to a file by default. You have to set
+            // 'useFileTransport' to false and configure a transport
+            // for the mailer to send real emails.
+            'useFileTransport' =&gt; true,
+        ],
+..
+..
+    ],
+];</pre></div><p>The <code class="literal">class</code> parameter<a id="id547" class="indexterm"></a> indicates the class that handles the component, <code class="literal">viewPath</code>, which indicates where views of the e-mail, or rather e-mail templates, are stored; the last parameter <code class="literal">useFileTransport</code> indicates the e-mail sending method.</p><p>Now, in <code class="literal">ReservationsController</code>, under <code class="literal">console/controllers/ReservationsController.php</code>, add the method, <code class="literal">actionReservationsOfTheDay</code>, which sends the content of daily reservations:</p><div class="informalexample"><pre class="programlisting">    public function actionReservationsOfTheDay($currentDate=null)
+    {
+        if($currentDate == null) $currentDate = date('Y-m-d');
+        $models = \common\models\Reservation::find()-&gt;where('DATE(reservation_date) = "'.$currentDate.'"')-&gt;all(); 
+        \Yii::$app-&gt;mailer-&gt;compose(['html' =&gt; 'reservationsOfTheDay-html', 'text' =&gt; 'reservationsOfTheDay-text'], ['models' =&gt; $models, 'currentDate' =&gt; $currentDate])
+            -&gt;setFrom('myemail@example.com')
+            -&gt;setTo('administrator@example.com')
+            -&gt;setSubject('Reservations of the day: '.$currentDate)
+            -&gt;send();
+            
+                 
+    }</pre></div><div class="note" title="Note"><h3 class="title"><a id="note76"></a>Note</h3><p>It is advisable to put the <code class="literal">from</code> e-mail parameter, for example, in a <code class="literal">params.php</code> file, which contains all the global parameters available in the whole application.</p></div><p>This method simply gets the <code class="literal">currentDate</code> parameter from the input so that we can change the evaluation date as we need; the action body finds reservations for the input date and passes them to the e-mail view <code class="literal">reservationsOfTheDay</code> in the <code class="literal">html</code> and <code class="literal">text</code> format.</p><p>Now, we must create <a id="id548" class="indexterm"></a>the content of the e-mail format, creating two files in <code class="literal">common/mail</code>: <code class="literal">reservationsOfTheDay-html.php</code> and <code class="literal">reservationsOfTheDay-text.php</code>.</p><p>This is the content of the HTML version:</p><div class="informalexample"><pre class="programlisting">There are &lt;?= count($models) ?&gt; reservations for the date &lt;?= $currentDate ?&gt;
+
+&lt;br /&gt;&lt;br /&gt;
+
+&lt;?php if(count($models)&gt;0) { ?&gt;
+    &lt;b&gt;This is a summary:&lt;/b&gt;
+    
+    &lt;br /&gt;
+    
+    &lt;table&gt;
+        &lt;tr&gt;
+            &lt;td&gt;Reservation #&lt;/td&gt;
+            &lt;td&gt;Room&lt;/td&gt;
+            &lt;td&gt;Customer&lt;/td&gt;
+            &lt;td&gt;Price per day&lt;/td&gt;
+            &lt;td&gt;Date from&lt;/td&gt;
+            &lt;td&gt;Date to&lt;/td&gt;
+        &lt;/tr&gt;
+        
+        &lt;?php foreach($models as $m) { ?&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;?= $m-&gt;id ?&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;?= $m-&gt;room-&gt;floor.' '.$m-&gt;room-&gt;number ?&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;?= $m-&gt;customer-&gt;surname.' '.$m-&gt;customer-&gt;name ?&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;?= $m-&gt;price_per_day ?&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;?= $m-&gt;date_from ?&gt;&lt;/td&gt;
+            &lt;td&gt;&lt;?= $m-&gt;date_to ?&gt;&lt;/td&gt;
+        &lt;/tr&gt;    
+        &lt;?php } ?&gt;
+        
+    &lt;/table&gt;
+&lt;?php } else { ?&gt;
+    &lt;i&gt;There is no summary for current date&lt;/i&gt;
+&lt;?php } ?&gt;    </pre></div><p>This is the corresponding<a id="id549" class="indexterm"></a> content in text format (not required for the HTML e-mail client):</p><div class="informalexample"><pre class="programlisting">There are &lt;?= count($models) ?&gt; reservations for the date &lt;?= $currentDate ?&gt;
+
+&lt;?php if(count($models)&gt;0) { ?&gt;
+    This is a summary
+    
+    
+    &lt;?php foreach($models as $m) { ?&gt;
+        Reservation #: &lt;?= $m-&gt;id ?&gt; - Room: &lt;?= $m-&gt;room-&gt;floor.' '.$m-&gt;room-&gt;number ?&gt; - Customer: &lt;?= $m-&gt;customer-&gt;surname.' '.$m-&gt;customer-&gt;name ?&gt; - Price per day: &lt;?= $m-&gt;price_per_day ?&gt; - Date from: &lt;?= $m-&gt;date_from ?&gt; - Date to: &lt;?= $m-&gt;date_to ?&gt;
+    &lt;?php } ?&gt;
+&lt;?php } else { ?&gt;
+    There is no summary for the current date
+&lt;?php } ?&gt;</pre></div><p>The command can be executed by launching:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ ./yii reservations/reservations-of-the-day</strong></span>
+</pre></div><p>We can also call the pass date parameter to change the date to check, for example, to check the reservations made on <code class="literal">2015-08-05</code>:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ ./yii reservations/reservations-of-the-day "2015-08-05"</strong></span>
+</pre></div><p>The last thing to do is to attach that command to a periodic task scheduler according to the operating system, for instance, cron in the Linux or Unix environment.</p></div></div></body></html>

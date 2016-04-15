@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Creating modules</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Creating modules" id="aid-2PKKS1"><div class="titlepage"><div><div><h1 class="title"><a id="ch13lvl1sec88"></a>Creating modules</h1></div></div></div><p>A module is practically an <a id="id566" class="indexterm"></a>application inside the main application. In fact, it is organized as a directory that is called the base path of the module. Within the directory, there are folders containing its controllers, models, views, and other code, just like in an application.</p><p>Follow the typical structure of a module:</p><div class="informalexample"><pre class="programlisting">myCustomModule/
+    Module.php                   the module class file
+    controllers/                 containing controller class files
+        DefaultController.php    the default controller class file
+    models/                      containing model class files
+    views/                       containing controller view and layout files
+        layouts/                 containing layout view files
+        default/                 containing view files for DefaultController
+            index.php            the index view file</pre></div><p>The <code class="literal">module</code> class file is instanced when a module is being accessed and it is used to share data and components for code, such as application instances.</p><p>The module class file has these characteristics:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">It is by default named <code class="literal">Module.php</code></li><li class="listitem">It is instanced once during the code execution</li><li class="listitem">It is located directly under the module's base path</li><li class="listitem">It extends from <code class="literal">yii\base\Module</code></li></ul></div><p>Let's look at an example of a module class for <code class="literal">myCustomModule</code> (under the <code class="literal">app\modules\myCustomModule</code> namespace):</p><div class="informalexample"><pre class="programlisting">namespace app\modules\myCustomModule;
+
+class Module extends \yii\base\Module
+{
+    public function init()
+    {
+        parent::init();
+
+        $this-&gt;params['foo'] = 'bar';
+        // ...  other initialization code ...
+    }
+}</pre></div><p>As a standard application, a module can have its own configuration based on a config file that has the same contents of a standard application:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+return [
+    'components' =&gt; [
+        // list of component configurations
+    ],
+    'params' =&gt; [
+        // list of parameters
+    ],
+  ..
+  ..
+  ..
+];</pre></div><p>We load this in the <code class="literal">init()</code> method of the module:</p><div class="informalexample"><pre class="programlisting">public function init()
+{
+    parent::init();
+    // initialize the module with the configuration loaded from config.php
+    \Yii::configure($this, require(__DIR__ . '/config.php'));
+}</pre></div><p>Then, we create and use<a id="id567" class="indexterm"></a> controllers, models, and views in the same way we do with a normal application.</p><div class="note" title="Note"><h3 class="title"><a id="note78"></a>Note</h3><p>We always have to take care to specify the right namespace at the top of every file.</p></div><p>Finally, to use a module in an application, we simply configure the application by listing the module in the module's property of the application. The following code in the application configuration uses the forum module:</p><div class="informalexample"><pre class="programlisting">[
+    'modules' =&gt; [
+        'myCustomModule' =&gt; [
+            'class' =&gt; 'app\modules\myCustomModule\Module',
+            // ... other configurations for the module ...
+        ],
+    ],
+]</pre></div></div></body></html>

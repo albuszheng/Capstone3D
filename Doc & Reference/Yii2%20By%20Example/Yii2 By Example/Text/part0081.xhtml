@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Creating a controller</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Creating a controller"><div class="titlepage" id="aid-2D7TI2"><div><div><h1 class="title"><a id="ch11lvl1sec75"></a>Creating a controller</h1></div></div></div><p>Yii provides two<a id="id470" class="indexterm"></a> base classes: <code class="literal">\yii\rest\Controller</code> and <code class="literal">\yii\rest\ActiveController</code> that we can extend when we are creating a new controller for RESTful web services.</p><p>Both of these classes contain the following useful common features, in execution order:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">The response output as required from the request (content negotiator).</li><li class="listitem">The HTTP method validation.</li><li class="listitem">Authentication.</li><li class="listitem">Rate limiting.</li></ol><div style="height:10px; width: 1px"></div></div><p>The second class <code class="literal">\yii\rest\ActiveController</code> adds more functionalities through ActiveRecord, such as handling user authorization and a set of already existing actions: <code class="literal">index</code>, <code class="literal">view</code>, <code class="literal">create</code>, <code class="literal">update</code>, <code class="literal">delete</code>, and <code class="literal">options</code>.</p><p>We will see that Yii provides all the necessary information to get the response status and content through the body and HTTP header.</p><p>Let's create a controller to extend <code class="literal">\yii\rest\Controller</code> or rather without ActiveRecord. Create a new controller in <code class="literal">api/controllers/TestRestController.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace api\controllers;
+
+use yii\rest\Controller;
+
+class TestRestController extends Controller
+{
+    private function dataList()
+    {
+        return [
+            [ 'id' =&gt; 1, 'name' =&gt; 'Albert', 'surname' =&gt; 'Einstein' ],
+            [ 'id' =&gt; 2, 'name' =&gt; 'Enzo', 'surname' =&gt; 'Ferrari' ],
+            [ 'id' =&gt; 4, 'name' =&gt; 'Mario', 'surname' =&gt; 'Bros' ]
+        ];
+    }
+    
+    
+    public function actionIndex()
+    {
+            return $this-&gt;dataList();
+    }
+}</pre></div><p>In the preceding code, we have a method <code class="literal">dataList</code>, which returns an array of objects, and an <code class="literal">actionIndex</code> method that provides the <code class="literal">index</code> action for <code class="literal">TestRestController</code> and returns <a id="id471" class="indexterm"></a>that list.</p><div class="note" title="Note"><h3 class="title"><a id="note71"></a>Note</h3><p>Many examples can be executed using a web browser (requested by employing the GET verb). Generally, however, we need a specific tool to test RESTful web services, such as <code class="literal">Postman</code> for example, an excellent extension for the Chrome browser or the <code class="literal">curl</code> command for advanced users.</p></div><p>The first feature of <code class="literal">\yii\rest\Controller</code> is to arrange the response output format, dynamically based on the request, which is also called <a id="id472" class="indexterm"></a><span class="strong"><strong>content negotiation</strong></span>.</p><p>Indeed, we can try to launch this request through <code class="literal">http://hostname/yiiadv/api/web/test-rest/index</code> in our browser, or through specific tools using the GET verb and the <code class="literal">Accept</code> HTTP header set to <code class="literal">application/xml</code>, or by using <code class="literal">curl</code>, as follows:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ curl -H "Accept: application/xml" http://hostname/yiiadv/api/web/test-rest/index</strong></span>
+<span class="strong"><strong>&lt;?xml version="1.0" encoding="UTF-8"?&gt;</strong></span>
+<span class="strong"><strong>&lt;response&gt;&lt;item&gt;&lt;id&gt;1&lt;/id&gt;&lt;name&gt;Albert&lt;/name&gt;&lt;surname&gt;Einstein&lt;/surname&gt;&lt;/item&gt;&lt;item&gt;&lt;id&gt;2&lt;/id&gt;&lt;name&gt;Enzo&lt;/name&gt;&lt;surname&gt;Ferrari&lt;/surname&gt;&lt;/item&gt;&lt;item&gt;&lt;id&gt;4&lt;/id&gt;&lt;name&gt;Mario&lt;/name&gt;&lt;surname&gt;Bros&lt;/surname&gt;&lt;/item&gt;&lt;/response&gt;</strong></span>
+</pre></div><p>In these cases, we will get a response based on the XML data:</p><div class="mediaobject"><img src="../Images/image00288.jpeg" alt="Creating a controller"/><div class="caption"><p>The XML data response to test-rest/index</p></div></div><p style="clear:both; height: 1em;"> </p><p>However, if we change the <code class="literal">Accept</code> header to <code class="literal">application/json</code>, we will get a response based on the JSON data:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ curl -H "Accept: application/json" http://hostname/yiiadv/api/web/test-rest/index</strong></span>
+
+<span class="strong"><strong>[{"id":1,"name":"Albert","surname":"Einstein"},{"id":2,"name":"Enzo","surname":"Ferrari"},{"id":4,"name":"Mario","surname":"Bros"}]</strong></span>
+</pre></div><p>In these cases, we will get a response based on the JSON data:</p><div class="mediaobject"><img src="../Images/image00289.jpeg" alt="Creating a controller"/><div class="caption"><p>The JSON data response to test-rest/index</p></div></div><p style="clear:both; height: 1em;"> </p><p>The same <a id="id473" class="indexterm"></a>data will be rendered in different ways according to the <code class="literal">Accept</code> header sent from the client.</p><p>The second feature, HTTP method validation, allows you to specify which verbs are available for a resource. Verbs are defined in the <code class="literal">behaviors()</code> method, which must be extended to modify this setting:</p><div class="informalexample"><pre class="programlisting">    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbs'] = [
+                'class' =&gt; \yii\filters\VerbFilter::className(),
+                'actions' =&gt; [
+                    'index'  =&gt; ['get'],
+                ],
+        ];
+        return $behaviors;
+    }</pre></div><p>In this case, we only set the GET verb to the <code class="literal">index</code> action, because keys of the <code class="literal">actions</code> attribute of <code class="literal">behaviors['verbs']</code> are the actions and the value is an array containing supported HTTP methods.</p><p>If we launch <code class="literal">http://hostname/yiiadv/api/web/test-rest/index</code> using the GET verb (as a browser request), we will continue to display the result. However, if we change the HTTP method to the POST verb, for example, we will get an exception error:</p><div class="mediaobject"><img src="../Images/image00290.jpeg" alt="Creating a controller"/><div class="caption"><p>An exception error using the wrong verb</p></div></div><p style="clear:both; height: 1em;"> </p><p>This is <a id="id474" class="indexterm"></a>because only the GET verb is supported by the <code class="literal">index</code> action.</p><p>In the next sections, we will explain the third and fourth features, authentication and rate limiting.</p><div class="section" title="Example &ndash; creating a controller to manage rooms"><div class="titlepage"><div><div><h2 class="title"><a id="ch11lvl2sec48"></a>Example &ndash; creating a controller to manage rooms</h2></div></div></div><p>With this example, we <a id="id475" class="indexterm"></a>will apply the concepts dealt with in the previous chapter, in this case using <code class="literal">\yii\rest\ActiveController</code> as the base class instead of <code class="literal">\yii\rest\Controller</code>, since we are going to employ an ActiveRecord class to manipulate data.</p><p>Create a new controller in <code class="literal">api/controllers/RoomsController.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace api\controllers;
+
+use yii\rest\ActiveController;
+
+class RoomsController extends ActiveController
+{
+    public $modelClass = 'common\models\Room';
+}</pre></div><p>This controller implicitly contains these actions:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">actionIndex</code> that returns a list of models, accessible only with GET and HEAD HTTP methods</li><li class="listitem"><code class="literal">actionView</code> that returns details about the mode, accessible only with the GET and HEAD HTTP methods by passing the <code class="literal">id</code> parameter</li><li class="listitem"><code class="literal">actionCreate</code> that creates a new model, accessible only with the POST HTTP methods</li><li class="listitem"><code class="literal">actionUpdate</code> that updates an existing model, accessible only with the PUT and PATCH HTTP methods</li><li class="listitem"><code class="literal">actionDelete</code> that deletes an existing model, accessible only with the DELETE HTTP method</li><li class="listitem"><code class="literal">actionOptions</code> that returns the allowed HTTP methods</li></ul></div><p>Now, let's try to <a id="id476" class="indexterm"></a>launch all these methods.</p><p>Launch <code class="literal">actionIndex</code> at <code class="literal">http://hostname/yiiadv/api/web/rooms</code> using the GET method:</p><div class="informalexample"><pre class="programlisting">[
+{
+    "id": 1,
+    "floor": 1,
+    "room_number": 101,
+    "has_conditioner": 1,
+    "has_tv": 0,
+    "has_phone": 1,
+    "available_from": "2015-05-20",
+    "price_per_day": "120.00",
+    "description": "description 1"
+
+},
+
+    {
+        "id": 2,
+        "floor": 2,
+        "room_number": 202,
+        "has_conditioner": 0,
+        "has_tv": 1,
+        "has_phone": 1,
+        "available_from": "2015-05-30",
+        "price_per_day": "118.00",
+        "description": "description 2"
+    }
+]</pre></div><p>We will get all the records in the database as an array of the JSON object and HTTP header, along with the successful status code and pagination details:</p><div class="informalexample"><pre class="programlisting">X-Pagination-Current-Page: 1
+X-Pagination-Page-Count: 1
+X-Pagination-Per-Page: 20
+X-Pagination-Total-Count: 2</pre></div><p>If we launch <a id="id477" class="indexterm"></a>the same URL using the HEAD HTTP method, we will only get the HTTP HEADER response without a body, so we will get only the pagination information.</p><p>Finally, if we launch the same URL with an unsupported HTTP method, for example the PUT method, we will get two important HTTP headers:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">The <code class="literal">status code</code> header set to <code class="literal">405 Method Not Allowed</code></li><li class="listitem">The <code class="literal">Allow</code> header set to <code class="literal">GET, HEAD</code></li></ul></div><p>The <code class="literal">status code</code> header says that a method is not supported, and the <code class="literal">Allow</code> header returns a list of supported HTTP methods for that action.</p><p>Now, launch <code class="literal">actionView</code> on <code class="literal">http://hostname/yiiadv/api/web/rooms/view?id=1</code> using the GET method:</p><div class="informalexample"><pre class="programlisting">{
+  "id": 1,
+  "floor": 1,
+  "room_number": 101,
+  "has_conditioner": 1,
+  "has_tv": 0,
+  "has_phone": 1,
+  "available_from": "2015-05-20",
+  "price_per_day": "120.00",
+  "description": "description 1"
+}</pre></div><p>If we try to launch a nonexistent ID, for example <code class="literal">http://hostname/yiiadv/api/web/rooms/view?id=100</code>, using the GET method, we will get this body response:</p><div class="informalexample"><pre class="programlisting">{
+  "name": "Not Found",
+  "message": "Object not found: 100",
+  "code": 0,
+  "status": 404,
+  "type": "yii\\\\web\\\\NotFoundHttpException"
+}</pre></div><p>The HTTP <code class="literal">status code</code> header will be set to <code class="literal">404 Not Found</code> to specify that the requested item (<code class="literal">id=100</code>) does not exist. Using only the HEAD HTTP method, we will get information from the HTTP <code class="literal">status code</code> set to <code class="literal">404</code>. The <code class="literal">Create</code> and <code class="literal">Update</code> actions require that the client sends body content of the object to be created or updated.</p><p>By default, Yii recognizes only the <code class="literal">application/x-www-form-urlencoded</code> and <code class="literal">multipart/form-data</code> input formats. In order to enable the JSON input format, we need to configure the <code class="literal">parsers</code> property of the request's application component in the <code class="literal">api/config/main.php</code> file:</p><div class="informalexample"><pre class="programlisting">'request' =&gt; [
+    'parsers' =&gt; [
+        'application/json' =&gt; 'yii\web\JsonParser',
+    ]
+]</pre></div><p>After<a id="id478" class="indexterm"></a> configuring the JSON input parser, we can call <code class="literal">http://hostname/yiiadv/api/web/rooms/create</code> using the POST HTTP method to create a new room and pass, for example, this JSON:</p><div class="informalexample"><pre class="programlisting">    {
+        "floor": 99,
+        "room_number": 999,
+        "has_conditioner": 1,
+        "has_tv": 1,
+        "has_phone": 1,
+        "available_from": "2015-12-30",
+        "price_per_day": "48.00",
+        "description": "description room 999"
+    }</pre></div><p>If no error occurred, we will get:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>201 Created as HTTP Header Status Code</strong></span>
+<span class="strong"><strong>Object just created as body content</strong></span>
+</pre></div><p>If we are missing some required fields and there are validation errors, we will get:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>422 Data Validation Failed</strong></span>
+<span class="strong"><strong>An array of field-message to indicate which validation errors occurred</strong></span>
+</pre></div><p>The same thing needs to be done for an update action, in this case, however, we will call <code class="literal">http://hostname/yiiadv/api/web/rooms/update</code> and pass the <code class="literal">id</code> URL parameter using the PUT or PATCH HTTP method. In this case, only the HTTP header status code <code class="literal">200 OK</code> will be a successful response and the update object will be returned as body content.</p><p>Finally, <code class="literal">actionDelete</code> is used by calling <code class="literal">http://hostname/yiiadv/api/web/rooms/delete</code>, by passing the <code class="literal">id</code> URL parameter, and using the DELETE HTTP method. A successful execution will return <code class="literal">204 No Content</code> as the HTTP status code; otherwise, it will be <code class="literal">404 Not Found</code>.</p></div></div></body></html>

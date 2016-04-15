@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Using multiple database connections</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Using multiple database connections"><div class="titlepage" id="aid-1CQAE2"><div><div><h1 class="title"><a id="ch05lvl1sec41"></a>Using multiple database connections</h1></div></div></div><p>Applications can require <a id="id275" class="indexterm"></a>multiple database connections so that they can send and get data from different sources.</p><p>Using other database sources is incredibly simple. The only thing to do is to add a new database entry in the main configuration and use ActiveRecord support. All the operations on records will be transparent for the developer.</p><p>Here are some examples of connection strings (dsn) to configure access to other databases:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">MySQL and MariaDB: <code class="literal">mysql:host=localhost;dbname=mydatabase</code></li><li class="listitem">SQLite: <code class="literal">sqlite:/path/to/database/file</code></li><li class="listitem">PostgreSQL: <code class="literal">pgsql:host=localhost;port=5432;dbname=mydatabase</code></li><li class="listitem">CUBRID: <code class="literal">cubrid:dbname=demodb;host=localhost;port=33000</code></li><li class="listitem">MS SQL Server (via the <code class="literal">sqlsrv</code> driver): <code class="literal">sqlsrv:Server=localhost;Database=mydatabase</code></li><li class="listitem">MS SQL Server (via the <code class="literal">dblib</code> driver): <code class="literal">dblib:host=localhost;dbname=mydatabase</code></li><li class="listitem">MS SQL Server (via the <code class="literal">mssql</code> driver): <code class="literal">mssql:host=localhost;dbname=mydatabase</code></li><li class="listitem">Oracle: <code class="literal">oci:dbname=//localhost:1521/mydatabase</code></li></ul></div><div class="section" title="Example &ndash; configuring a second DB connection to export data to a local SQLite DB"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec29"></a>Example &ndash; configuring a second DB connection to export data to a local SQLite DB</h2></div></div></div><p>We now want to add a <a id="id276" class="indexterm"></a>new database connection to a SQLite DB. When we use a database, we have to make sure that the PDO driver is installed in the system, otherwise PHP cannot handle it.</p><p>Open <code class="literal">basic/config/web.php</code> and the inner <code class="literal">components</code> attribute, and append a new attribute named <code class="literal">dbSqlite</code> with the following attributes:</p><div class="informalexample"><pre class="programlisting">        'dbSqlite' =&gt; [
+            'class' =&gt; 'yii\db\Connection',
+            'dsn' =&gt; 'sqlite:'.dirname(__DIR__).'/../db.sqlite',
+        ],</pre></div><p>This entry will use a DB SQLite named <code class="literal">db.sqlite</code>, which we can find in the <code class="literal">dirname(__DIR__).'/../web/db.sqlite'</code> path, under the <code class="literal">/basic/web</code> folder. If this file does not exist, it will be created (if a write permission is present in the <code class="literal">/basic/web</code> folder).</p><div class="note" title="Note"><h3 class="title"><a id="note36"></a>Note</h3><p>Be sure that the <code class="literal">/basic/web</code> folder is writable, otherwise it will be impossible for the framework to create a <code class="literal">db.sqlite</code> file.</p></div><p>Create a new controller to handle actions in this new database. This will be put in <code class="literal">/basic/controllers/TestSqliteController.php</code>.</p><p>Insert the first action named <code class="literal">actionCreateRoomTable</code> in this new controller, which will create the same structure of the <code class="literal">Room</code> table from MySQL in <code class="literal">dbSqlite</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace app\controllers;
+
+use Yii;
+use yii\web\Controller;
+
+
+class TestSqliteController extends Controller
+{
+    public function actionCreateRoomTable()
+    {
+        // Create room table
+        $sql = 'CREATE TABLE IF NOT EXISTS room (id int not null, floor int not null, room_number int not null, has_conditioner int not null, has_tv int not null, has_phone int not null, available_from date not null, price_per_day float, description text)';
+        \Yii::$app-&gt;dbSqlite-&gt;createCommand($sql)-&gt;execute();
+        echo 'Room table created in dbSqlite';
+    }
+}</pre></div><div class="note" title="Note"><h3 class="title"><a id="note37"></a>Note</h3><p>Pay attention so that in <code class="literal">actionCreateRoomTable</code>, the database instance is taken from: <code class="literal">\Yii::$app-&gt;dbSqlite</code>.</p></div><p>Point your <a id="id277" class="indexterm"></a>browser to <code class="literal">http://hostname/basic/web/test-sqlite/create-room-table</code> and create a <code class="literal">db.sqlite</code> file in <code class="literal">basic/web</code> and a <code class="literal">room</code> table in it.</p><p>As we have mentioned before, if the PDO driver is correctly installed, a blank page with the <span class="strong"><strong>Room table created in dbSqlite</strong></span> text will be displayed.</p><p>Now we want to clone the room table from MySQL to SQLite to make a backup of this table. We need to save the records from MySQL to SQLite and verify the data stored to display it in a table.</p><p>Create a new action named <code class="literal">actionBackupRoomTable()</code> that executes these steps:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Create a <code class="literal">room</code> table (if it does not exist).</li><li class="listitem">Delete all the records from the room in <code class="literal">dbSqlite</code> (alias truncate).</li><li class="listitem">Load all the records from the room table in MySQL (using ActiveRecord).</li><li class="listitem">Insert every single record from MySQL into SQLite.</li><li class="listitem">Render the view to display data from SQLite with the table (to verify that the copy succeeded).</li></ol><div style="height:10px; width: 1px"></div></div><p>The content of the <code class="literal">actionBackupRoomTable()</code> action is:</p><div class="informalexample"><pre class="programlisting">    use app\models\Room;
+
+    public function actionBackupRoomTable()
+    {
+        // Create room table
+        $sql = 'CREATE TABLE IF NOT EXISTS room (id int not null, floor int not null, room_number int not null, has_conditioner int not null, has_tv int not null, has_phone int not null, available_from date not null, price_per_day float, description text)';
+        \Yii::$app-&gt;dbSqlite-&gt;createCommand($sql)-&gt;execute();
+        
+        // Truncate room table in dbSqlite
+        $sql = 'DELETE FROM room';
+        \Yii::$app-&gt;dbSqlite-&gt;createCommand($sql)-&gt;execute();
+        
+        // Load all records from MySQL and insert every single record in dbqlite
+        $models = Room::find()-&gt;all();
+        
+        foreach($models as $m)
+        {
+            \Yii::$app-&gt;dbSqlite-&gt;createCommand()-&gt;insert('room', $m-&gt;attributes)-&gt;execute();            
+        }
+        
+        // Load all records from dbSqlite
+        $sql = 'SELECT * FROM room';
+        $sqliteModels = \Yii::$app-&gt;dbSqlite-&gt;createCommand($sql)-&gt;queryAll();
+ 
+        return $this-&gt;render('backupRoomTable', ['sqliteModels' =&gt; $sqliteModels]);
+   }</pre></div><p>Finally, create <a id="id278" class="indexterm"></a>a view <code class="literal">backupRoomTable</code> in <code class="literal">basic/views/test-sqlite/backupRoomTable.php</code> with the following content to display data from <code class="literal">dbSqlite</code>:</p><div class="informalexample"><pre class="programlisting">&lt;h2&gt;Rooms from dbSqlite&lt;/h2&gt;
+
+&lt;table class="table"&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Floor&lt;/th&gt;
+        &lt;th&gt;Room number&lt;/th&gt;
+        &lt;th&gt;Has conditioner&lt;/th&gt;
+        &lt;th&gt;Has tv&lt;/th&gt;
+        &lt;th&gt;Has phone&lt;/th&gt;
+        &lt;th&gt;Available from&lt;/th&gt;
+        &lt;th&gt;Available from (db format)&lt;/th&gt;
+        &lt;th&gt;Price per day&lt;/th&gt;
+        &lt;th&gt;Description&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;?php foreach($sqliteModels as $item) { ?&gt;
+    &lt;tr&gt;
+        &lt;td&gt;&lt;?php echo $item['floor'] ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo $item['room_number'] ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asBoolean($item['has_conditioner']) ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asBoolean($item['has_tv']) ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo ($item['has_phone'] == 1)?'Yes':'No' ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asDate($item['available_from']) ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asDate($item['available_from'], 'php:Y-m-d') ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asCurrency($item['price_per_day'], 'EUR') ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo $item['description'] ?&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;?php } ?&gt;
+&lt;/table&gt;</pre></div><p>Navigate your <a id="id279" class="indexterm"></a>browser to <code class="literal">http://hostname/basic/web/test-sqlite/backup-room-table</code>, which should display a similar output to this:</p><div class="mediaobject"><img src="../Images/image00270.jpeg" alt="Example &ndash; configuring a second DB connection to export data to a local SQLite DB"/><div class="caption"><p>The list of rooms from the SQLite database</p></div></div><p style="clear:both; height: 1em;"> </p><p>We can now download the <code class="literal">db.sqlite</code> file from <code class="literal">http://hostname/basic/web/db.sqlite</code> to preserve a backup copy of the room table!</p></div></div></body></html>

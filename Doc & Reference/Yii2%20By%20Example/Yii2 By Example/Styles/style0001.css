@@ -1,0 +1,167 @@
+body, td, th {
+	font-size: 0.83rem;
+	text-indent: 0px;
+	text-align: left;
+	
+}
+
+a {
+	text-indent: 0px;
+}
+
+p {
+	margin-left: 0px;
+	margin-bottom: 10px;
+	text-indent: 0px;
+	
+}
+
+ul, ol {
+	margin-bottom: 10px;
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+	margin-top: 0px;
+	margin-left: 0px;
+	margin-bottom: 10px;
+	text-indent: 0px;
+}
+
+
+div.note, 
+div.tip,
+div.informalexample, 
+div.informaltable {
+	margin-top: 0px;
+	margin-left: 0px;
+	border: 0px solid black;
+	
+}
+
+img {
+	width: auto;
+	height: auto;
+}
+
+.indent1 {
+	margin: 0px 0px 0px 0.5em;
+}
+
+.indent2 {
+	margin: 0px 0px 0px 10px;
+}
+
+.indent3 {
+	margin: 0px 0px 0px 1.5em;
+}
+
+.indent4 {
+	margin: 0px 0px 0px 2em;
+}
+
+.indent5 {
+	margin: 0px 0px 0px 2.5em;
+}
+
+.indent6,
+.indent7,
+.indent8,
+.indent9,
+.indent10 {
+	margin: 0px 0px 0px 3em;
+}
+
+pre {
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	margin-bottom: 10px;
+}
+
+div.caption,
+div.caption p {
+	text-align: center;
+	font-style: italic;
+}
+
+div.mediaobject {
+	margin-bottom: 10px;
+	font-style: italic;
+}
+
+div.mediaobject img {
+	padding-bottom: 10px;
+	margin-bottom: 10px;
+}
+
+div.note div.mediaobject {
+	margin-top:10px;
+}
+/*
+div.note, 
+div.tip, 
+table.note, 
+table.tip {
+	font-style: italic;
+}
+*/
+blockquote, 
+div.blockquote,
+blockquote p {
+	font-style: italic;
+}
+
+
+hr {
+	margin: 0px;
+	padding: 0px;
+	width: 100%;
+}
+
+
+li div.note,
+li div.tip {
+	margin-top: 10px;
+}
+
+
+ol,
+ul,
+li {
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+ol {
+	margin-bottom: 5px;
+}
+
+ul {
+	margin-bottom: 5px;
+}
+
+ol ul,
+ol ol,
+ul ul,
+ul ol {
+	margin-bottom: 0px;
+}
+
+table {
+	margin-bottom: 10px;
+}
+
+li p {
+	margin-bottom: 0px;
+}
+
+li div p {
+	margin-bottom: 10px;
+}
+
+/*
+li ul, 
+li ol {
+	margin-top: 10px;
+}
+*/

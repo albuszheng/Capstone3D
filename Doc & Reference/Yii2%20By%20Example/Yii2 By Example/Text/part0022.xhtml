@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>How the controller sends data to view</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="How the controller sends data to view"><div class="titlepage" id="aid-KVCC2"><div><div><h1 class="title"><a id="ch02lvl1sec16"></a>How the controller sends data to view</h1></div></div></div><p>In the previous <a id="id90" class="indexterm"></a>paragraph, we have seen how to display the content view. However, the view should only be responsible for displaying data, and not for manipulation. Consequently, any work on data should be done in controller action and then passed to view.</p><p>The <code class="literal">render()</code> method in the action of the controller has a second parameter, which is an array whose keys are names of variables, and values are the content of these variables available in view context.</p><p>Now, let's move all data manipulation of our <code class="literal">itemsList</code> example in controller, leaving out just the code to format the output (such as HTML).</p><p>The following is the content of the <code class="literal">actionItemsList()</code> controller:</p><div class="informalexample"><pre class="programlisting">public function actionItemsList()
+{
+  $newsList = [
+    [ 'title' =&gt; 'First World War', 'date' =&gt; '1914-07-28' ],
+    [ 'title' =&gt; 'Second World War', 'date' =&gt; '1939-09-01' ],
+    [ 'title' =&gt; 'First man on the moon', 'date' =&gt; '1969-07-20' ]
+  ];
+
+  return $this-&gt;render('itemsList', ['newsList' =&gt; $newsList]);
+}</pre></div><p>In <code class="literal">views/news/itemsList.php</code>, we only have the following code:</p><div class="informalexample"><pre class="programlisting">&lt;?php // $newsList is from actionItemsList ?&gt;
+&lt;table&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Title&lt;/th&gt;
+        &lt;th&gt;Date&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;?php foreach($newsList as $item) { ?&gt;
+    &lt;tr&gt;
+        &lt;th&gt;&lt;?php echo $item['title'] ?&gt;&lt;/th&gt;
+        &lt;th&gt;&lt;?php echo $item['date'] ?&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;?php } ?&gt;
+&lt;/table&gt;</pre></div><p>Thus, we have <a id="id91" class="indexterm"></a>correctly split the working of controller and view.</p><div class="section" title="Example &ndash; create a controller to display the static news items list and details using the bootstrap template"><div class="titlepage"><div><div><h2 class="title"><a id="ch02lvl2sec13"></a>Example &ndash; create a controller to display the static news items list and details using the bootstrap template</h2></div></div></div><p>Our next goal is to <a id="id92" class="indexterm"></a>complete the news reader <a id="id93" class="indexterm"></a>displaying details of single news in another page.</p><p>Since we are going to use the same data for list and detail, we will extract the <code class="literal">$newsList</code> data from action to a function, in order to be reused for more actions.</p><p>In <code class="literal">NewsController</code>, we will have the following code:</p><div class="informalexample"><pre class="programlisting">public function dataItems()
+{
+  $newsList = [
+    [ 'title' =&gt; 'First World War', 'date' =&gt; '1914-07-28' ],
+    [ 'title' =&gt; 'Second World War', 'date' =&gt; '1939-09-01' ],
+    [ 'title' =&gt; 'First man on the moon', 'date' =&gt; '1969-07-20' ]
+  ];
+
+  return $newsList;
+}
+
+public function actionItemsList()
+{
+  $newsList = $this-&gt;dataItems();
+
+  return $this-&gt;render('itemsList', ['newsList' =&gt; $newsList]);
+}</pre></div><p>After this, we will create a new function in <code class="literal">NewsController</code>, <code class="literal">actionItemDetail</code>, that is used to handle requests of detail of a news item. This function will expect a parameter, which will allow to filter the correct items from <code class="literal">$newsList</code>, for example, the title.</p><p>The following is the content of <code class="literal">actionItemDetail</code>:</p><div class="informalexample"><pre class="programlisting">public function actionItemDetail($title)
+{
+  $newsList = $this-&gt;dataItems();
+
+  $item = null;
+  foreach($newsList as $n)
+  {
+    if($title == $n['title']) $item = $n;
+  }
+
+  return $this-&gt;render('itemDetail', ['item' =&gt; $item]);
+}</pre></div><p>Next we have to <a id="id94" class="indexterm"></a>create a new view file in <code class="literal">views/news</code> named <code class="literal">itemDetail.php</code>.</p><p>The following is<a id="id95" class="indexterm"></a> the content of <code class="literal">itemDetail.php</code> located under <code class="literal">views/news/</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php // $item is from actionItemDetail ?&gt;
+
+&lt;h2&gt;News Item Detail&lt;h2&gt;
+&lt;br /&gt;
+Title: &lt;b&gt;&lt;?php echo $item['title'] ?&gt;&lt;/b&gt;
+&lt;br /&gt;
+Date: &lt;b&gt;&lt;?php echo $item['date'] ?&gt;&lt;/b&gt;</pre></div><p>If we point to <code class="literal">http://hostname/basic/web/index.php?r=news/item-detail</code> without passing the title parameter, we will see the following screenshot:</p><div class="mediaobject"><img src="../Images/image00247.jpeg" alt="Example &ndash; create a controller to display the static news items list and details using the bootstrap template"/></div><p style="clear:both; height: 1em;"> </p><p>It displays an error that tells us that the title parameter is missing.</p><p>Try to pass <code class="literal">First%20%World%20War</code> as the title parameter to the URL, like this <code class="literal">http://hostname/basic/web/index.php?r=news/item-detail&amp;title=First%20World%20War</code>; the following will be the output:</p><div class="mediaobject"><img src="../Images/image00248.jpeg" alt="Example &ndash; create a controller to display the static news items list and details using the bootstrap template"/></div><p style="clear:both; height: 1em;"> </p><p>That is what we are<a id="id96" class="indexterm"></a> expecting!</p><p>Finally, we want to <a id="id97" class="indexterm"></a>connect together <code class="literal">itemsList</code> and <code class="literal">itemDetail</code>. In <code class="literal">views/news/itemsList.php</code>, we must change the title content into an anchor element, as follows:</p><div class="informalexample"><pre class="programlisting">&lt;?php // $newsList is from actionItemsList ?&gt;
+&lt;table&gt;
+  &lt;tr&gt;
+    &lt;th&gt;Title&lt;/th&gt;
+    &lt;th&gt;Date&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;?php foreach($newsList as $item) { ?&gt;
+  &lt;tr&gt;
+    &lt;th&gt;&lt;a href="&lt;?php echo Yii::$app-&gt;urlManager-&gt;createUrl(['news/item-detail' , 'title' =&gt; $item['title']]) ?&gt;"&gt;&lt;?php echo $item['title'] ?&gt;&lt;/a&gt;&lt;/th&gt;
+    &lt;th&gt;&lt;?php echo $item['date'] ?&gt;&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;?php } ?&gt;
+&lt;/table&gt;</pre></div><p>To build a link, there is an available component, <code class="literal">urlManager</code>, which allows us to create links through the <code class="literal">createUrl()</code> method. The parameter in <code class="literal">createUrl()</code> is an array that contains the route path and variable to pass to the URL. To learn more about this method, just refer to <a id="id98" class="indexterm"></a>the link <a class="ulink" href="http://www.yiiframework.com/doc-2.0/yii-web-urlmanager.html#createUrl%28%29-detail">http://www.yiiframework.com/doc-2.0/yii-web-urlmanager.html#createUrl%28%29-detail</a>.</p><p>In our case, we have <code class="literal">news/item-detail</code> as the route to be called and the <code class="literal">title</code> parameter to be passed to the URL.</p><div class="note" title="Note"><h3 class="title"><a id="note06"></a>Note</h3><p>The date can be formatted using the built-in formatter component. For example, to to display a date in the d/m/Y format, <code class="literal">d/m/Y : Yii::$app-&gt;formatter-&gt;asDatetime($item['date'], "php:d/m/Y");</code>.</p></div><p>It is advisable to<a id="id99" class="indexterm"></a> use a unique identifier to<a id="id100" class="indexterm"></a> pass data between routes. For this purpose, we add a third parameter, named <code class="literal">id</code>, to identify a record univocally.</p><p>The following is the content of <code class="literal">NewsController</code>:</p><div class="informalexample"><pre class="programlisting">public function dataItems()
+{
+  $newsList = [
+    [ 'id' =&gt; 1, 'title' =&gt; 'First World War', 'date' =&gt; '1914-07-28' ],
+    [ 'id' =&gt; 2, 'title' =&gt; 'Second World War', 'date' =&gt; '1939-09-01' ],
+    [ 'id' =&gt; 3, 'title' =&gt; 'First man on the moon', 'date' =&gt; '1969-07-20' ]
+  ];
+  return $newsList;
+}
+
+public function actionItemsList()
+{
+  $newsList = $this-&gt;dataItems();
+  return $this-&gt;render('itemsList', ['newsList' =&gt; $newsList]);
+}
+public function actionItemDetail($id)
+{
+  $newsList = $this-&gt;dataItems();
+
+  $item = null;
+  foreach($newsList as $n)
+  {
+    if($id == $n['id']) $item = $n;
+  }
+
+  return $this-&gt;render('itemDetail', ['item' =&gt; $item]);
+}</pre></div><p>Then, change the parameter in the <code class="literal">createUrl</code> parameter in <code class="literal">views/news/itemsList.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;table&gt;
+  &lt;tr&gt;
+    &lt;th&gt;Title&lt;/th&gt;
+     &lt;th&gt;Date&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;?php foreach($newsList as $item) { ?&gt;
+  &lt;tr&gt;
+    &lt;th&gt;&lt;a href="&lt;?php echo Yii::$app-&gt;urlManager-&gt;createUrl(['news/item-detail' , 'id' =&gt; $item['id']]) ?&gt;"&gt;&lt;?php echo $item['title'] ?&gt;&lt;/a&gt;&lt;/th&gt;
+    &lt;th&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asDatetime($item['date'], "php:d/m/Y"); ?&gt;&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;?php } ?&gt;
+&lt;/table&gt;</pre></div></div></div></body></html>

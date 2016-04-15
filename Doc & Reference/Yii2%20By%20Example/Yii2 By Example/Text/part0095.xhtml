@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Generating an API documentation</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Generating an API documentation"><div class="titlepage" id="aid-2QJ5E2"><div><div><h1 class="title"><a id="ch13lvl1sec89"></a>Generating an API documentation</h1></div></div></div><p>Documentation<a id="id568" class="indexterm"></a> is definitively <a id="id569" class="indexterm"></a>one of the most important aspects of an app, since it provides information about its flows and structures. Unfortunately, it is often omitted due to lack of time.</p><p>Yii give us a powerful tool to automatically generate a pretty documentation. Basically, it uses all the documentation comments present in the app, those starting with <code class="literal">/**</code> instead of the classic <code class="literal">/*</code>.</p><p>Therefore, we have the advantage that comments in the code are used to produce a complete documentation.</p><p>Inside these comments, there are few keywords that are usable according to the context&mdash;file, class, or function/method.</p><p>In case of a file, the most common keywords to put on top are:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">@link url</code>, where <code class="literal">url</code> is the reference URL linked to the file</li><li class="listitem"><code class="literal">@copyright text</code>, where text is the content of copyright</li><li class="listitem"><code class="literal">@license url</code>, where <code class="literal">url</code> is the reference to license content</li></ul></div><p>In case of a class, the most common keywords to put on top are:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">@author name</code>, where name is the name of the author</li><li class="listitem"><code class="literal">@since version</code>, where version is the version of the project in which this class has been included</li></ul></div><p>In case of a function/method, the most common keywords to put on top are:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">@param type name</code>, where type is the type of parameter and name is the name of the parameter passed as an argument of the function</li><li class="listitem"><code class="literal">@return type</code>, where type is the returned type</li><li class="listitem"><code class="literal">@throws class</code>, where class is the exception class thrown by the exception</li></ul></div><p>Besides API documentation, Yii provides tools to create pretty guide files that are in the <code class="literal">.md</code> format (typical of GitHub). It is easy to find information on formatting a <code class="literal">.md</code> file by surfing the Internet.</p><div class="section" title="Example &ndash; using an API documentation to generate a doc of app and services"><div class="titlepage"><div><div><h2 class="title"><a id="ch13lvl2sec57"></a>Example &ndash; using an API documentation to generate a doc of app and services</h2></div></div></div><p>Let's now see which<a id="id570" class="indexterm"></a> commands automatically produce a documentation from the Yii app.</p><p>There are two kinds of documentation:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">API documentation, which is a reference of each <code class="literal">.php</code> file in the project, completed with doc comments referred to a single file, class, or function</li><li class="listitem">Guide, which is a pretty manual for the app, created using the <code class="literal">.md</code> files that Yii renders in pretty <code class="literal">.html</code> files</li></ul></div><p>The first step is to install <code class="literal">api-doc</code>, if it is not already present.</p><p>Point to the project root folder and launch this command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ php composer.phar require --prefer-dist yiisoft/yii2-apidoc</strong></span>
+</pre></div><p>This will install the <code class="literal">yii2-apidoc</code> extension.</p><div class="note" title="Note"><h3 class="title"><a id="note79"></a>Note</h3><p>If this command is not properly complete, launch also a Composer update as follows:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ php composer.phar update</strong></span>
+</pre></div></div><p>Now we can launch the command to produce an API documentation starting from the project root folder:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ vendor/bin/apidoc api ./ ../app-doc</strong></span>
+</pre></div><p>The parameters are as follows:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">The first parameter, <code class="literal">api</code>, identifies the command to execute</li><li class="listitem">The second parameter, <code class="literal">./</code>, identifies the path of the source files to scan</li><li class="listitem">The third parameter, <code class="literal">../app-doc</code>, identifies the destination folder of the created documentation</li></ul></div><p>After launching the command, going to the <code class="literal">../app-doc</code> folder on a browser will show us the API documentation created by the framework.</p><p>When we make any changes in the source file, it is necessary to relaunch the command to update the API documentation. The second kind of documentation is the guide, a set of <code class="literal">.html</code> files produced by <code class="literal">.md</code> files.</p><p>So we need to create a folder, starting from the project root folder, for example, the folder named <code class="literal">guide</code>, where we will put all the <code class="literal">.md</code> files that we want to convert into <code class="literal">.html</code> pretty files from the command <code class="literal">guide</code>.</p><p>Now we are ready to launch the command to create our guide, which is totally similar to the previously made API command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ vendor/bin/apidoc guide ./guide ../app-doc</strong></span>
+</pre></div><p>This command will convert all the <code class="literal">.md</code> files present in the <code class="literal">./guide</code> folder into <code class="literal">.html</code> files, storing them in the <code class="literal">../app-doc</code> folder (together with the API documentation files).</p><p>Let's make a concrete<a id="id571" class="indexterm"></a> example. Starting with the basic template project, create a new controller named <code class="literal">TestDocController</code> in <code class="literal">TestDocController.php</code> at <code class="literal">basic/controllers</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+/**
+ * This file contains a controller to demonstrate api documentation tool.  
+ *
+ * @link http://www.example.com/
+ * @copyright Copyright (c) 2015
+ * @license http://www.example.com/license/
+ */
+
+namespace app\controllers;
+
+use Yii;
+use yii\web\Controller;
+
+
+/**
+ * This is a controller class to demonstrate api documentation tool.  
+ *
+ * @author Fabrizio Caldarelli
+ * @since 1.0
+ */
+class TestDocController extends Controller
+{
+    /**
+     * Make sum of the operands
+     *
+     * @param float $a first operand
+     * @param float $b second operand
+     * @return float sum of parameters
+     * @author  
+     */
+    public function makeSum(float $a, float $b)
+    {
+        return $a+$b;
+    }
+}</pre></div><p>Now open a shell console on host, and from the project root folder, launch the command to generate the API documentation:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$  vendor/bin/apidoc api ./ ../app-doc</strong></span>
+</pre></div><p>This will create the<a id="id572" class="indexterm"></a> documentation for all files starting with the root folder (<code class="literal">./</code>) and storing the HTML result files in <code class="literal">../app-doc</code>.</p><p>Now, on your browser, go to <code class="literal">http://hostname/app-doc</code> and we will display the API documentation index page. Search for <code class="literal">TestDocController.php</code> in the side menu and click on it. This should be the output:</p><div class="mediaobject"><img src="../Images/image00295.jpeg" alt="Example &ndash; using an API documentation to generate a doc of app and services"/><div class="caption"><p>TestDocController API documentation</p></div></div><p style="clear:both; height: 1em;"> </p><p>Now, we want to demonstrate the second kind of documentation&mdash;guide documentation.</p><p>Create a folder from the project root folder named <code class="literal">app-guide</code>. In it, put a new file named <code class="literal">test-doc-controller.md</code> with the following content:</p><div class="informalexample"><pre class="programlisting">## TestDoc Controller
+
+This is the guide for TestDoc Controller.
+
+## Functionalities
+
+It is provided makeSum function, that makes a sum of two values passed as parameter
+
+```
+$a = 10;
+$b = 20;
+$c = $this-&gt;makeSum(float $a, float $b)     // $c = 30;
+```</pre></div><p>Go to the shell console<a id="id573" class="indexterm"></a> of the hosting and from the project root folder, launch the command to generate the guide documentation:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$  vendor/bin/apidoc guide ./app-guide ../app-doc</strong></span>
+</pre></div><p>This will create the guide documentation for all <code class="literal">.md</code> files in the <code class="literal">./app-guide</code> folder and will store <code class="literal">.html</code> results in <code class="literal">../app-doc</code>.</p><p>On your browser go to <code class="literal">http://hostname/app-doc/guide-test-doc-controller.html</code>, you should see the following screen:</p><div class="mediaobject"><img src="../Images/image00296.jpeg" alt="Example &ndash; using an API documentation to generate a doc of app and services"/><div class="caption"><p>TestDocController guide documentation</p></div></div><p style="clear:both; height: 1em;"> </p></div></div></body></html>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Chapter&nbsp;5.&nbsp;Developing a Reservation System</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="chapter" title="Chapter&nbsp;5.&nbsp;Developing a Reservation System"><div class="titlepage" id="aid-173722"><div><div><h1 class="title"><a id="ch05"></a>Chapter&nbsp;5.&nbsp;Developing a Reservation System</h1></div></div></div><p>In this chapter, you will learn how to configure and manage databases, using SQL or ActiveRecord directly, then you will see how to solve common tasks, such as saving single and multiple models from a form, and how to create data aggregation and filtered views.</p><p>We will cover the following topics in this chapter:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Configuring a DB connection:<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">For example, creating rooms, customers, and reservations tables</li></ul></div></li><li class="listitem">For example, testing a connection and executing a SQL query</li><li class="listitem">Using Gii to create room, customer, and reservation models</li><li class="listitem">Using ActiveRecord to manipulate data:<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">For example, querying rooms list with ActiveRecord</li></ul></div></li><li class="listitem">Working with relationships:<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">For example, using relationships to connect rooms, reservations, and customers</li></ul></div></li><li class="listitem">How to save a model from a form:<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">For example, creating and updating a room from a form</li></ul></div></li><li class="listitem">Setting up the GMT time zone</li><li class="listitem">Using multiple database connections:<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">For example, configuring a second DB connection to export data to a local SQLite DB</li></ul></div></li></ul></div><div class="section" title="Configuring a DB connection"><div class="titlepage"><div><div><h1 class="title"><a id="ch05lvl1sec35"></a>Configuring a DB connection</h1></div></div></div><p>Yii2 offers a <a id="id174" class="indexterm"></a>high-level layer to access databases, built on top of <a id="id175" class="indexterm"></a><span class="strong"><strong>PHP Data Objects</strong></span> (<span class="strong"><strong>PDO</strong></span>).</p><p>This framework allows us to manipulate a database table's content through the use of ActiveRecord objects. This encapsulates methods to access single or multiple records, as well as filtering, joining, and ordering data in an intuitive way.</p><p>Again, we can work with databases using plain SQL, but this means that we must handle dissimilarities in SQL languages passing through different databases (MySQL, SQL Server, Postgres, Oracle, and so on), which means losing Yii2 facilities.</p><p>A database object connection is an instance of <code class="literal">yii\db\Connection</code>:</p><div class="informalexample"><pre class="programlisting">$db = new yii\db\Connection([
+    'dsn' =&gt; 'mysql:host=localhost;dbname=my_database',
+    'username' =&gt; 'my_username',
+    'password' =&gt; 'my_password',
+    'charset' =&gt; 'utf8',
+]);</pre></div><p>In this example, we have a connection to a MySQL Server with a <code class="literal">mysql</code> connection string to the database <code class="literal">my_databases</code>, setting <code class="literal">my_username</code> as <code class="literal">username</code> and <code class="literal">my_password</code> as <code class="literal">password</code>. Moreover, we set <code class="literal">charset</code> to <code class="literal">utf8</code> in order to guarantee standard charset use. This is a standard database connection entry.</p><p>Other common available connection strings are:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">MySQL and MariaDB: <code class="literal">mysql:host=localhost;dbname=mydatabase</code></li><li class="listitem">SQLite: <code class="literal">sqlite:/path/to/database/file</code></li><li class="listitem">PostgreSQL: <code class="literal">pgsql:host=localhost;port=5432;dbname=mydatabase</code></li><li class="listitem">MS SQL Server (via <code class="literal">mssql</code> driver): <code class="literal">mssql:host=localhost;dbname=mydatabase</code></li><li class="listitem">Oracle: <code class="literal">oci:dbname=//localhost:1521/mydatabase</code></li></ul></div><div class="note" title="Note"><h3 class="title"><a id="note21"></a>Note</h3><p>If we do not provide a direct driver to database and we have to use ODBC, we will have a sample of the ODBC connection object as follows:</p><div class="informalexample"><pre class="programlisting">$db = new yii\db\Connection([
+     'driverName' =&gt; 'mysql',
+    'dsn' =&gt; 'odbc:Driver={MySQL};Server=localhost;Database=my_database',
+    'username' =&gt; 'my_username',
+    'password' =&gt; 'my_password',
+    'charset' =&gt; 'utf8',
+]);</pre></div></div><p>For convenience, we <a id="id176" class="indexterm"></a>will set the database connection as an application component because it will be adopted in many points of the application. In <code class="literal">basic/config/web.php</code>:</p><div class="informalexample"><pre class="programlisting">return [
+    // ...
+    'components' =&gt; [
+        // ...
+        'db' =&gt; [
+            'class' =&gt; 'yii\db\Connection',
+            'dsn' =&gt; 'mysql:host=localhost;dbname=my_database',
+            'username' =&gt; 'my_username',
+            'password' =&gt; 'my_password',
+            'charset' =&gt; 'utf8',
+        ],
+    ],
+    // ...
+];</pre></div><div class="note" title="Note"><h3 class="title"><a id="note22"></a>Note</h3><p>In the basic template, database configuration is in a separate file, generally <code class="literal">basic/config/db.php</code>.</p><p>If we open <code class="literal">basic/config/web.php</code>, we can see that the <code class="literal">db.php</code> file fills the <code class="literal">db</code> property of the main configuration.</p></div><div class="section" title="Example &ndash; creating rooms, customers, and reservations tables"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec24"></a>Example &ndash; creating rooms, customers, and reservations tables</h2></div></div></div><p>Now, we need a <a id="id177" class="indexterm"></a>MySQL database instance to work <a id="id178" class="indexterm"></a>with. Open the DB administration <a id="id179" class="indexterm"></a>panel as phpMyAdmin (if provided) or access the DB directly using a console and create a new database named <code class="literal">my_database</code>, associated with the username <code class="literal">my_username</code> and the password <code class="literal">my_password</code>.</p><p>In this example, we will create three database tables to manage rooms, customers, and reservations data.</p><p>A room will have the following fields:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">id</code> as an integer</li><li class="listitem"><code class="literal">floor</code> as an integer</li><li class="listitem"><code class="literal">room_number</code> as an integer</li><li class="listitem"><code class="literal">has_conditioner</code> as an integer</li><li class="listitem"><code class="literal">has_tv</code> as an integer</li><li class="listitem"><code class="literal">has_phone</code> as an integer</li><li class="listitem"><code class="literal">available_from</code> as the date</li><li class="listitem"><code class="literal">price_per_day</code> as a decimal</li><li class="listitem"><code class="literal">description</code> as text</li></ul></div><p>The script of<a id="id180" class="indexterm"></a> the <code class="literal">room</code> table will be:</p><div class="informalexample"><pre class="programlisting">CREATE TABLE `room` (
+  `id` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  `floor` int(11) NOT NULL,
+  `room_number` int(11) NOT NULL,
+  `has_conditioner` int(1) NOT NULL,
+  `has_tv` int(1) NOT NULL,
+  `has_phone` int(1) NOT NULL,
+  `available_from` date NOT NULL,
+  `price_per_day` decimal(20,2) DEFAULT NULL,
+  `description` text);</pre></div><p>A customer will <a id="id181" class="indexterm"></a>have the following fields:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">id</code> as an integer</li><li class="listitem"><code class="literal">name</code> as a string</li><li class="listitem"><code class="literal">surname</code> as a string</li><li class="listitem"><code class="literal">phone_number</code> as a string</li></ul></div><p>The script <a id="id182" class="indexterm"></a>of the <code class="literal">customer</code> table will be</p><div class="informalexample"><pre class="programlisting">CREATE TABLE `customer` (
+ `id` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+ `name` varchar(50) NOT NULL,
+ `surname` varchar(50) NOT NULL,
+ `phone_number` varchar(50) DEFAULT NULL
+);</pre></div><p>A reservation will have the following fields:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">id</code> as an integer</li><li class="listitem"><code class="literal">room_id</code> as an integer that is a reference to a room table</li><li class="listitem"><code class="literal">customer_id</code> as an integer that is a reference to a customer table</li><li class="listitem"><code class="literal">price_per_day</code> as a decimal</li><li class="listitem"><code class="literal">date_from</code> as the date to specify check in</li><li class="listitem"><code class="literal">date_to</code> as the date to specify check out</li><li class="listitem"><code class="literal">reservation_date</code> as a timestamp of creation</li><li class="listitem"><code class="literal">days_stay</code> as an integer</li></ul></div><p>The script <a id="id183" class="indexterm"></a>of <a id="id184" class="indexterm"></a>the <code class="literal">reservation</code> table<a id="id185" class="indexterm"></a> will be:</p><div class="informalexample"><pre class="programlisting">CREATE TABLE `reservation` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `room_id` int(11) NOT NULL,
+ `customer_id` int(11) NOT NULL,
+ `price_per_day` decimal(20,2) NOT NULL,
+ `date_from` date NOT NULL,
+ `date_to` date NOT NULL,
+ `reservation_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+);</pre></div><p>Finally, place <code class="literal">basic/config/web.php</code> in the <code class="literal">components</code> property:</p><div class="informalexample"><pre class="programlisting">$db = new yii\db\Connection([
+    'dsn' =&gt; 'mysql:host=localhost;dbname=my_database',
+    'username' =&gt; 'my_username',
+    'password' =&gt; 'my_password',
+    'charset' =&gt; 'utf8',
+]);</pre></div><p>Then we are ready to test the connection to the DB.</p></div><div class="section" title="Example &ndash; test connection and executing the SQL query"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec25"></a>Example &ndash; test connection and executing the SQL query</h2></div></div></div><p>Now let's see how to test the <a id="id186" class="indexterm"></a>DB connection.</p><p>Put some rooms <a id="id187" class="indexterm"></a>data in the database table:</p><div class="informalexample"><pre class="programlisting">INSERT INTO `my_database`.`room` (`id`, `floor`, `room_number`, `has_conditioner`, `has_tv`, `has_phone`, `available_from`, `price_per_day`, `description`)
+VALUES
+(NULL, '1', '101', '1', '0', '1', '2015-05-20', '120', NULL), (NULL, '2', '202', '0', '1', '1', '2015-05-30', '118', NULL);</pre></div><p>Database queries are made using the <code class="literal">yii\db\Command</code> object, which is created statically by the <code class="literal">yii\db\Connection::createCommand()</code> method.</p><p>The most important methods to retrieve data from a command are:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">queryAll()</code>: This <a id="id188" class="indexterm"></a>method returns all the rows of a query, where each array element is an array that represents a row of data; if the query returns no data, the response is an empty array</li><li class="listitem"><code class="literal">queryOne()</code>: This <a id="id189" class="indexterm"></a>method returns the first row of the query, that is, an array, which represents a row of data; if the query returns no data, the response is a false Boolean value</li><li class="listitem"><code class="literal">queryScalar()</code>: This <a id="id190" class="indexterm"></a>method returns the value of the first column in the first row of the query result; otherwise false will be returned if there is no value</li><li class="listitem"><code class="literal">query()</code>: This is the <a id="id191" class="indexterm"></a>most common response that returns the <code class="literal">yii\db\DataReader</code> object</li></ul></div><p>Now we will <a id="id192" class="indexterm"></a>display the <code class="literal">room</code> table's content in different ways.</p><p>We will<a id="id193" class="indexterm"></a> update <code class="literal">RoomsController</code> in <code class="literal">basic/controllers/RoomsController.php</code>. In this file, we will append an index action to fetch data and pass it to view:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace app\controllers;
+
+use Yii;
+use yii\web\Controller;
+
+class RoomsController extends Controller
+{
+    public function actionIndex()
+    {
+        $sql = 'SELECT * FROM room ORDER BY id ASC';
+        
+        $db = Yii::$app-&gt;db;
+        
+        $rooms = $db-&gt;createCommand($sql)-&gt;queryAll();
+        
+    // same of
+     // $rooms = Yii::$app-&gt;db-&gt;createCommand($sql)-&gt;queryAll();
+
+        return $this-&gt;render('index', [ 'rooms' =&gt; $rooms ]);
+    }
+}</pre></div><p>The content of <code class="literal">actionIndex()</code> is very simple. Define the <code class="literal">$sql</code> variable with the SQL statement to be executed, then fill the <code class="literal">$rooms</code> array with the query result, and finally render the <code class="literal">index</code> view, passing the rooms variable.</p><p>In the view content, in <code class="literal">basic/views/rooms/index.php</code>, we will display the <code class="literal">$rooms</code> array in a table to exploit Bootstrap CSS's advantages, and apply the <code class="literal">table</code> class to the table HTML tag.</p><p>This is the<a id="id194" class="indexterm"></a> content of<code class="literal"> basic/views/rooms/index.php</code>, where we can<a id="id195" class="indexterm"></a> also see the data formatter used:</p><div class="informalexample"><pre class="programlisting">&lt;table class="table"&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Floor&lt;/th&gt;
+        &lt;th&gt;Room number&lt;/th&gt;
+        &lt;th&gt;Has conditioner&lt;/th&gt;
+        &lt;th&gt;Has tv&lt;/th&gt;
+        &lt;th&gt;Has phone&lt;/th&gt;
+        &lt;th&gt;Available from&lt;/th&gt;
+        &lt;th&gt;Available from (db format)&lt;/th&gt;
+        &lt;th&gt;Price per day&lt;/th&gt;
+        &lt;th&gt;Description&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;?php foreach($rooms as $item) { ?&gt;
+    &lt;tr&gt;
+        &lt;td&gt;&lt;?php echo $item['floor'] ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo $item['room_number'] ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asBoolean($item['has_conditioner']) ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asBoolean($item['has_tv']) ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo ($item['has_phone'] == 1)?'Yes':'No' ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asDate($item['available_from']) ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asDate($item['available_from'], 'php:Y-m-d') ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asCurrency($item['price_per_day'], 'EUR') ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo $item['description'] ?&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;?php } ?&gt;
+&lt;/table&gt;</pre></div><p>The <code class="literal">floor</code> and <code class="literal">room_number</code> fields are directly displayed.</p><p>The next two fields <code class="literal">has_conditioner</code> and <code class="literal">has_tv</code> are shown by employing a Boolean formatter supplied by Yii2; the Boolean formatter will use the locale defined during the configuration of Yii2.</p><p>The next field <code class="literal">has_phone</code> renders its value as the previous two fields; the reason for this is to indicate how to produce the same output of a Boolean formatter in a standard PHP style.</p><p>Then, the<a id="id196" class="indexterm"></a> <code class="literal">available_from</code> field is rendered using the date formatter in <a id="id197" class="indexterm"></a>two different ways, directly and passing the format to be used. Or, if no parameter is passed, it adopts the default format.</p><p>Again, the <code class="literal">price_per_day</code> field is rendered through the currency formatter, passing the currency as a parameter. If no parameter is passed, the default value will be used. The last field <code class="literal">description</code> is displayed directly. Point your browser to <code class="literal">http://hostname/basic/web/rooms/index</code> to see the content as follows:</p><div class="mediaobject"><img src="../Images/image00261.jpeg" alt="Example &ndash; test connection and executing the SQL query"/><div class="caption"><p>A list of rooms</p></div></div><p style="clear:both; height: 1em;"> </p></div></div></div></body></html>

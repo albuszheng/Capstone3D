@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Configuring user authorization</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Configuring user authorization"><div class="titlepage" id="aid-1UU542"><div><div><h1 class="title"><a id="ch08lvl1sec60"></a>Configuring user authorization</h1></div></div></div><p>Yii has two <a id="id380" class="indexterm"></a>methods to authorize users: ACF and RBAC.</p><p>The first one, ACF, is used in applications that require a minimal and simple access control. Basically, its behavior is based on five parameters:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">allow</code>: This parameter specifies whether this is an allow or deny rule; possible values are <code class="literal">allow</code> or <code class="literal">deny</code></li><li class="listitem"><code class="literal">actions</code>: This parameter specifies which actions this rule matches, and they are declared using an array of string</li><li class="listitem"><code class="literal">roles</code>: This parameter specifies which user roles this rule matches; possible values are <code class="literal">?</code>' and <code class="literal">@</code>, which mean respectively guest user and authenticated user</li><li class="listitem"><code class="literal">ips</code>: This parameter specifies which client IP address this rule matches; the IP address that can contain <code class="literal">*</code> as a wildcard</li><li class="listitem"><code class="literal">verbs</code>: This parameter specifies which verb (request method) this rules matches</li></ul></div><p>By default, if no rule matches, access will be denied.</p><p>ACF is enabled by overwriting the <code class="literal">behaviors()</code> method of <code class="literal">Controller</code> and populating its <code class="literal">access</code> property with the content of some (or every one) of the preceding parameters.</p><div class="informalexample"><pre class="programlisting">    public function behaviors()
+    {
+        return [
+            'access' =&gt; [
+                'class' =&gt; AccessControl::className(),
+                'only' =&gt; ['login', 'logout', 'signup', 'index'],
+                'rules' =&gt; [
+                    [
+                        'allow' =&gt; true,
+                        'actions' =&gt; ['login', 'signup', 'index'],
+                        'roles' =&gt; ['?'],
+                    ],
+                    [
+                        'allow' =&gt; true,
+                        'actions' =&gt; ['logout'],
+                        'roles' =&gt; ['@'],
+                    ],
+                ],
+            ],
+        ];
+    }</pre></div><p>In this example, the <code class="literal">login</code>, <code class="literal">logout</code>, <code class="literal">signup</code>, and <code class="literal">index</code> actions are enabled for guest users (all users) and the logout action is enabled only for authenticated ones.</p><p>ACF has many other parameters that can be defined, such as <code class="literal">controllers</code> , to define which controllers this rule matches (if it is empty, this means all controllers); <code class="literal">matchCallback</code> whose value is a PHP callable function called to verify whether this rule can be applied or not; and finally <code class="literal">denyCallback</code>, whose value is a PHP callable function used when this rule will deny access.</p><p>When a rule is denied, there are two different behaviors according to the role of the user. If a guest is denied, a denied rule will call the <code class="literal">yii\web\User::loginRequired()</code> method to redirect the user's browser to the login page; if the user is authenticated, it will throw a <code class="literal">yii\web\ForbiddenHttpException</code> exception.</p><p>This behavior can be customized using the <code class="literal">denyCallback</code> property mentioned earlier, and by defining the correct callable PHP function.</p><p>Obviously, any detail about the logged in user is not considered by this type of authorization. During configuration in the <code class="literal">behaviors()</code> method, in fact, no detail about the user ever appears (for example, <code class="literal">role</code>). So we cannot define more precisely which conditions a user can execute or not a controller action.</p><p>ACF suggests only <a id="id381" class="indexterm"></a>if we have to limit access to an authenticated user, without needing some other details to allow the controller action to be executed.</p><p>But in all those cases in which it is enough to limit access based on the condition that the user is logged in or not, it is the best approach. In the REST API with limited access (where only the authenticated users are able to make calls), ACF is probably the best solution.</p><div class="section" title="Example &ndash; creating an ACF to authorize the users"><div class="titlepage"><div><div><h2 class="title"><a id="ch08lvl2sec40"></a>Example &ndash; creating an ACF to authorize the users</h2></div></div></div><p>Now let's look at how to create an<a id="id382" class="indexterm"></a> ACF to authorize the user to display or<a id="id383" class="indexterm"></a> not display the page content.</p><p>We have two actions: <code class="literal">actionPrivatePage</code> and <code class="literal">actionPublicPage</code>. The first one is accessible only from an authenticated user and the second one is publically accessible.</p><p>In <code class="literal">MyAuthenticationController.php</code>, let's add the <code class="literal">behaviors()</code> method with the following content:</p><div class="informalexample"><pre class="programlisting">    public function behaviors()
+    {
+        return [
+            'access' =&gt; [
+                'class' =&gt; AccessControl::className(),
+                'only' =&gt; ['public-page', 'private-page'],
+                'rules' =&gt; [
+                    [
+                        'allow' =&gt; true,
+                        'actions' =&gt; ['public-page'],
+                        'roles' =&gt; ['?'],
+                    ],
+                    [
+                        'allow' =&gt; true,
+                        'actions' =&gt; ['private-page'],
+                        'roles' =&gt; ['@'],
+
+                    ],
+                ],
+                
+                // Callable function when user is denied
+                'denyCallback' =&gt; function($rule, $data) {
+                        $this-&gt;redirect(['login']);
+                }
+            ],
+        ];
+    }</pre></div><p>This method applies an <a id="id384" class="indexterm"></a>ACF to only two actions, <code class="literal">actionPublicPage</code> and <code class="literal">actionPrivatePage</code> (based only on the property value) and restricts<a id="id385" class="indexterm"></a> access for private pages that specify the roles as <code class="literal">@</code>.</p><p>Then, we added the <code class="literal">denyCallback</code> property to indicate how the behavior should appear when access is denied to the user. In this case, we set it so that the user should be redirected to the <code class="literal">login</code> action of <code class="literal">MyAuthenticationController</code>.</p></div><div class="section" title="RBAC"><div class="titlepage"><div><div><h2 class="title"><a id="ch08lvl2sec41"></a>RBAC</h2></div></div></div><p>RBAC<a id="id386" class="indexterm"></a> is the right choice when we need more granularity of authorization controls.</p><p>RBAC involves two parts:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">The first one is to build up the RBAC authorization data</li><li class="listitem">The second one is to use the authorization data to perform further access controls</li></ul></div><p>We'll start now <a id="id387" class="indexterm"></a>by building up the RBAC authorization data. RBAC can be initialized in two ways: through PhpManager, instancing the <code class="literal">yii\rbac\PhpManager</code> component that will store RBAC data in the <code class="literal">@app/rbac</code> folder, and through DbManager, instancing the <code class="literal">yii\rbac\DbManager</code> component, which will use four database tables to store its data.</p><p>We need to configure the <code class="literal">authManager</code> application component in the main configuration file using one of the authorization managers, <code class="literal">yii\rbac\PhpManager</code> or <code class="literal">yii\rbac\DbManager</code>.</p><p>The following code shows how to configure <code class="literal">authManager</code> in <code class="literal">basic/config/web.php</code> using the <code class="literal">yii\rbac\PhpManager</code> class:</p><div class="informalexample"><pre class="programlisting">return [
+    // ...
+    'components' =&gt; [
+        'authManager' =&gt; [
+            'class' =&gt; 'yii\rbac\PhpManager',
+        ],
+        // ...
+    ],
+];</pre></div><p>The following code shows how to configure <code class="literal">authManager</code> in <code class="literal">basic/config/web.php</code> using the <code class="literal">yii\rbac\DbManager</code> class:</p><div class="informalexample"><pre class="programlisting">return [
+    // ...
+    'components' =&gt; [
+        'authManager' =&gt; [
+            'class' =&gt; 'yii\rbac\DbManager,
+        ],
+        // ...
+    ],
+];</pre></div><p>Both these methods are based on three objects: <code class="literal">permissions</code>, <code class="literal">roles</code>, and <code class="literal">rules</code>. The <code class="literal">permissions</code> method represents actions that can be controlled; <code class="literal">roles</code> are a set of permissions to which the target can be enabled or less; and <code class="literal">rules</code> are extra validations that will be executed when a permission is checked. Finally, <code class="literal">permissions</code> or <code class="literal">roles</code> can be assigned to users and identified by the <code class="literal">IdentityInterface::getId()</code> value of the <code class="literal">Yii::$app-&gt;user</code> component.</p><p>When access permissions do not change, we could create a console command to launch in case, or once, permissions are changed. However, we will not discuss that now as you will see the console command in-depth in the next chapters.</p><p>Instead, we will <a id="id388" class="indexterm"></a>write permissions using a fake action to only execute permissions, roles, and assignments settings.</p><p>In <code class="literal">basic/controllers/MyAuthenticationController.php</code>, add this action named <code class="literal">actionInitializeAuthorizations</code>:</p><div class="informalexample"><pre class="programlisting">    public function actionInitializeAuthorizations()
+    {
+        $auth = Yii::$app-&gt;authManager;
+        
+        // Reset all
+        $auth-&gt;removeAll();
+        
+        // add "createReservation" permission
+        $permCreateReservation = $auth-&gt;createPermission('createReservation');
+        $permCreateReservation-&gt;description = 'Create a reservation';
+        $auth-&gt;add($permCreateReservation);
+
+        // add "updatePost" permission
+        $permUpdateReservation = $auth-&gt;createPermission('updateReservation');
+        $permUpdateReservation-&gt;description = 'Update reservation';
+        $auth-&gt;add($permUpdateReservation);
+
+        // add "operator" role and give this role the "createReservation" permission
+        $roleOperator = $auth-&gt;createRole('operator');
+        $auth-&gt;add($roleOperator);
+        $auth-&gt;addChild($roleOperator, $permCreateReservation);
+
+        // add "admin" role and give this role the "updateReservation" permission
+        // as well as the permissions of the "operator" role
+        $roleAdmin = $auth-&gt;createRole('admin');
+        $auth-&gt;add($roleAdmin);
+        $auth-&gt;addChild($roleAdmin, $permUpdateReservation);
+        $auth-&gt;addChild($roleAdmin, $roleOperator);
+
+        // Assign roles to users. 1 and 2 are IDs returned by IdentityInterface::getId()
+        // usually implemented in your User model.
+        $auth-&gt;assign($roleOperator, 2);
+        $auth-&gt;assign($roleAdmin, 1);
+    }</pre></div><div class="note" title="Note"><h3 class="title"><a id="note54"></a>Note</h3><p>Before calling this action from your browser, make sure that the folder in <code class="literal">basic/rbac</code> already exists and that it is writable.</p></div><p>In order to start<a id="id389" class="indexterm"></a> this action from the beginning, two permissions and two roles are created, then the <code class="literal">createReservation</code> permission is added as a child to the operator role and the <code class="literal">updateReservation</code> permission is added as a child to the admin role, together to the operator role.</p><p>If we check the <code class="literal">createReservation</code> permission for the user with the <code class="literal">roleOperator</code> role, it will be successfully confirmed. The same happens if we check the user with <code class="literal">adminOperator</code>. But when we check the <code class="literal">updateReservation</code> permission on the user with the <code class="literal">roleOperator</code> role, it will be denied since that permission is not assigned to that specific role.</p><div class="note" title="Note"><h3 class="title"><a id="note55"></a>Note</h3><p>Permissions and role names can be chosen without restrictions, because they are used as parameters when checking permissions.</p></div><p>Now let's point our browser to <code class="literal">http://hostname/basic/my-authentication/initialize-authorizations</code> in order to launch the permissions creation.</p><p>The content of files created through this action in the <code class="literal">basic/rbac</code> folder are simply arrays. This is the content of the <code class="literal">items.php</code> file:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+return [
+    'createReservation' =&gt; [
+        'type' =&gt; 2,
+        'description' =&gt; 'Create a reservation',
+    ],
+    'updateReservation' =&gt; [
+        'type' =&gt; 2,
+        'description' =&gt; 'Update reservation',
+    ],
+    'operator' =&gt; [
+        'type' =&gt; 1,
+        'children' =&gt; [
+            'createReservation',
+        ],
+    ],
+    'admin' =&gt; [
+        'type' =&gt; 1,
+        'children' =&gt; [
+            'updateReservation',
+            'operator',
+        ],
+    ],
+];</pre></div><p>This is the content of <code class="literal">assignments.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+return [
+    2 =&gt; [
+        'operator',
+    ],
+    1 =&gt; [
+        'admin',
+    ],
+];</pre></div><p>Finally, to<a id="id390" class="indexterm"></a> check the user authorization, it is enough to call the <code class="literal">yii\web\User::can()</code> method:</p><div class="informalexample"><pre class="programlisting">if (\Yii::$app-&gt;user-&gt;can()) {
+    // create reservation permission is enabled to current user
+}</pre></div><div class="section" title="Example &ndash; configuring RBAC to set permissions for users"><div class="titlepage"><div><div><h3 class="title"><a id="ch08lvl3sec01"></a>Example &ndash; configuring RBAC to set permissions for users</h3></div></div></div><p>In this example, we will <a id="id391" class="indexterm"></a>create a user permissions management system from scratch, based on RBAC. We will create a new controller named <code class="literal">AuthorizationManagerController</code> in <code class="literal">basic/controllers/AuthorizationManagerController.php</code> that will display all the users and all the available permissions and roles from the database. This example is based on the user database table already used in the previous paragraphs.</p><p>Let's take a look at its structure again:</p><div class="informalexample"><pre class="programlisting">CREATE TABLE `user` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `username` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+ `auth_key` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
+ `password_hash` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+ `access_token` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
+ PRIMARY KEY (`id`)
+)</pre></div><p>We will truncate the database table and insert these records, five items, to be used in the next examples:</p><div class="informalexample"><pre class="programlisting">TRUNCATE user;
+
+INSERT INTO `user` (`id`, `username`, `auth_key`, `password_hash`, `access_token`) VALUES
+(1, 'foo', '', '$2a$12$hL0rmIMjxhLqI.xr7jD1FugNWEgZNh62HuJj5.y34XBUfBWB4cppW', NULL),
+(2, 'userA', '', '$2a$12$hL0rmIMjxhLqI.xr7jD1FugNWEgZNh62HuJj5.y34XBUfBWB4cppW', NULL),
+(3, 'userB', '', '$2a$12$hL0rmIMjxhLqI.xr7jD1FugNWEgZNh62HuJj5.y34XBUfBWB4cppW', NULL),
+(4, 'userC', '', '$2a$12$hL0rmIMjxhLqI.xr7jD1FugNWEgZNh62HuJj5.y34XBUfBWB4cppW', NULL),
+(5, 'admin', '', '$2a$12$hL0rmIMjxhLqI.xr7jD1FugNWEgZNh62HuJj5.y34XBUfBWB4cppW', NULL);</pre></div><p>Now that we have <a id="id392" class="indexterm"></a>data to work with, we can pass to write code.</p><p>The first method to create in this controller is <code class="literal">initializeAuthorizations()</code>, which has to initialize all the available authorizations in the system:</p><div class="informalexample"><pre class="programlisting">    &lt;?php
+
+namespace app\controllers;
+
+use Yii;
+use yii\web\Controller;
+use yii\filters\AccessControl;
+use app\models\User;
+use app\models\LoginForm;
+
+class MyAuthenticationController extends Controller
+{
+  
+public function initializeAuthorizations()
+    {
+        $auth = Yii::$app-&gt;authManager;
+        
+        $permissions = [
+            'createReservation' =&gt; array('desc' =&gt; 'Create a reservation'),
+            'updateReservation' =&gt; array('desc' =&gt; 'Update reservation'),
+            'deleteReservation' =&gt; array('desc' =&gt; 'Delete reservation'),
+            
+            'createRoom' =&gt; array('desc' =&gt; 'Create a room'),
+            'updateRoom' =&gt; array('desc' =&gt; 'Update room'),
+            'deleteRoom' =&gt; array('desc' =&gt; 'Delete room'),
+
+            'createCustomer' =&gt; array('desc' =&gt; 'Create a customer'),
+            'updateCustomer' =&gt; array('desc' =&gt; 'Update customer'),
+            'deleteCustomer' =&gt; array('desc' =&gt; 'Delete customer'),
+        ];
+        
+        $roles = [
+            'operator' =&gt; array('createReservation', 'createRoom', 'createCustomer'),
+        ];
+        
+        // Add all permissions
+        foreach($permissions as $keyP=&gt;$valueP)
+        {
+            $p = $auth-&gt;createPermission($keyP);
+            $p-&gt;description = $valueP['desc'];
+            $auth-&gt;add($p);
+            
+            // add "operator" role and give this role the "createReservation" permission
+            $r = $auth-&gt;createRole('role_'.$keyP);
+            $r-&gt;description = $valueP['desc'];
+            $auth-&gt;add($r);
+            if( false == $auth-&gt;hasChild($r, $p)) $auth-&gt;addChild($r, $p);
+        }
+        
+        // Add all roles
+        foreach($roles as $keyR=&gt;$valueR)
+        {
+            $r = $auth-&gt;createRole($keyR);
+            $r-&gt;description = $keyR;
+            $auth-&gt;add($r);
+            
+            foreach($valueR as $permissionName)
+            {
+             if( false == $auth-&gt;hasChild($r, $auth-&gt;getPermission($permissionName))) $auth-&gt;addChild($r, $auth-&gt;getPermission($permissionName));
+            }
+            
+        }
+                
+        // Add all permissions to admin role
+        $r = $auth-&gt;createRole('admin');
+        $r-&gt;description = 'admin';
+        $auth-&gt;add($r);
+        foreach($permissions as $keyP=&gt;$valueP)
+        {
+            if( false == $auth-&gt;hasChild($r, $auth-&gt;getPermission($permissionName))) $auth-&gt;addChild($r, $auth-&gt;getPermission($keyP));
+        }
+    }
+}</pre></div><p>At the top of this<a id="id393" class="indexterm"></a> method, we created a permissions and roles list, then we assigned them to the Yii authorization component. Take care to ensure that, after calling this method for the first time, you check whether any children already exist by calling the <code class="literal">hasChild</code> method on every <code class="literal">addChild()</code> insert attempt.</p><div class="note" title="Note"><h3 class="title"><a id="note56"></a>Note</h3><p>We have created a role for each permission, because <code class="literal">assign()</code> and <code class="literal">revoke()</code> take a role and not a permission as a first parameter, so we are required to replicate a role for every permission.</p></div><p>Next, we can create <code class="literal">actionIndex()</code>, which launches the previous initialize authorizations, getting all the users and populating an array with all the permissions assigned to every user. This is the content of the <code class="literal">actionIndex()</code> method:</p><div class="informalexample"><pre class="programlisting">    public function actionIndex()
+    {
+        $auth = Yii::$app-&gt;authManager;
+        
+        // Initialize authorizations
+        $this-&gt;initializeAuthorizations();
+
+        // Get all users        
+        $users = User::find()-&gt;all();
+        
+        // Initialize data
+        $rolesAvailable = $auth-&gt;getRoles();
+        $rolesNamesByUser = [];
+        
+        // For each user, fill $rolesNames with name of roles assigned to user
+        foreach($users as $user)
+        {
+            $rolesNames = [];
+            
+            $roles = $auth-&gt;getRolesByUser($user-&gt;id);
+            foreach($roles as $r)
+            {
+                $rolesNames[] = $r-&gt;name;
+            }
+            
+            $rolesNamesByUser[$user-&gt;id] = $rolesNames;
+        }
+        
+        return $this-&gt;render('index', ['users' =&gt; $users, 'rolesAvailable' =&gt; $rolesAvailable, 'rolesNamesByUser' =&gt; $rolesNamesByUser]);
+    }</pre></div><p>Follow the content of the <a id="id394" class="indexterm"></a>index action view in <code class="literal">basic/views/authorization-manager/index.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+use yii\helpers\Html;
+?&gt;
+
+&lt;table class="table"&gt;
+    &lt;tr&gt;
+        &lt;td&gt;User&lt;/td&gt;
+        &lt;?php foreach($rolesAvailable as $r) { ?&gt;
+            &lt;td&gt;&lt;?php echo $r-&gt;description ?&gt;&lt;/td&gt;
+        &lt;?php } ?&gt;
+    &lt;/tr&gt;
+    
+    &lt;?php foreach($users as $u) { ?&gt;
+        &lt;tr&gt;
+            &lt;td&gt;&lt;?php echo $u-&gt;username ?&gt;&lt;/td&gt;
+            
+            &lt;?php foreach($rolesAvailable as $r) { ?&gt;
+                &lt;td align="center"&gt;
+                &lt;?php if(in_array($r-&gt;name, $rolesNamesByUser[$u-&gt;id])) { ?&gt;
+                  &lt;?php echo Html::a('Yes', ['remove-role', 'userId' =&gt; $u-&gt;id, 'roleName' =&gt; $r-&gt;name]); ?&gt;
+                &lt;?php } else { ?&gt;
+                    &lt;?php echo Html::a('No', ['add-role', 'userId' =&gt; $u-&gt;id, 'roleName' =&gt; $r-&gt;name]); ?&gt;
+                &lt;?php } ?&gt;
+                &lt;/td&gt;
+            &lt;?php } ?&gt;
+        &lt;/tr&gt;
+    &lt;?php } ?&gt;
+    
+&lt;/table&gt;</pre></div><p>This loops for each<a id="id395" class="indexterm"></a> user's content of the <code class="literal">$rolesAvailable</code> array. To see this output, point your browser to <code class="literal">http://hostname/basic/web/authorization-manager/index</code>:</p><div class="mediaobject"><img src="../Images/image00285.jpeg" alt="Example &ndash; configuring RBAC to set permissions for users"/><div class="caption"><p>Users/Permissions table</p></div></div><p style="clear:both; height: 1em;"> </p><p>Every permission status is a link to the actions of adding a role or removing a role (depending on the current status).</p><p>Now we must create the last two actions: add a role and revoke a role to the user:</p><div class="informalexample"><pre class="programlisting">    public function actionAddRole($userId, $roleName)
+    {
+        $auth = Yii::$app-&gt;authManager;
+        
+        $auth-&gt;assign($auth-&gt;getRole($roleName), $userId);
+        
+        return $this-&gt;redirect(['index']);
+    }
+    
+    public function actionRemoveRole($userId, $roleName)
+    {
+        $auth = Yii::$app-&gt;authManager;
+        
+        $auth-&gt;revoke($auth-&gt;getRole($roleName), $userId);
+        
+        return $this-&gt;redirect(['index']);
+    }</pre></div></div></div></div></body></html>

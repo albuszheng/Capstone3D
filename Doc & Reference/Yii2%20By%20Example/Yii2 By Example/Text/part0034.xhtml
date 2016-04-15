@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Creating the rule class</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Creating the rule class" id="aid-10DJ41"><div class="titlepage"><div><div><h1 class="title"><a id="ch03lvl1sec28"></a>Creating the rule class</h1></div></div></div><p>URL rules<a id="id144" class="indexterm"></a> declared in terms of pattern-route pairs can cover the majority of projects. However, it is not flexible enough with dynamic data, where the URL could be any format and value stored in the database.</p><p>Now, we need to display item details using a URL that contains only the item title, such as <code class="literal">http://hostname/basic/web/news/Test</code> news of 2015-04-19</p><p>There is no way to solve this with URL rules, as we have done until now.</p><p>A more general solution to parse and create URL requests is using <code class="literal">Rule</code> classes.</p><p>The <code class="literal">Rule</code> class extends <code class="literal">Object</code> and implements <code class="literal">UrlRuleInterface</code>.</p><p>The next example will explain how to display item details, finding it from the title (defined in <code class="literal">data()</code> array of objects), and parsing and creating routes with a <code class="literal">Rule</code> class.</p><p>The route displayed in the browser will have the news/title format.</p><p>For this <a id="id145" class="indexterm"></a>purpose, create a new folder <code class="literal">components</code> under the basic folder if it does not exist, and create <code class="literal">components/NewsUrlRule.php</code> with the following content:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace app\components;
+
+use yii\web\UrlRuleInterface;
+use yii\base\Object;
+
+class NewsUrlRule extends Object implements UrlRuleInterface
+{
+
+  public function createUrl($manager, $route, $params)
+  {
+    if ($route === 'news/item-detail') {
+      if (isset($params['title'])) {
+        return 'news/'.$params['title'];
+      }
+    }
+    return false;  // this rule does not apply
+  }
+
+  public function parseRequest($manager, $request)
+  {
+    $pathInfo = $request-&gt;getPathInfo();
+
+    if (preg_match('%^([^\/]*)\/([^\/]*)$%', $pathInfo, $matches)) {
+      if($matches[1] == 'news')
+      {
+        $params = [ 'title' =&gt; $matches[2]];
+        return ['news/item-detail', $params];
+      }
+      else
+      {
+        return false;
+      }
+    }
+    return false;  // this rule does not apply
+  }
+}</pre></div><p>The first method, <code class="literal">createUrl()</code> receives <code class="literal">$manager</code>, <code class="literal">$route</code>, and <code class="literal">$params</code>. With route and params, the framework builds the URL. In this case, we check whether the route passed is equivalent to <code class="literal">news/item-detail</code> and if it is so, return the corresponding URL.</p><p>The second <a id="id146" class="indexterm"></a>method, <code class="literal">parseRequest()</code> receives <code class="literal">$manager</code> and <code class="literal">$request</code>. A match with a custom regular expression will be done to extract the required parts, using the <code class="literal">$request</code> data. The process will return the route, to be executed.</p><p>Now, link these components to <code class="literal">urlManager</code> of the <code class="literal">web.php</code> file located at <code class="literal">config/</code>, appending the following lines in the <code class="literal">rule</code> property of the <code class="literal">urlManager</code> component:</p><div class="informalexample"><pre class="programlisting">[
+'class' =&gt; 'app\components\NewsUrlRule',
+// ...configure other properties...
+],</pre></div><p>The next thing to do is to create <code class="literal">actionItemDetail</code> in <code class="literal">NewsController</code>, as follows:</p><div class="informalexample"><pre class="programlisting">public function actionItemDetail()
+{
+    $title = Yii::$app-&gt;request-&gt;get('title');
+    
+    $data = $this-&gt;data();
+    
+    $itemFound = null;
+    
+    foreach($data as $d)
+    {
+        if($d['title'] == $title) $itemFound = $d;
+    }        
+    
+    return $this-&gt;render('itemDetail', ['title' =&gt; $title, 'itemFound' =&gt; $itemFound]);
+}</pre></div><p>In this action, we simply find the item starting from the title received from the route. We pass the title and <code class="literal">itemFound</code> to view.</p><p>The last file to create is <code class="literal">view</code> under <code class="literal">views/news/itemDetail.php</code>:</p><div class="informalexample"><pre class="programlisting">Detail item with title &lt;b&gt;&lt;?php echo $title ?&gt;&lt;/b&gt;
+&lt;br /&gt;&lt;br /&gt;
+&lt;?php if($itemFound != null) { ?&gt;
+    &lt;table border="1"&gt;
+        &lt;?php foreach($itemFound as $key=&gt;$value) { ?&gt;
+        &lt;tr&gt;
+            &lt;th&gt;&lt;?php echo $key ?&gt;&lt;/th&gt;
+            &lt;td&gt;&lt;?php echo $value ?&gt;&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;?php } ?&gt;
+    &lt;/table&gt;
+    
+    &lt;br /&gt;
+    
+    Url for this items is: &lt;?php echo yii\helpers\Url::to(['news/item-detail', 'title' =&gt; $title]); ?&gt;
+    
+&lt;?php } else { ?&gt;
+    &lt;i&gt;No item found&lt;/i&gt;
+&lt;?php } ?&gt;</pre></div><div class="mediaobject"><img src="../Images/image00257.jpeg" alt="Creating the rule class"/><div class="caption"><p>Item detail output</p></div></div><p style="clear:both; height: 1em;"> </p><p>In this view, the<a id="id147" class="indexterm"></a> item details (if the item is found) along with how to build the URL of the item detail will be displayed.</p></div></body></html>

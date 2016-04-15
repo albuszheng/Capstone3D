@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Authentication</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Authentication"><div class="titlepage" id="aid-2E6E42"><div><div><h1 class="title"><a id="ch11lvl1sec76"></a>Authentication</h1></div></div></div><p>There are three kinds of<a id="id479" class="indexterm"></a> authentication:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><span class="strong"><strong>HTTP Basic Auth</strong></span> (the <code class="literal">HttpBasicAuth</code> class): This method uses the WWW-Authenticate<a id="id480" class="indexterm"></a> HTTP header to send the <a id="id481" class="indexterm"></a>username and password for every request</li><li class="listitem"><span class="strong"><strong>Query parameter</strong></span> (the <code class="literal">QueryParamAuth</code> class): This method uses an access token passed as <a id="id482" class="indexterm"></a>query parameter<a id="id483" class="indexterm"></a> in the API URL</li><li class="listitem"><span class="strong"><strong>OAuth 2</strong></span> (the <code class="literal">HttpBearerAuth</code> class): This <a id="id484" class="indexterm"></a>method uses an <a id="id485" class="indexterm"></a>access token that is obtained by the consumer from an authorization server and sent to the API server via HTTP bearer tokens</li></ul></div><p>Yii supports all the methods mentioned, but we can also easily create a new one.</p><p>To enable <a id="id486" class="indexterm"></a>authentication, follow these steps:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Configure the user application component in the configuration, setting <code class="literal">enableSession</code> to <code class="literal">false</code> in order to make user authentication status not persistent using a session across requests. Next, set <code class="literal">loginUrl</code> to <code class="literal">null</code> to show the HTTP 403 error instead of redirecting it to the login page.</li><li class="listitem">Specify which authentication method we want to use, configuring the <code class="literal">authenticator</code> behavior in API controller classes.</li><li class="listitem">Implement <code class="literal">yii\web\IdentityInterface::findIdentityByAccessToken()</code> in the user identity class.<div class="note" title="Note"><h3 class="title"><a id="note72"></a>Note</h3><p>The first step ensures that REST requests are really stateless, but if you need to persist or store session data, you can skip this step.</p></div></li></ol><div style="height:10px; width: 1px"></div></div><p>Step 1 can be configured in <code class="literal">api/config/main.php</code>:</p><div class="informalexample"><pre class="programlisting">    'components' =&gt; [
+            ...
+        'user' =&gt; [
+            'identityClass' =&gt; 'common\models\User',
+            'enableSession' =&gt; false,
+            'loginUrl' =&gt; null
+        ],
+];</pre></div><p>Step 2 requires that we extend the <code class="literal">behaviors()</code> controller method, specifying a single authenticator:</p><div class="informalexample"><pre class="programlisting">public function behaviors()
+{
+    $behaviors = parent::behaviors();
+    $behaviors['authenticator'] = [
+        'class' =&gt; yii\filters\auth\HttpBasicAuth::className(),
+    ];
+    return $behaviors;
+}</pre></div><p>Or we can do this by specifying multiple authenticators:</p><div class="informalexample"><pre class="programlisting">public function behaviors()
+{
+    $behaviors = parent::behaviors();
+    $behaviors['authenticator'] = [
+        'class' =&gt; yii\filters\auth\CompositeAuth::className(),
+        'authMethods' =&gt; [
+            yii\filters\auth\HttpBasicAuth::className(),
+            yii\filters\auth\HttpBearerAuth::className(),
+            yii\filters\auth\QueryParamAuth::className(),
+        ],
+    ];
+    return $behaviors;
+}</pre></div><p>Finally, step 3<a id="id487" class="indexterm"></a> requires the implementation of <code class="literal">findIdentityByAccessToken()</code> of the <code class="literal">identityClass</code> specified in the configuration file.</p><p>In a simple scenario, the access token can be stored in a column of the <code class="literal">User</code> table and then retrieved:</p><div class="informalexample"><pre class="programlisting">    public static function findIdentityByAccessToken($token, $type = null)
+    {
+        return static::findOne(['access_token' =&gt; $token]);
+    }</pre></div><p>At the end of the configuration, every request will try to authenticate the user in the <code class="literal">beforeAction()</code> method of the same controller.</p><p>Now, let's take a look at the first authentication method, <code class="literal">HTTPBasicAuth</code>. This method requires us to set the <code class="literal">auth</code> property to the callable PHP function; if it is not set, the username will be used as the access token passed to the <code class="literal">\yii\web\User::loginByAccessToken()</code> method.</p><p>The basic implementation of the <code class="literal">HttpBasicAuth</code> authentication is:</p><div class="informalexample"><pre class="programlisting">public function behaviors()
+{
+    $behaviors = parent::behaviors();
+    $behaviors['authenticator'] = [
+            'class' =&gt; yii\filters\auth\HttpBasicAuth::className(),
+           'auth' =&gt; function($username, $password) {
+            // return null or identity interface
+    // For example search by username and password
+    return \common\models\User::findOne(['username' =&gt; $username, 'password' =&gt; $password);
+           }
+
+           /*
+           'auth' =&gt; [$this, 'httpBasicAuthHandler'],
+           */
+    ];
+    return $behaviors;
+}
+
+public function httpBasicAuthHandler($username, $password)
+{
+    // For example search by username and password
+    return \common\models\User::findOne(['username' =&gt; $username, 'password' =&gt; $password]);
+}</pre></div><p>The callable PHP function stored by the <code class="literal">auth</code> property can be represented as an inline function, or as an array, whose first value is the object and the second is the function name to be called, by passing <code class="literal">$username</code> and <code class="literal">$password</code> parameters.</p><p>Check how PHP is running through <code class="literal">phpinfo()</code>. If you display CGI/FCGI, then you need to add <code class="literal">SetEnvIf Authorization .+ HTTP_AUTHORIZATION=$0</code> in <code class="literal">.htaccess</code> to use HTTP Auth from PHP.</p><p>The second <a id="id488" class="indexterm"></a>authentication method is query parameter, by using the <code class="literal">QueryParamAuth</code> class. With this method, a query parameter named <code class="literal">access-token</code> must be passed to the URL. Then, it will call the <code class="literal">\yii\web\user::loginByAccessToken()</code> method, passing <code class="literal">access-token</code> as the first parameter. This function will return an <code class="literal">IdentityInterface</code> or <code class="literal">null</code>.</p><p>The URL parameter name can be changed using <code class="literal">tokenParam</code> in the authentication declaration:</p><div class="informalexample"><pre class="programlisting">public function behaviors()
+{
+    $behaviors = parent::behaviors();
+    $behaviors['authenticator'] = [
+            'class' =&gt; yii\filters\auth\QueryParamAuth::className(),
+           'tokenParam' =&gt; 'myAccessToken'
+    ];
+    return $behaviors;
+}</pre></div><p>With this configuration, the URL must be <code class="literal">http://hostname/url?myAccessToken=...</code>
+</p><p>The last <a id="id489" class="indexterm"></a>authentication method, OAuth 2, requires an authorization server from which we will get the bearer token to pass to the REST API server, which is similar to <code class="literal">QueryParamAuth</code>.</p><div class="section" title="Example &ndash; using authentication to get a customers list"><div class="titlepage"><div><div><h2 class="title"><a id="ch11lvl2sec49"></a>Example &ndash; using authentication to get a customers list</h2></div></div></div><p>In this example, we are <a id="id490" class="indexterm"></a>going to authenticate ourselves by<a id="id491" class="indexterm"></a> using two methods at the same time: <code class="literal">HTTPBasicAuth</code> and <code class="literal">QueryParamAuth</code>. When using <code class="literal">QueryParamAuth</code> with an access token, we will first call a publically accessible action to get an access token that the user will pass to all the other actions as the query URL parameter.</p><p>We will start by creating a new model from the <code class="literal">Customer</code> database table and putting it into the <code class="literal">common/models</code> folder. Then, we will create a new user in the <code class="literal">User</code> database table using, for example, <code class="literal">foo</code> as the username and <code class="literal">$2a$12$xzGZB29iqBHva4sEYbJeT.pq9g1/VdjoD0S67ciDB30EWSCE18sW6</code> as the password (this is equivalent to the hashed bar text).</p><p>Create a new controller in <code class="literal">api/controllers/CustomersController.php</code> that only extends the <code class="literal">behaviors()</code> method to implement <code class="literal">HTTPBasicAuth</code> and <code class="literal">QueryParamAuth</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace api\controllers;
+
+use yii\rest\ActiveController;
+use yii\filters\auth\CompositeAuth;
+use yii\filters\auth\HttpBasicAuth;
+use yii\filters\auth\QueryParamAuth;
+
+class CustomersController extends ActiveController
+{
+  public $modelClass = 'common\models\Customer';
+
+  public function behaviors()
+  {
+    $behaviors = parent::behaviors();
+
+    $behaviors['authenticator'] = [
+      'class' =&gt; CompositeAuth::className(),
+      'authMethods' =&gt; [
+        [
+          'class' =&gt; HttpBasicAuth::className(),
+          'auth' =&gt; function($username, $password)
+          {
+            $out = null;
+            $user = \common\models\User::findByUsername($username);
+            if($user!=null)
+            {
+              if($user-&gt;validatePassword($password)) $out = $user;
+            }
+            return $out;
+          }
+        ],
+        [
+           'class' =&gt; QueryParamAuth::className(),
+        ]
+      ]
+    ];
+      
+   return $behaviors;
+  }
+}</pre></div><p>In <code class="literal">HTTPBasicAuth</code>, we implement the <code class="literal">auth</code> property inside the configuration array by checking <code class="literal">$username</code> and<a id="id492" class="indexterm"></a> then validating the password. If the<a id="id493" class="indexterm"></a> username and password match each other, it will return the user found or will otherwise be null.</p><p>
+<code class="literal">QueryParamAuth</code>, instead, does not need any property other than the class, since we will use <code class="literal">access-token</code> as the query parameter name. Nevertheless, to complete this task, we need an action that will return the related user's access token after passing both the username and password.</p><p>For this purpose, we will add the <code class="literal">actionAccessTokenByUser()</code> method, which looks for the user with the <code class="literal">$username</code> and <code class="literal">$password</code> parameters passed. If the user already exists, its <code class="literal">access_token</code> property will be updated with a random string, so every time we call this action, <code class="literal">access_token</code> will change and the previous one will be cancelled:</p><div class="informalexample"><pre class="programlisting">    public function actionAccessTokenByUser($username, $passwordHash)
+    {
+        $accessToken = null;
+        
+        $user = \common\models\User::findOne(['username' =&gt; $username, 'password_hash' =&gt; $passwordHash]);
+        if($user!=null)
+        {
+            $user-&gt;access_token = Yii::$app-&gt;security-&gt;generateRandomString();
+            $user-&gt;save();
+            $accessToken = $user-&gt;access_token;
+        }        
+        return [ 'access-token' =&gt; $accessToken ];
+    }</pre></div><p>Finally, to test <code class="literal">HTTPBasicAuth</code>, we need to pass the WWW-Authentication header by calling the <code class="literal">http://hostname/yiiadv/api/web/customers/index</code> URL.</p><p>If we want to<a id="id494" class="indexterm"></a> use <code class="literal">QueryParamAuth</code>, we need to:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Get <code class="literal">access-token</code> returned from <code class="literal">http://hostname/yiiadv/api/web/customers/access-token-by-user</code>, by<a id="id495" class="indexterm"></a> passing the username and hashed password</li><li class="listitem">Call <code class="literal">http://hostname/yiiadv/api/web/customers/index?access-token</code>, by passing the access-token property value received from the previous request</li></ul></div><p>
+<code class="literal">QueryParamAuth</code> calls the <code class="literal">findIdentityByAccessToken()</code> function of <code class="literal">IdentityInterfaces</code>(the user mode ). So, check that the method is implemented, and if it's not, implement it as follows:</p><div class="informalexample"><pre class="programlisting">public static function findIdentityByAccessToken($token, $type = null)
+    {
+    return User::findOne(['access_token' =&gt; $token]);
+    }</pre></div><p>Pay attention, as this way of using access tokens allows the use of the REST API with the same credentials for only one client at a time. This is because any time an <code class="literal">access-token-by-user</code> is called, a new <code class="literal">access-token</code> will be created. Therefore, it should be created a relation one-to-many between users and <code class="literal">access-token</code> in order to provide multiple clients with <a id="id496" class="indexterm"></a>access using the same username/password <a id="id497" class="indexterm"></a>credentials.</p></div></div></body></html>

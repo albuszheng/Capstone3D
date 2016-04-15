@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Multiple grids on one page</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Multiple grids on one page" id="aid-1LCVG1"><div class="titlepage"><div><div><h1 class="title"><a id="ch06lvl1sec50"></a>Multiple grids on one page</h1></div></div></div><p>Every Yii2 widget <a id="id312" class="indexterm"></a>has so much encapsulated in it that using multiple GridView widgets is a simple activity that involves making few changes.</p><p>The only parameters indeed that are not customizable with the DataProvider model class are <code class="literal">pageParam</code> and <code class="literal">sortParam</code>, which define the current page index and the parameters used to order a grid.</p><p>Suppose, for example, that we have two GridViews filled with two different data providers, <code class="literal">$firstDataProvider</code> and <code class="literal">$secondDataProvider</code>.</p><p>In the controller, we will set the <code class="literal">pageParam</code> and <code class="literal">sortParam</code> parameters of each DataProvider:</p><div class="informalexample"><pre class="programlisting">$firstDataProvider-&gt;pagination-&gt;pageParam = 'first-dp-page';
+$firstDataProvider-&gt;sort-&gt;sortParam = 'first-dp-sort';
+
+$secondDataProvider-&gt;pagination-&gt;pageParam = 'second-dp-page';
+$secondDataProvider-&gt;sort-&gt;sortParam = 'second-dp-sort';</pre></div><p>If we miss these <a id="id313" class="indexterm"></a>definitions when changing a page or sorting a column, this action will also affect the other GridView in the same page because we have not distinguished the two grid view parameters.</p><div class="section" title="Example: managing the reservations and rooms grids in the same view"><div class="titlepage"><div><div><h2 class="title"><a id="ch06lvl2sec32"></a>Example: managing the reservations and rooms grids in the same view</h2></div></div></div><p>The purpose of this<a id="id314" class="indexterm"></a> example is to display both the reservations and rooms grids in the same page completely independent from each other.</p><p>In <code class="literal">ReservationsController</code> in <code class="literal">basic/controllers/ReservationsController.php</code>, create a new action named <code class="literal">actionMultipleGrid()</code> with the following content:</p><div class="informalexample"><pre class="programlisting">    public function actionMultipleGrid()
+    {
+        /**
+         * Reservations
+         */
+        $reservationsQuery = \app\models\Reservation::find();
+        $reservationsSearchModel = new \app\models\ReservationSearch();
+        
+        if(isset($_GET['ReservationSearch']))
+        {
+            $reservationsSearchModel-&gt;load( \Yii::$app-&gt;request-&gt;get() );
+            
+            $reservationsQuery-&gt;joinWith(['customer']);
+            $reservationsQuery-&gt;andFilterWhere(
+                ['LIKE', 'customer.surname', $reservationsSearchModel-&gt;getAttribute('customer.surname')]
+            );
+            
+            $reservationsQuery-&gt;andFilterWhere([
+                'id' =&gt; $reservationsSearchModel-&gt;id,
+                'customer_id' =&gt; $reservationsSearchModel-&gt;customer_id,
+                'room_id' =&gt; $reservationsSearchModel-&gt;room_id,
+                'price_per_day' =&gt; $reservationsSearchModel-&gt;price_per_day,
+            
+            ]);
+        }
+        
+        $reservationsDataProvider = new \yii\data\ActiveDataProvider([
+            'query' =&gt; $reservationsQuery,
+            'sort' =&gt; [
+                'sortParam' =&gt; 'reservations-sort-param',
+            ],
+            'pagination' =&gt; [
+                'pageSize' =&gt; 10,
+                'pageParam' =&gt; 'reservations-page-param'
+            ],
+        ]);        
+        
+        
+        /**
+         * Rooms
+         */
+        $roomsQuery = \app\models\Room::find();
+        $roomsSearchModel = new \app\models\Room();
+        
+        if(isset($_GET['Room']))
+        {
+            $roomsSearchModel-&gt;load( \Yii::$app-&gt;request-&gt;get() );
+            
+            $roomsQuery-&gt;andFilterWhere([
+                'id' =&gt; $roomsSearchModel-&gt;id,
+                'floor' =&gt; $roomsSearchModel-&gt;floor,
+                'room_number' =&gt; $roomsSearchModel-&gt;room_number,
+                'has_conditioner' =&gt; $roomsSearchModel-&gt;has_conditioner,
+                'has_phone' =&gt; $roomsSearchModel-&gt;has_conditioner,
+                'has_tv' =&gt; $roomsSearchModel-&gt;has_conditioner,
+                'available_from' =&gt; $roomsSearchModel-&gt;has_conditioner,
+            
+            ]);
+        }
+        
+        $roomsDataProvider = new \yii\data\ActiveDataProvider([
+            'query' =&gt; $roomsQuery,
+            'sort' =&gt; [
+                'sortParam' =&gt; 'rooms-sort-param',
+            ],
+            'pagination' =&gt; [
+                'pageSize' =&gt; 10,
+                'pageParam' =&gt; 'rooms-page-param'
+            ],
+        ]);        
+        
+        return $this-&gt;render('multipleGrid', [
+            'reservationsDataProvider' =&gt; $reservationsDataProvider, 'reservationsSearchModel' =&gt; $reservationsSearchModel,
+            'roomsDataProvider' =&gt; $roomsDataProvider, 'roomsSearchModel' =&gt; $roomsSearchModel,
+        ]);
+        
+    }</pre></div><p>We have detached the<a id="id315" class="indexterm"></a> reservations declaration from the rooms declaration in order to clearly distinguish each from the other. Be careful to ensure that you defined <code class="literal">sortparam</code> and <code class="literal">pageparam</code> for either of the DataProvider.</p><p>Now we create a new view in <code class="literal">basic/views/reservations/multipleGrid.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+use yii\grid\GridView;
+use yii\helpers\Html;
+?&gt;
+
+&lt;h2&gt;Reservations&lt;/h2&gt;
+&lt;?= GridView::widget([
+    'dataProvider' =&gt; $reservationsDataProvider,
+    'filterModel' =&gt; $reservationsSearchModel,
+    'columns' =&gt; [
+        'id',
+        'room_id',
+        'attribute' =&gt; 'customer.surname',
+        'price_per_day',
+        'date_from',
+        'date_to'
+    ],
+]) ?&gt;
+
+&lt;h2&gt;Rooms&lt;/h2&gt;
+&lt;?= GridView::widget([
+    'dataProvider' =&gt; $roomsDataProvider,
+    'filterModel' =&gt; $roomsSearchModel,
+    'columns' =&gt; [
+        'id',
+        'floor',
+        'room_number',        
+        'has_conditioner:boolean',
+        'has_phone:boolean',
+        'has_tv:boolean',
+        'available_from',
+    ],
+]) ?&gt;</pre></div><p>The two grids are <a id="id316" class="indexterm"></a>completely independent and we can now order or change a page without interfering with other grids.</p></div></div></body></html>

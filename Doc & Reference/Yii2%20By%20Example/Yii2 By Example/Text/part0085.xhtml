@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Other forms of export &ndash; RSS</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Other forms of export &ndash; RSS" id="aid-2H1VQ1"><div class="titlepage"><div><div><h1 class="title"><a id="ch11lvl1sec79"></a>Other forms of export &ndash; RSS</h1></div></div></div><p>Yii allows us to create <a id="id519" class="indexterm"></a>a custom format response to output data. The response format can be changed based on the <code class="literal">Accept</code> HTTP header sent by the client or done programmatically. When Yii receives a request, it searches for an available response formatter based on the <code class="literal">Accept</code> HTTP header value and finally calls the <code class="literal">format </code>(<code class="literal">$response</code>) method of the response formatter found.</p><p>Therefore, there are three steps to create <a id="id520" class="indexterm"></a>custom responses:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Implementing the <code class="literal">yii\web\ResponseFormatterInterface</code> interface.</li><li class="listitem">Adding a new custom formatter response property in the configuration file.</li><li class="listitem">Extending the <code class="literal">behaviors()</code> method of the controller to handle specific <code class="literal">Accept</code> HTTP header values.</li></ol><div style="height:10px; width: 1px"></div></div><p>The first step requires us to implement the <code class="literal">yii\web\ResponseFormatterInterface</code> interface and extend its method <code class="literal">format</code> (<code class="literal">$response</code>). Data to be formatted is stored in the <code class="literal">$response-&gt;data</code> property, and the response to client must be filled out in the <code class="literal">$response-&gt;content</code> property:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace api\components;
+
+use yii\web\ResponseFormatterInterface;
+
+class RssResponseFormatter implements ResponseFormatterInterface
+{
+    public function format($response)
+    {
+        $response-&gt;getHeaders()-&gt;set('Content-Type', 'application/rss+xml; charset=UTF-8');
+        if ($response-&gt;data !== null) {
+            $response-&gt;content = "&lt;rss&gt;&lt;/rss&gt;";
+        }
+    }
+}</pre></div><p>The second step requires us to add a reference to the custom response formatter. For this purpose, we will use the <code class="literal">formatters</code> property of <code class="literal">response</code>, which is an array where keys are the format names, and the array values are the corresponding configurations to create formatter objects:</p><div class="informalexample"><pre class="programlisting">         'response' =&gt; [
+            'formatters' =&gt; [
+            
+                'rss' =&gt; [
+                    'format' =&gt; 'raw',
+                    'charset' =&gt; 'UTF-8',
+                    'class' =&gt; '\api\components\RssResponseFormatter',
+                ],                
+                
+            ]
+
+        ],             </pre></div><p>The third step requires us <a id="id521" class="indexterm"></a>to extend the <code class="literal">behaviors()</code> method of the controller in order to handle specific <code class="literal">Accept</code> HTTP header values and indicate to the framework which response formatter to use according to the <code class="literal">Accept</code> HTTP header value, for example:</p><div class="informalexample"><pre class="programlisting">    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['contentNegotiator']['formats']['application/rss+xml'] = 'rss';
+        return $behaviors;
+    }    </pre></div><p>When a client sends a request with the <code class="literal">Accept</code> HTTP header set to <code class="literal">application/rss+xml</code>, this controller will use the <code class="literal">rss</code> formatter (read from the configuration file) to prepare the response. If we specify a formatter that does not exist in the configuration file, we will get <code class="literal">InvalidConfigException</code>.</p><div class="section" title="Example &ndash; creating an RSS with a list of available rooms"><div class="titlepage"><div><div><h2 class="title"><a id="ch11lvl2sec52"></a>Example &ndash; creating an RSS with a list of available rooms</h2></div></div></div><p>Now, let's look at how to<a id="id522" class="indexterm"></a> create an RSS response formatter for the available rooms.</p><p>First of all, we must create the complete response formatter component in <code class="literal">api/components/RssResponseFormatter.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace api\components;
+
+use yii\web\ResponseFormatterInterface;
+
+class RssResponseFormatter implements ResponseFormatterInterface
+{
+    public function format($response)
+    {
+        $response-&gt;getHeaders()-&gt;set('Content-Type', 'application/rss+xml; charset=UTF-8');
+        if ($response-&gt;data !== null) {
+            $rssOut = '&lt;?xml version="1.0" encoding="UTF-8"?&gt;';
+            $rssOut .= '&lt;rss&gt;';
+            $rssOut .= '&lt;channel&gt;';
+            foreach($response-&gt;data as $d)
+            {
+                $rssOut .= '&lt;item&gt;';    
+                $rssOut .= sprintf('&lt;title&gt;Room #%d at floor %d&lt;/title&gt;', $d['id'], $d['floor']);
+                $rssOut .= '&lt;/item&gt;';
+            }
+            $rssOut .= '&lt;/channel&gt;';
+            $rssOut .= '&lt;/rss&gt;';
+            
+            $response-&gt;content = $rssOut;;
+        }
+    }
+}</pre></div><p>The RSS response <a id="id523" class="indexterm"></a>formatter must implement the <code class="literal">format</code> (<code class="literal">$response</code>) method to correctly implement <code class="literal">yii\web\ResponseFormatterInterface</code>. When the <code class="literal">format</code> (<code class="literal">$response</code>) method is invoked, it will set the <code class="literal">Content-Type</code> HTTP header to <code class="literal">application/rss+xml</code>, use data that is ready to be sent from the <code class="literal">$response-&gt;data</code> property, and fill in the <code class="literal">$response-&gt;content</code> property, which is the final content received by the client.</p><p>Then, we must change the <code class="literal">api/config/main.php</code> file to add the <code class="literal">response</code> property with the support of the new response formatter:</p><div class="informalexample"><pre class="programlisting">        'response' =&gt; [
+            'formatters' =&gt; [
+            
+                'rss' =&gt; [
+                    'format' =&gt; 'raw',
+                    'charset' =&gt; 'UTF-8',
+                    'class' =&gt; '\api\components\RssResponseFormatter',
+                ],                
+                
+            ]
+        ],</pre></div><p>The <code class="literal">formatter</code> property is an array of the response formatter where the keys are the format names and the values are the corresponding configurations to create formatter objects.</p><p>In this case, we configured a new formatter called <code class="literal">rss</code> that represents the <code class="literal">\api\components\RssResponseFormatter</code> component.</p><p>Finally, we have to configure the <code class="literal">behaviors()</code> method in the controller to handle the <code class="literal">Accept</code> HTTP header with the <code class="literal">application/rss+xml</code> value.</p><p>Open the <code class="literal">RoomsController</code> file in <code class="literal">api/controllers/RoomsController.php</code> and add the extension to the <code class="literal">behaviors()</code> method:</p><div class="informalexample"><pre class="programlisting">    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['contentNegotiator']['formats']['application/rss+xml'] = 'rss';
+        return $behaviors;
+    }    </pre></div><p>Starting from the base<a id="id524" class="indexterm"></a> configuration of <code class="literal">$behaviors</code> inherited from <code class="literal">parent::behaviors()</code>, the <code class="literal">contentNegotiator</code> attribute contains a reference to <code class="literal">formats</code> for the <code class="literal">Accept</code> HTTP header value. The array keys are the <code class="literal">Accept</code> HTTP header value that is supported, and the values are the corresponding response formatter.</p><p>If we try to make the following request:</p><div class="informalexample"><pre class="programlisting">GET /yiiadv/api/web/rooms/index HTTP/1.1
+Host: hostname
+Accept: application/rss+xml</pre></div><p>We should display the following response:</p><div class="mediaobject"><img src="../Images/image00294.jpeg" alt="Example &ndash; creating an RSS with a list of available rooms"/><div class="caption"><p>The RSS response output</p></div></div><p style="clear:both; height: 1em;"> </p><p>We can also use the response formatter programmatically. It is enough to set the format of the <code class="literal">Yii::$app-&gt;response</code> application component to a configured response formatter in the configuration file.</p><p>For example, we can add a new action named <code class="literal">actionIndexRss</code> in <code class="literal">RoomsController</code> that will output data<a id="id525" class="indexterm"></a> using <code class="literal">RssResponseFormatter</code> in this way:</p><div class="informalexample"><pre class="programlisting">    public function actionIndexRss()
+    {
+        \Yii::$app-&gt;response-&gt;format = 'rss';
+        
+        $provider = new \yii\data\ActiveDataProvider([
+            'query' =&gt; \common\models\Room::find(),
+            'pagination' =&gt; [
+                'pageSize' =&gt; 20,
+            ],
+        ]);
+        
+        return $provider;
+    }</pre></div></div></div></body></html>

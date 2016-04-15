@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>How to save a model from a form</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="How to save a model from a form"><div class="titlepage" id="aid-1AT9A2"><div><div><h1 class="title"><a id="ch05lvl1sec39"></a>How to save a model from a form</h1></div></div></div><p>Let's now look at how to save a model from a form, which could be a new or an updated model.</p><p>The steps you need to follow are:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">In the <code class="literal">action</code> method, create a new model or get an existing model.</li><li class="listitem">In the <code class="literal">action</code> method, check whether there is data in the <code class="literal">$_POST</code> array.</li><li class="listitem">If there is data in <code class="literal">$_POST</code>, fill in the <code class="literal">attributes</code> property of the model with data from <code class="literal">$_POST</code> and call the <code class="literal">save()</code> method of the model; if <code class="literal">save()</code> returns true, redirect the user to another page (the details page, for example).</li></ol><div style="height:10px; width: 1px"></div></div><p>From now on, we will continue to use widgets and helper classes provided by the framework. In this case, the HTML form will be rendered using the <code class="literal">yii\widget\ActiveForm</code> class.</p><p>The most simple form we can write is the following:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+use yii\widgets\ActiveForm;
+
+$form = ActiveForm::begin([
+    'id' =&gt; 'login-form',
+]) ?&gt;
+    &hellip;
+    &hellip;
+    &hellip;
+&lt;?php ActiveForm::end() ?&gt;</pre></div><p>This code <a id="id257" class="indexterm"></a>generates a form HTML tag with <code class="literal">login-form</code> as the <code class="literal">id</code> attribute and empty content; the <code class="literal">method</code> and <code class="literal">action</code> attributes are respectively, by default, the post and same action URL that generated the form. Other properties about AJAX validation and client validation can be set, as you will see further on.</p><p>The widget <code class="literal">$form</code> is created by employing a static method <code class="literal">ActiveForm::begin</code>, passing as an array that contains attributes of a form HTML tag (<code class="literal">id</code>, <code class="literal">action</code>, <code class="literal">method</code>, and so on) a configuration parameter and a key named <code class="literal">options</code> to specify all the extra options that we want to pass to form the HTML tag. Finally, the form will be completed when we call the static method <code class="literal">ActiveForm::end()</code>. Between the <code class="literal">begin()</code> and <code class="literal">end()</code> methods of the form, we can insert all the content needed.</p><p>In particular, the input fields of the form can be managed using the ActiveField widget. The ActiveField widget related to an attribute of model is created by calling the <code class="literal">field()</code> method of the <code class="literal">$form</code> object:</p><div class="informalexample"><pre class="programlisting">$field = $form-&gt;field($model, 'attribute');</pre></div><p>The object returned from the <code class="literal">field()</code> method is a generic field that we can specialize by simply applying other methods to generate all the common kinds of input fields: hidden, text, password, file, and so on. This returns the same ActiveField <code class="literal">$field</code> object, and consequently other methods can be applied in a cascade.</p><p>A text field input is created with:</p><div class="informalexample"><pre class="programlisting">$textInputField = $field-&gt;textInput();</pre></div><p>Or can be created simply like this:</p><div class="informalexample"><pre class="programlisting">$textInputField = $form-&gt;field($model, 'attribute')-&gt;textInput();</pre></div><p>This variable <code class="literal">$textInputField</code> is again an ActiveField (the same object of <code class="literal">$field</code>), so we can apply all the other methods required to complete our input field; for example, if we need to place a hint in input field, we can use:</p><div class="informalexample"><pre class="programlisting">$textInputField-&gt;hint('Enter value');</pre></div><p>Or we can simply use:</p><div class="informalexample"><pre class="programlisting">$textInputField = $form-&gt;field($model, 'attribute')-&gt;textInput()-&gt;hint('Enter value');</pre></div><p>Additional framework in addition automatically takes into account the attribute's validation rules, which are defined in the <code class="literal">rules()</code> method of the model class. For example, if an attribute is required and we click on it and pass it to another field without typing anything, an error alert will be displayed reminding us that the field is required.</p><p>When an<a id="id258" class="indexterm"></a> input field is created using the ActiveField widget, the <code class="literal">id</code> and <code class="literal">name</code> properties of this input will have this format: <code class="literal">model-class-name_attribute-name</code> for <code class="literal">id</code> and <code class="literal">model-class-name[attribute-name]</code> for <code class="literal">name</code>. This means that all the attributes of the model will be passed to the controller action when we submit the form grouped in a container array named the same as the model class.</p><p>For example, if the <code class="literal">$model</code> class is <code class="literal">Room</code> and the attribute is <code class="literal">floor</code> whose content is <code class="literal">12</code>, create a text field from the <code class="literal">$form</code> object:</p><div class="informalexample"><pre class="programlisting">&lt;?php echo $floorInputField = $form-&gt;field($model, 'floor')
+-&gt;textInput()-&gt;hint('Enter value for floor');</pre></div><p>This outputs the following HTML:</p><div class="informalexample"><pre class="programlisting">&lt;input id="Room_floor" name="Room[floor]" value="12" placeholder="Enter value for floor" /&gt;</pre></div><div class="section" title="Example &ndash; creating and updating a room from a form"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec28"></a>Example &ndash; creating and updating a room from a form</h2></div></div></div><p>Just from following <a id="id259" class="indexterm"></a>the instructions in the previous paragraph, we will try to<a id="id260" class="indexterm"></a> create and update a room from the HTML form.</p><p>We now update the previously created <code class="literal">actionCreate()</code> method in <code class="literal">RoomsController</code> with some code to instantiate a new model object, check the content of the <code class="literal">$_POST</code> array, and if it is set, we call <code class="literal">save()</code> on the model:</p><div class="informalexample"><pre class="programlisting">    public function actionCreate()
+    {
+        // 1. Create a new Room instance;
+        $model = new Room();
+        
+        // 2. Check if $_POST['Room'] contains data;
+        if(isset($_POST['Room']))
+        {
+            $model-&gt;attributes = $_POST['Room'];
+            
+            // Save model
+            if($model-&gt;save())
+            {
+             // If save() success, redirect user to action view.
+             return $this-&gt;redirect(['view', 'id' =&gt; $model-&gt;id]);
+            }
+        }
+
+        return $this-&gt;render('create', ['model' =&gt; $model]);
+    }</pre></div><p>To update the<a id="id261" class="indexterm"></a> view<a id="id262" class="indexterm"></a> in <code class="literal">basic/views/rooms/create.php</code>, pass:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+use yii\widgets\ActiveForm;
+use yii\helpers\Html;
+?&gt;
+ 
+&lt;div class="row"&gt;
+
+    &lt;div class="col-lg-6"&gt;
+        
+        &lt;h2&gt;Create a new room&lt;/h2&gt;
+            
+        &lt;?php $form = ActiveForm::begin(['id' =&gt; 'room-form']) ?&gt;
+
+        &lt;?php echo $form-&gt;field($model, 'floor')-&gt;textInput(); ?&gt;
+        &lt;?php echo $form-&gt;field($model, 'room_number')-&gt;textInput(); ?&gt;
+        &lt;?php echo $form-&gt;field($model, 'has_conditioner')-&gt;checkbox(); ?&gt;
+        &lt;?php echo $form-&gt;field($model, 'has_tv')-&gt;checkbox(); ?&gt;
+        &lt;?php echo $form-&gt;field($model, 'has_phone')-&gt;checkbox(); ?&gt;
+        &lt;?php echo $form-&gt;field($model, 'available_from')-&gt;textInput(); ?&gt;
+        &lt;?php echo $form-&gt;field($model, 'price_per_day')-&gt;textInput(); ?&gt;
+        &lt;?php echo $form-&gt;field($model, 'description')-&gt;textArea(); ?&gt;
+        &lt;?php echo Html::submitButton('Save', ['class' =&gt; 'btn btn-primary']); ?&gt;
+        &lt;?php ActiveForm::end() ?&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</pre></div><p>By default, <code class="literal">ActiveForm::begin()</code> creates a form that has client validation enabled; therefore, the form will be submitted only when all the validation rules are satisfied as the <code class="literal">submit</code> button is rendered using <code class="literal">yii\helpers\Html</code>.</p><p>Pay attention<a id="id263" class="indexterm"></a> to the top of view that contains the <code class="literal">use</code> keyword to define<a id="id264" class="indexterm"></a> the complete path of the classes <code class="literal">Html</code> and <code class="literal">ActiveForm</code>:</p><div class="informalexample"><pre class="programlisting">use yii\widgets\ActiveForm;
+use yii\helpers\Html;</pre></div><p>Point your browser to <code class="literal">http://hostname/basic/rooms/create</code> to display the form to create a new room. The following screenshot shows what you should display, reporting in it some particular conditions:</p><div class="mediaobject"><img src="../Images/image00269.jpeg" alt="Example &ndash; creating and updating a room from a form"/><div class="caption"><p>The form to create a new room</p></div></div><p style="clear:both; height: 1em;"> </p><p>This screenshot presents different states of fields: the floor input has a red border because it has the wrong type of content (it must be an integer!), the room number has a green border to indicate that is correct, and the <span class="strong"><strong>Available From</strong></span> field has a red border because it is required but the user left it blank. The framework provides a more concise form to fill in attributes if <code class="literal">$_POST</code> data is available:</p><div class="informalexample"><pre class="programlisting">$model-&gt;load(Yii::$app-&gt;request-&gt;post());</pre></div><p>This fills in the attributes of the model if the <code class="literal">$_POST[model-class]</code> content is available, and with this suggestion we can change the <code class="literal">actionCreate</code> content as follows:</p><div class="informalexample"><pre class="programlisting">    public function actionCreate()
+    {
+        // 1. Create a new Room instance;
+        $model = new Room();
+        
+        // 2. Check if $_POST['Room'] contains data and save model;
+        if( $model-&gt;load(Yii::$app-&gt;request-&gt;post()) &amp;&amp; ($model-&gt;save()) )
+        {
+            return $this-&gt;redirect(['detail', 'id' =&gt; $model-&gt;id]);
+        }
+        
+        return $this-&gt;render('create', ['model' =&gt; $model]);
+    }</pre></div><p>This is<a id="id265" class="indexterm"></a> extraordinarily concise! Similarly, we can handle the <a id="id266" class="indexterm"></a>update action to save changes to an existing model.</p><p>We can make a reusable form by putting its content in an external. Create a new file in <code class="literal">basic/views/rooms/_form.php</code> (the first underscore indicates that this is a view that is includable in other views) and cut and paste the code about form generation from the <code class="literal">create</code> view to this new <code class="literal">_form</code> view:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+use yii\widgets\ActiveForm;
+use yii\helpers\Html;
+?&gt;
+&lt;?php $form = ActiveForm::begin(['id' =&gt; 'room-form']) ?&gt;
+
+&lt;?php echo $form-&gt;field($model, 'floor')-&gt;textInput(); ?&gt;
+&lt;?php echo $form-&gt;field($model, 'room_number')-&gt;textInput(); ?&gt;
+&lt;?php echo $form-&gt;field($model, 'has_conditioner')-&gt;checkbox(); ?&gt;
+&lt;?php echo $form-&gt;field($model, 'has_tv')-&gt;checkbox(); ?&gt;
+&lt;?php echo $form-&gt;field($model, 'has_phone')-&gt;checkbox(); ?&gt;
+&lt;?php echo $form-&gt;field($model, 'available_from')-&gt;textInput(); ?&gt;
+&lt;?php echo $form-&gt;field($model, 'price_per_day')-&gt;textInput(); ?&gt;
+&lt;?php echo $form-&gt;field($model, 'description')-&gt;textArea(); ?&gt;
+
+&lt;?php echo Html::submitButton('Create', ['class' =&gt; 'btn btn-primary']); ?&gt;
+
+&lt;?php ActiveForm::end() ?&gt;</pre></div><p>In the <code class="literal">basic/views/rooms/create.php</code> file, instead of the form code, just put the code to render the <code class="literal">_form</code> view in it:</p><div class="informalexample"><pre class="programlisting">&lt;?php echo $this-&gt;render('_form', ['model' =&gt; $model]); ?&gt;</pre></div><div class="note" title="Note"><h3 class="title"><a id="note35"></a>Note</h3><p>When we modify the <code class="literal">create</code> view, remember to pass <code class="literal">$model</code> as the second parameter to render the <code class="literal">_form</code> view.</p></div><p>We are ready to<a id="id267" class="indexterm"></a> build the update flow in order to update the room <a id="id268" class="indexterm"></a>content from a form. Firstly, create an action in <code class="literal">basic/controllers/RoomsController.php</code> named <code class="literal">actionUpdate</code>, passing <code class="literal">$id</code> as a parameter that identifies the primary key to find the model.</p><p>In this action, we will put some code to get the model based on the <code class="literal">id</code> primary key, check whether the <code class="literal">$_POST</code> array contains data, and then save the model:</p><div class="informalexample"><pre class="programlisting">    public function actionUpdate($id)
+    {
+        // 1. Create a new Room instance;
+        $model = Room::findOne($id);
+        
+        // 2. Check if $_POST['Room'] contains data and save model;
+        if( ($model!=null) &amp;&amp; $model-&gt;load(Yii::$app-&gt;request-&gt;post()) &amp;&amp; ($model-&gt;save()) )
+        {
+            return $this-&gt;redirect(['detail', 'id' =&gt; $model-&gt;id]);
+        }
+        
+        return $this-&gt;render('update', ['model' =&gt; $model]);
+    }</pre></div><p>This is basically equivalent to the code for the <code class="literal">create</code> action. Now, create the <code class="literal">update</code> view in <code class="literal">basic/views/rooms/update.php</code> with the following content:</p><div class="informalexample"><pre class="programlisting">&lt;div class="row"&gt;
+
+    &lt;div class="col-lg-6"&gt;
+        
+        &lt;h2&gt;Update a room&lt;/h2&gt;
+        &lt;?php echo $this-&gt;render('_form', ['model' =&gt; $model]); ?&gt;
+    &lt;/div&gt;
+
+&lt;/div&gt;</pre></div><p>From the database, check for one existing room and type the <code class="literal">id</code> value of this URL in your browser: <code class="literal">http://hostname/basic/rooms/update?id=id-found</code>.</p><p>For example, if <code class="literal">id</code> of an existing room is <code class="literal">1</code>, type this URL in your browser:</p><p>
+<code class="literal">http://hostname/basic/rooms/update?id=1</code>
+</p><p>This will show <a id="id269" class="indexterm"></a>a form with the filled in field based on the model attributes' content.</p><p>This example is <a id="id270" class="indexterm"></a>complete, having built the <code class="literal">detail</code> view, which shows the content of model attributes. Create an action named <code class="literal">actionDetail</code>, passing <code class="literal">$id</code> as a parameter, which identifies the primary key to find the model:</p><div class="informalexample"><pre class="programlisting">    public function actionDetail($id)
+    {
+        // 1. Create a new Room instance;
+        $model = Room::findOne($id);
+        
+        return $this-&gt;render('detail', ['model' =&gt; $model]);
+    }</pre></div><p>Then, create the <code class="literal">detail</code> view to display some of the model attributes' values in <code class="literal">basic/views/rooms/detail.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;table class="table"&gt;
+    &lt;tr&gt;
+        &lt;th&gt;ID&lt;/th&gt;
+        &lt;td&gt;&lt;?php echo $model['id'] ?&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Floor&lt;/th&gt;
+        &lt;td&gt;&lt;?php echo $model['floor'] ?&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Room number&lt;/th&gt;
+        &lt;td&gt;&lt;?php echo $model['room_number'] ?&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/table&gt;</pre></div><p>Now after successfully creating or updating model, the detail view will be displayed with the content of some attributes of the model.</p></div></div></body></html>

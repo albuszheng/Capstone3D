@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Saving linked models in the same view</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Saving linked models in the same view" id="aid-1S2JE1"><div class="titlepage"><div><div><h1 class="title"><a id="ch07lvl1sec57"></a>Saving linked models in the same view</h1></div></div></div><p>It could be convenient<a id="id358" class="indexterm"></a> to save different kind of models in the same view. This approach allows us to save time and to navigate from every single detail until a final item that merges all data is created. Handling different kind of models linked to each other it is not so different from what we have seen so far. The only point to take care of is the link (foreign keys) between models, which we must ensure is valid.</p><p>Therefore, the controller action will receive the <code class="literal">$_POST</code> data encapsulated in the model's class name container; if we are thinking, for example, of the customer and reservation models, we will have two arrays in the <code class="literal">$_POST</code> variable, <code class="literal">$_POST['Customer']</code> and <code class="literal">$_POST['Reservation']</code>, containing all the fields about the customer and reservation models.</p><p>Then all data must be saved together. It is advisable to use a database transaction while saving data because the action can be considered as ended only when all the data has been saved.</p><p>Using database transactions in Yii2 is incredibly simple! A database transaction starts with calling <code class="literal">beginTransaction()</code> on the database connection object and finishes with calling the <code class="literal">commit()</code> or <code class="literal">rollback()</code> method on the database transaction object created by <code class="literal">beginTransaction()</code>.</p><p>To start a transaction:</p><div class="informalexample"><pre class="programlisting">$dbTransaction = Yii::$app-&gt;db-&gt;beginTransaction();</pre></div><p>Commit a transaction, to <a id="id359" class="indexterm"></a>save all the database activities:</p><div class="informalexample"><pre class="programlisting">$dbTransaction-&gt;commit();</pre></div><p>Rollback a transaction, to clear all the database activities:</p><div class="informalexample"><pre class="programlisting">$dbTransaction-&gt;rollback();</pre></div><p>So, if a customer was saved and the reservation was not (for any possible reason), our data would be partial and incomplete. Using a database transaction, we will avoid this danger.</p><div class="section" title="Example &ndash; creating a customer and reservation in the same view"><div class="titlepage"><div><div><h2 class="title"><a id="ch07lvl2sec38"></a>Example &ndash; creating a customer and reservation in the same view</h2></div></div></div><p>We now want to create both the<a id="id360" class="indexterm"></a> customer and reservation models in the same view in a single step. In this way, we will have a box containing the customer model fields and a box with the reservation model fields in the view.</p><p>Create a view in <code class="literal">basic/views/reservations/createCustomerAndReservation.php</code>, with the fields from the customer and reservation models:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+use yii\helpers\Html;
+use yii\widgets\ActiveForm;
+use yii\helpers\ArrayHelper;
+use \app\models\Room;
+?&gt;
+
+&lt;div class="room-form"&gt;
+
+    &lt;?php $form = ActiveForm::begin(); ?&gt;
+
+    &lt;div class="model"&gt;
+        
+      &lt;?php echo $form-&gt;errorSummary([$customer, $reservation]); ?&gt;
+
+      &lt;h2&gt;Customer&lt;/h2&gt;        
+      &lt;?= $form-&gt;field($customer, "name")-&gt;textInput() ?&gt;
+      &lt;?= $form-&gt;field($customer, "surname")-&gt;textInput() ?&gt;
+      &lt;?= $form-&gt;field($customer, "phone_number")-&gt;textInput() ?&gt;
+
+      &lt;h2&gt;Reservation&lt;/h2&gt;        
+      &lt;?= $form-&gt;field($reservation, "room_id")-&gt;dropDownList(ArrayHelper::map(Room::find()-&gt;all(), 'id', function($room, $defaultValue) {
+          return sprintf('Room n.%d at floor %d', $room-&gt;room_number, $room-&gt;floor);
+      })); ?&gt;
+      &lt;?= $form-&gt;field($reservation, "price_per_day")-&gt;textInput() ?&gt;
+      &lt;?= $form-&gt;field($reservation, "date_from")-&gt;textInput() ?&gt;
+      &lt;?= $form-&gt;field($reservation, "date_to")-&gt;textInput() ?&gt;
+      
+    &lt;/div&gt;
+
+    &lt;div class="form-group"&gt;
+        &lt;?= Html::submitButton('Save customer and room', ['class' =&gt; 'btn btn-primary']) ?&gt;
+    &lt;/div&gt;
+
+    &lt;?php ActiveForm::end(); ?&gt;
+
+&lt;/div&gt;</pre></div><p>We have created <a id="id361" class="indexterm"></a>two blocks in the form to fill out the fields for the customer and the reservation.</p><p>Now, create a new action named <code class="literal">actionCreateCustomerAndReservation</code> in <code class="literal">ReservationsController</code> in <code class="literal">basic/controllers/ReservationsController.php</code>:</p><div class="informalexample"><pre class="programlisting">    public function actionCreateCustomerAndReservation()
+    {
+        $customer = new \app\models\Customer();
+        $reservation = new \app\models\Reservation();
+
+        // It is useful to set fake customer_id to reservation model to avoid validation error (because customer_id is mandatory)
+        $reservation-&gt;customer_id = 0;
+        
+        if(
+            $customer-&gt;load(Yii::$app-&gt;request-&gt;post())
+            &amp;&amp;
+            $reservation-&gt;load(Yii::$app-&gt;request-&gt;post())
+            &amp;&amp;
+            $customer-&gt;validate()
+            &amp;&amp;
+            $reservation-&gt;validate()
+        )
+        {
+        
+            $dbTrans = Yii::$app-&gt;db-&gt;beginTransaction();
+            
+            $customerSaved = $customer-&gt;save();
+            
+            if($customerSaved)
+            {
+                $reservation-&gt;customer_id = $customer-&gt;id;
+                $reservationSaved = $reservation-&gt;save();
+                
+                if($reservationSaved)
+                {
+                    $dbTrans-&gt;commit();
+                }
+                else {
+                    $dbTrans-&gt;rollback();
+                }                
+            }
+            else {
+                $dbTrans-&gt;rollback();
+            }
+        }
+        
+        
+        return $this-&gt;render('createCustomerAndReservation', [ 'customer' =&gt; $customer, 'reservation' =&gt; $reservation ]);
+    }</pre></div><p>Ensure you pay<a id="id362" class="indexterm"></a> attention to these two matters:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">$reservation-&gt;customer_id = 0</code>: With this code, we avoid the validation error relating to the <code class="literal">customer_id</code> requirement that appears when <code class="literal">$reservation</code> is validated</li><li class="listitem">The database transaction will be committed only if the customer model and reservation model's save action are completed</li></ul></div><p>Browse to <code class="literal">http://hostname/basic/web/reservations/create-customer-and-reservation</code> to see the complete page:</p><div class="mediaobject"><img src="../Images/image00281.jpeg" alt="Example &ndash; creating a customer and reservation in the same view"/><div class="caption"><p>A customer and reservation created together</p></div></div><p style="clear:both; height: 1em;"> </p></div></div></body></html>

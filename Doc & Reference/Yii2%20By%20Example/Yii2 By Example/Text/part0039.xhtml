@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Uploading files</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Uploading files" id="aid-1565U1"><div class="titlepage"><div><div><h1 class="title"><a id="ch04lvl1sec33"></a>Uploading files</h1></div></div></div><p>The common<a id="id167" class="indexterm"></a> task when data is sent from view to controller is uploading files. Also, in this case, Yii2 provides a convenient helper to handle this task: <code class="literal">yii\web\UploadedFile</code>. This class has two important methods: <code class="literal">getInstance()</code> (in plural form <code class="literal">getInstances()</code>) and <code class="literal">saveAs()</code>.</p><p>The first method, <code class="literal">getInstance()</code>, allows us to get the file from the form's input field, while the second method, <code class="literal">saveAs()</code>, as its name implies, allows us to save file input field content to the server filesystem.</p><p>Before we start with the example, it is important to create a folder that will contain the uploaded files. The best place to create this folder is at the root directory of the application. So create a folder named <code class="literal">uploadedfiles</code> under the <code class="literal">basic/</code> folder.</p><div class="note" title="Note"><h3 class="title"><a id="note18"></a>Note</h3><p>Make sure that this folder is writable.</p></div><p>Next, to centralize configuration, define an alias for this new folder, so that we can change this path from app configuration. Enter in <code class="literal">basic/config/web.php</code> and append the <code class="literal">aliases</code> property, if it<a id="id168" class="indexterm"></a> does not exist, to the <code class="literal">$config</code> array with these lines:</p><div class="informalexample"><pre class="programlisting">'aliases' =&gt;
+[
+        '@uploadedfilesdir' =&gt; '@app/uploadedfiles'
+],</pre></div><div class="note" title="Note"><h3 class="title"><a id="note19"></a>Note</h3><p>
+<code class="literal">@app</code> is a system aliases that defines the application's root directory.</p></div><div class="section" title="Example &ndash; uploading an image of a room"><div class="titlepage"><div><div><h2 class="title"><a id="ch04lvl2sec23"></a>Example &ndash; uploading an image of a room</h2></div></div></div><p>In this example, we will<a id="id169" class="indexterm"></a> see how to upload an image of a room.</p><p>We need to make changes in model, view, and controller. Let's start with model.</p><p>In model, we need to add a new property, named <code class="literal">fileImage</code>, with its specific rule.</p><p>This is the final version of Model:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace app\models;
+use Yii;
+use yii\base\Model;
+class Room extends Model
+{
+    public $floor; 
+    public $room_number;
+    public $has_conditioner;
+    public $has_tv;
+    public $has_phone;
+    public $available_from;
+    public $price_per_day;
+    public $description;
+    
+    public $fileImage;
+    
+    public function attributeLabels()
+    {
+        return [
+            'floor' =&gt; 'Floor',
+            'room_number' =&gt; 'Room number',
+            'has_conditioner' =&gt; 'Conditioner available',
+            'has_tv' =&gt; 'TV available',
+            'has_phone' =&gt; 'Phone available',
+            'available_from' =&gt; 'Available from',
+            'price_per_day' =&gt; 'Price (Eur/day)',
+            'description' =&gt; 'Description',
+            'fileImage' =&gt; 'Image'
+        ];
+    }
+    
+    /**
+     * @return array the validation rules.
+     */
+    public function rules()
+    {
+        return [
+            ['floor', 'integer', 'min' =&gt; 0],
+            ['room_number', 'integer', 'min' =&gt; 0],
+            [['has_conditioner', 'has_tv', 'has_phone'], 'integer', 'min' =&gt; 0, 'max' =&gt; 1],
+            ['available_from', 'date', 'format' =&gt; 'php:Y-m-d'],
+            ['price_per_day', 'number', 'min' =&gt; 0],
+            ['description', 'string', 'max' =&gt; 500],
+            
+            ['fileImage', 'file']
+        ];
+    } 
+}</pre></div><p>In rules, for the <code class="literal">fileImage</code> field, we can add many types of validation; for example, check if required, check mime type (<code class="literal">.gif</code>, <code class="literal">.jpeg</code>, and <code class="literal">.png</code>).</p><p>Next, we will use <a id="id170" class="indexterm"></a>the static method <code class="literal">getInstance()</code> of the <code class="literal">UploadedFile</code> class in controller, to get the file from the input file field and then use <code class="literal">saveAs</code> to save in the specific folder. This is the final version of <code class="literal">RoomsController</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace app\controllers;
+
+use Yii;
+use yii\web\Controller;
+use app\models\Room;
+
+class RoomsController extends Controller
+{
+    public function actionCreate()
+    {
+        $model = new Room();
+        $modelCanSave = false;
+
+        if ($model-&gt;load(Yii::$app-&gt;request-&gt;post()) &amp;&amp; $model-&gt;validate()) {
+
+            $model-&gt;fileImage = UploadedFile::getInstance($model, 'fileImage');
+
+            if ($model-&gt;fileImage) { 
+                $model-&gt;fileImage-&gt;saveAs(Yii::getAlias('@uploadedfilesdir/' . $model-&gt;fileImage-&gt;baseName . '.' . $model-&gt;fileImage-&gt;extension)));
+            } 
+            
+            $modelCanSave = true;
+        }
+        
+        return $this-&gt;render('create', [
+            'model' =&gt; $model,
+            'modelSaved' =&gt; $modelCanSave
+        ]);
+    }
+}</pre></div><p>
+<code class="literal">UploadedFile::getInstance</code> gets the file from the <code class="literal">$_FILES</code> array to fill the <code class="literal">fileImage</code> property of Model with its data.</p><p>The last thing to do<a id="id171" class="indexterm"></a> is to update the <code class="literal">create</code> view content, by appending the <code class="literal">fileInput</code> field. This is the final version:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+use yii\helpers\Html;
+use yii\widgets\ActiveForm;
+use yii\helpers\Url;
+use yii\helpers\ArrayHelper;
+?&gt;
+
+&lt;?php if($modelCanSave) { ?&gt;
+&lt;div class="alert alert-success"&gt;
+    Model ready to be saved!
+    &lt;br /&gt;&lt;br /&gt;
+    These are values: &lt;br /&gt;
+    Floor: &lt;?php echo $model-&gt;floor; ?&gt; &lt;br /&gt;
+    Room Number: &lt;?php echo $model-&gt;room_number; ?&gt; &lt;br /&gt;
+    Has conditioner: &lt;?php echo Yii::$app-&gt;formatter-&gt;asBoolean($model-&gt;has_conditioner); ?&gt; &lt;br /&gt;
+    Has TV: &lt;?php echo Yii::$app-&gt;formatter-&gt;asBoolean($model-&gt;has_tv); ?&gt; &lt;br /&gt;
+    Has phone: &lt;?php echo Yii::$app-&gt;formatter-&gt;asBoolean($model-&gt;has_phone); ?&gt; &lt;br /&gt;
+    Available from (mm/dd/yyyy): &lt;?php echo Yii::$app-&gt;formatter-&gt;asDate($model-&gt;available_from,'php:m/d/Y'); ?&gt; &lt;br /&gt;
+    Price per day: &lt;?php echo Yii::$app-&gt;formatter-&gt;asCurrency($model-&gt;price_per_day,'EUR'); ?&gt; &lt;br /&gt;
+    Image:
+    &lt;?php if(isset($model-&gt;fileImage)) { ?&gt;
+        &lt;img src="&lt;?php echo Url::to('@uploadedfilesdir/'.$model-&gt;fileImage-&gt;name) ?&gt;" /&gt;
+    &lt;?php } ?&gt;
+&lt;/div&gt;
+&lt;?php } ?&gt;
+
+&lt;?php $form = ActiveForm::begin(['options' =&gt; ['enctype' =&gt; 'multipart/form-data']]); ?&gt;  
+&lt;div class="row"&gt;
+    &lt;div class="col-lg-12"&gt;
+        &lt;h1&gt;Room form&lt;/h1&gt;
+        &lt;?= $form-&gt;field($model, 'floor')-&gt;textInput() ?&gt;
+        &lt;?= $form-&gt;field($model, 'room_number')-&gt;textInput() ?&gt;
+        &lt;?= $form-&gt;field($model, 'has_conditioner')-&gt;checkbox() ?&gt;
+        &lt;?= $form-&gt;field($model, 'has_tv')-&gt;checkbox() ?&gt;
+        &lt;?= $form-&gt;field($model, 'has_phone')-&gt;checkbox() ?&gt;
+        &lt;?= $form-&gt;field($model, 'available_from')-&gt;textInput() ?&gt;
+        &lt;?= $form-&gt;field($model, 'price_per_day')-&gt;textInput() ?&gt;
+        &lt;?= $form-&gt;field($model, 'description')-&gt;textarea() ?&gt;
+        
+        
+        &lt;?= $form-&gt;field($model, 'fileImage')-&gt;fileInput() ?&gt;
+   &lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="form-group"&gt;
+    &lt;?= Html::submitButton('Create' , ['class' =&gt; 'btn btn-success']) ?&gt;
+&lt;/div&gt;
+&lt;?php ActiveForm::end(); ?&gt;</pre></div><p>Take care of the last<a id="id172" class="indexterm"></a> row of this example, <code class="literal">ActiveForm::end()</code> that closes the body of the <code class="literal">$form</code> widget defined at the top of the file using the <code class="literal">ActiveForm::begin()</code> method.</p><div class="note" title="Note"><h3 class="title"><a id="note20"></a>Note</h3><p>In this example, the <code class="literal">ActiveForm</code> widget has been created by filling the <code class="literal">enctype</code> property of the configuration array with the <code class="literal">multipart/form-data</code> value, which allows us to send the binary data other than the form text parameters. However, this does not deal with Yii or PHP, because this is an HTML requirement for notifying the browser how to send files to the server.</p></div><p>In this view, if the <a id="id173" class="indexterm"></a>model has been validated and the <code class="literal">fileImage</code> property is filled, the corresponding image will be displayed.</p></div></div></body></html>

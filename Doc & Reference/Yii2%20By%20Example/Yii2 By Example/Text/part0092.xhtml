@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Chapter&nbsp;13.&nbsp;Final Refactoring</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="chapter" title="Chapter&nbsp;13.&nbsp;Final Refactoring" id="aid-2NNJO1"><div class="titlepage"><div><div><h1 class="title"><a id="ch13"></a>Chapter&nbsp;13.&nbsp;Final Refactoring</h1></div></div></div><p>This is the final stage of our development. Now that we have written all the working code, we must make it reusable but most importantly, maintainable. This chapter will help you to reuse code by means of widgets and other components. We will see some practical examples on how to use them. Then, we will deal with documentation, an important aspect of app development that allows everyone to quickly learn how a project is structured and built.</p><p>For the documentation, we are going to use the two most important tools provided by the framework in order to build API and guide references, making a real-life example. We will cover the following topics:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Creating widgets<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Example &ndash; creating a widget with a carousel</li></ul></div></li><li class="listitem">Creating components<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Example &ndash; creating a component that creates a backup of the MySQL database and sends an e-mail to the administrator</li></ul></div></li><li class="listitem">Creating modules</li><li class="listitem">Generating the API documentation<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Example &ndash; using API documentation to generate doc of the app</li></ul></div></li></ul></div><div class="section" title="Creating widgets"><div class="titlepage"><div><div><h1 class="title"><a id="ch13lvl1sec86"></a>Creating widgets</h1></div></div></div><p>A widget is a <a id="id550" class="indexterm"></a>reusable client-side code (containing JavaScript, CSS, and HTML) with minimal logic wrapped in a <code class="literal">yii\base\Widget</code> object that we can easily insert and apply in any view.</p><p>Building a widget <a id="id551" class="indexterm"></a>requires you to extend two methods of <code class="literal">yii\base\Widget</code>:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">The <code class="literal">init()</code> method initializes the object</li><li class="listitem">The <code class="literal">run()</code> method executes the object</li></ul></div><p>In order to instance a widget, it is enough to call the static <code class="literal">widget()</code> method that accepts just one parameter or better still an array containing values for its public properties.</p><p>The following is an example:</p><div class="informalexample"><pre class="programlisting">    MyWidget::widget(['prop1' =&gt; 'value of prop1', &hellip;])</pre></div><p>This returns a string containing widget output, passing its value <code class="literal">value of prop1</code> for its <code class="literal">prop1</code> public properties.</p><p>If we need to<a id="id552" class="indexterm"></a> insert an extra code in a widget's execution (for example, in the ActiveForm widget), we have a more complex way of instantiating the widget, using the <code class="literal">begin()</code> and <code class="literal">end()</code> methods.</p><p>The first method, <code class="literal">begin()</code>, accepts a function parameter with a configuration array to pass to the widget, and it will return the widget object.</p><p>When the second method, <code class="literal">end()</code>, is called, the code between these two methods will be displayed and simultaneously, the <code class="literal">end()</code> method directly echoes the output of the widget <code class="literal">run()</code> method:</p><div class="informalexample"><pre class="programlisting">    $widget = MyWidget::begin(['prop1' =&gt; 'value of prop1', &hellip;]);
+
+    ..
+    .. I can use $widget object here  ..
+    ..
+
+     MyWidget::end();</pre></div><p>As for any other views, in the <code class="literal">run()</code> method, we can refer to a view file, through the <code class="literal">render()</code> method, in order to display the widget output.</p><p>For example, a widget could be a real-time date/time clock. For this purpose, we will build a clock based on a block containing the date/time string updated by the JavaScript code. We can pass to widget construct time some values concerning for example, the color of the border box.</p><p>To make an instance, let's start with the basic template app (but this is obviously also valid for the advanced template app). Create a new folder (if it does not exist) named <code class="literal">components</code> in the root of the project at the same level of <code class="literal">controllers</code>, <code class="literal">models</code>, <code class="literal">views</code>, and so on, which will contain all the widgets we want to build.</p><p>Then, in this folder, we will create a new file named <code class="literal">ClockWidget.php</code> with the complete path <code class="literal">basic/components/ClockWidget.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace app\components;
+
+use yii\base\Widget;
+
+class ClockWidget extends Widget
+{
+
+    public function init()
+    {
+        \yii\web\JqueryAsset::register($this-&gt;getView());
+    }
+    
+    public function run()
+    {
+        return $this-&gt;render('clock');
+    }
+    
+}</pre></div><p>In the <code class="literal">init()</code> method, we <a id="id553" class="indexterm"></a>have also made references to the jQuery asset to request the framework to load the jQuery plugin, since we need it in the view file.</p><p>In the <code class="literal">run()</code> method, we have rendered the <code class="literal">clock</code> view, whose content will be discussed in next rows.</p><p>So, create a new folder at <code class="literal">basic/components/views</code> and, within it, a new file named <code class="literal">clock.php</code> with the following code:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+$this-&gt;registerJs( &lt;&lt;&lt; EOT_JS
+
+    function ClockWidget_refresh_datetime()
+    {
+        var dateTimeString = new Date().toString();
+        $('#ClockWidget_realtime_clock').html(dateTimeString);
+    }
+
+    setInterval(ClockWidget_refresh_datetime,1000);
+    
+    ClockWidget_refresh_datetime();
+EOT_JS
+);
+
+?&gt;
+
+&lt;div style="border:1px solid black;padding:5px;width:200px;text-align:center"&gt;
+    &lt;span id="ClockWidget_realtime_clock"&gt;&lt;/span&gt;
+&lt;/div&gt;</pre></div><p>This code simply displays a box with a string containing real-time values of the current date and time, updated every second.</p><p>Finally, we can use our <a id="id554" class="indexterm"></a>widget in any view using this code:</p><div class="informalexample"><pre class="programlisting">&lt;?= \app\components\ClockWidget::widget(); ?&gt;</pre></div><div class="section" title="Example &ndash; creating a widget with a carousel"><div class="titlepage"><div><div><h2 class="title"><a id="ch13lvl2sec55"></a>Example &ndash; creating a widget with a carousel</h2></div></div></div><p>In this example, we will<a id="id555" class="indexterm"></a> create a widget that consists of a carousel with<a id="id556" class="indexterm"></a> some rooms (we can choose which one to display by passing them to the widget with the public property). Again, we will use a basic template application; however, everything is equally applicable to the advanced template apps.</p><p>For this example, we will create a new controller to use its view as a widget container.</p><p>So, let's create this new controller named <code class="literal">TestCarouselController</code> at <code class="literal">basic/controller/TestCarouselController.php</code>. From here, we will pass the <code class="literal">models</code> property, consisting of a list of maximum three rooms:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace app\controllers;
+
+use yii\web\Controller;
+use app\models\Room;
+
+class TestCarouselController extends Controller
+{
+    public function actionIndex()
+    {
+        $models = Room::find()-&gt;limit(3)-&gt;all();
+        
+        return $this-&gt;render('index', ['models' =&gt; $models]);
+    }
+}</pre></div><p>Next, we will create the view at <code class="literal">basic/views/test-carousel/index.php</code> with the widget output as follows:</p><div class="informalexample"><pre class="programlisting">This is a carousel widget with some rooms:
+&lt;?= \app\components\CarouselWidget\CarouselWidget::widget(['models' =&gt; $models, 'options' =&gt; ['style' =&gt; 'border:1px solid black;text-align:center;padding:5px;']]); ?&gt;</pre></div><p>This builds the widget filling and its public properties <code class="literal">models</code> and <code class="literal">options</code>.</p><p>Now it is time to create our widget. To isolate the widget from another code as much as possible, we create a specific widget folder at the <code class="literal">basic/components</code> folder, under a subfolder named <code class="literal">CarouselWidget</code> inside of which we will create the widget file named <code class="literal">CarouselWidget.php</code>.</p><p>This widget includes a public property, <code class="literal">models</code> that contains the room's model that has been passed from the container view. It is necessary to pass these models to the Carousel widget at <code class="literal">\yii\bootstrap\Carousel</code> as an array of this kind:</p><div class="informalexample"><pre class="programlisting">items =&gt; [
+['content' =&gt; '...', 'caption' =&gt; '...'],
+['content' =&gt; '...', 'caption' =&gt; '...'],
+['content' =&gt; '...', 'caption' =&gt; '...'],
+...
+];</pre></div><p>In this way, in the <code class="literal">init()</code> method, we<a id="id557" class="indexterm"></a> will create an internal representation of the<a id="id558" class="indexterm"></a> models according to the Bootstrap Yii2 widget expectation.</p><p>Finally, in the <code class="literal">run()</code> method, we will output the view now in the views folder at <code class="literal">basic/components/CarouselWidget/views</code>. This is the widget content; remember that it is stored in <code class="literal">CarouselWidget.php</code> at <code class="literal">basic/components/CarouselWidget</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace app\components\CarouselWidget;
+
+use yii\base\Widget;
+
+class CarouselWidget extends Widget
+{
+    public $carouselId = 'carouselWidget_0';
+    public $options = [];
+    public $models = [];
+    
+    
+    private $carouselItemsContent;
+
+    public function init()
+    {
+        // It is not necessary because yii bootstrap Carousel widget will load it automatically
+        // \yii\jui\JuiAsset::register($this-&gt;getView());
+        
+        $this-&gt;carouselItemsContent = [];
+        foreach($this-&gt;models as $model)
+        {
+            $caption = sprintf('&lt;h1&gt;Room #%d&lt;/h1&gt;', $model-&gt;id);
+            $content = sprintf('This is room #%d at floor %d with %0.2f&euro; price per day', $model-&gt;id, $model-&gt;floor, $model-&gt;price_per_day);
+            $itemContent = ['content' =&gt; $content, 'caption' =&gt; $caption];
+            $this-&gt;carouselItemsContent[] = $itemContent;
+        }
+        
+    }
+    
+    public function run()
+    {
+        return $this-&gt;render('carousel', ['carouselItemsContent' =&gt; $this-&gt;carouselItemsContent]);
+    }
+    
+}</pre></div><p>The widget view, called <a id="id559" class="indexterm"></a>in the <code class="literal">run()</code> method, will be stored in <a id="id560" class="indexterm"></a>the <code class="literal">carousel.php</code> file at <code class="literal">basic/components/CarouselWidget/views</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php $styleOption = isset($this-&gt;context-&gt;options['style'])?$this-&gt;context-&gt;options['style']:''; ?&gt;
+&lt;div id="&lt;?php echo $this-&gt;context-&gt;id ?&gt;" style="&lt;?php echo $styleOption ?&gt;"&gt;
+    &lt;?php
+    echo \yii\bootstrap\Carousel::widget([
+        'id' =&gt; $this-&gt;context-&gt;carouselId,
+        'items' =&gt; $carouselItemsContent
+        
+    ]);
+    ?&gt;
+
+&lt;/div&gt;</pre></div><p>Browsing to <code class="literal">http://hostname/basic/web/test-carousel/index</code>, we will see the carousel widget (only text, but we can also insert some images within).</p></div></div></div></body></html>

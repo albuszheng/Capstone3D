@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>New controller action</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="New controller action" id="aid-2F4UM1"><div class="titlepage"><div><div><h1 class="title"><a id="ch11lvl1sec77"></a>New controller action</h1></div></div></div><p>It is very simple to add new actions to the<a id="id498" class="indexterm"></a> REST API controller. We only need to<a id="id499" class="indexterm"></a> remember three differences in the web controller:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Verb setting for the new action</li><li class="listitem">Authenticate the setting for the new action</li><li class="listitem">Output for the new action</li></ul></div><p>The first two steps are configured in the <code class="literal">behaviors()</code> method of the controller:</p><div class="informalexample"><pre class="programlisting">    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['verbs'] = [
+                'class' =&gt; \yii\filters\VerbFilter::className(),
+                'actions' =&gt; [
+                    'myCustomAction'  =&gt; ['get', 'head'],
+                ],
+        ];
+        
+        $behaviors['authenticator'] = [
+        'except' =&gt; 'myCustomAction',
+            'class' =&gt; HttpBasicAuth::className(),
+        ];
+      
+        return $behaviors;
+    }
+
+public function actionMyCustomAction()
+{
+    &hellip;
+    &hellip;
+    
+}</pre></div><p>In the first part of the <code class="literal">behaviors()</code> method, we will only set the <code class="literal">get</code> and <code class="literal">head</code> HTTP methods to call the <code class="literal">myCustomAction</code> action. If we try to call this action with other HTTP methods, we will get a not supported exception.</p><p>In the last part of the <code class="literal">behaviors()</code> method, we will set it so that <code class="literal">myCustomAction</code> has not got authentication, since it is in the <code class="literal">except</code> property.</p><p>The third difference, output for the new action, states that we have different ways to return data. We can use:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">A key-value pair array to create a single object from scratch</li><li class="listitem">An ActiveRecord instance to create a single object</li><li class="listitem">An ActiveRecord array to create a list of objects</li><li class="listitem">A data provider</li></ul></div><p>In this last case, the <a id="id500" class="indexterm"></a>framework will automatically output <a id="id501" class="indexterm"></a>pagination information and links to other pages (if present).</p><div class="section" title="Example &ndash; getting a rooms list for a reservation"><div class="titlepage"><div><div><h2 class="title"><a id="ch11lvl2sec50"></a>Example &ndash; getting a rooms list for a reservation</h2></div></div></div><p>In this example, we need to<a id="id502" class="indexterm"></a> create a <code class="literal">Reservation</code> model in <a id="id503" class="indexterm"></a>the <code class="literal">common/models</code> folder using Gii.</p><p>Then, we create a new controller in <code class="literal">api/controllers/ReservationsController.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace api\controllers;
+
+use Yii;
+use yii\rest\ActiveController;
+use yii\filters\auth\CompositeAuth;
+use yii\filters\auth\HttpBasicAuth;
+use yii\filters\auth\QueryParamAuth;
+
+class ReservationsController extends ActiveController
+{
+    public $modelClass = 'common\models\Reservation';
+     
+    public function actionIndexWithRooms()
+    {
+        $reservations = \common\models\Reservation::find()-&gt;all();
+        
+        $outData = [];
+        foreach($reservations as $r)
+        {
+            $outData[] = array_merge($r-&gt;attributes, ['room' =&gt; $r-&gt;room-&gt;attributes]);
+        }
+        return $outData;        
+    }
+            
+}</pre></div><p>Now, let's call <code class="literal">http://hostname/yiiadv/api/web/reservations/index-with-rooms</code>, where we will display a list of reservations, in each of which the <code class="literal">room</code> property is expanded together with the content of room object related to the reservation.</p><div class="note" title="Note"><h3 class="title"><a id="note73"></a>Note</h3><p>Take care to ensure that the <code class="literal">room</code> relation already exists in the <code class="literal">Reservation</code> model. If not, we must add this relation to the <code class="literal">Reservation</code> model:</p><div class="informalexample"><pre class="programlisting">    public function getRoom()
+    {
+        return $this-&gt;hasOne(Room::className(), ['id' =&gt; 'room_id']);
+    }</pre></div></div><p>However, this solution is inefficient since we always get all the rows and if there are too many of them, this can result in it being too expensive for us. To solve this problem, we could use a DataProvider created from a set of data found, or better yet, a more simple solution automatically provided by Yii.</p><p>Indeed, Yii <a id="id504" class="indexterm"></a>provides some easy ways to display relations<a id="id505" class="indexterm"></a> and filter returned fields. For example, there could be fields that we do not want to show, such as a password, private data, and so on.</p><p>Models have these methods:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">fields()</code>: By default, classes that extend <code class="literal">yii\base\Model::fields()</code> return all the model attributes as fields, while classes that extend <code class="literal">yii\db\ActiveRecord::fields()</code> only return the attributes that have been populated from the DB</li><li class="listitem"><code class="literal">extraFields()</code>: By default, classes that extend <code class="literal">yii\base\Model::extraFields()</code> return nothing, while classes that extend <code class="literal">yii\db\ActiveRecord::extraFields()</code> return the names of the relations that have been populated from the DB</li></ul></div><p>The first method, <code class="literal">fields()</code>, is a key-value array where the key is the name of the field returned. The value can be empty if the returned content is the attribute with the same name as the key, a string indicating which attribute to get the returned value from, or a callable PHP function to manipulate the returned value.</p><p>The second method, <code class="literal">extraFields()</code>, is a string array whose values are relations defined in the model class.</p><p>Finally, to dynamically filter the requested field, we append the <code class="literal">fields</code> parameter to the requested URL and the <code class="literal">expand</code> parameter to get a list of relations from the models.</p><p>So, if we call <code class="literal">http://hostname/yiiadv/api/web/reservations/index?expand=room</code>, we will get the same <a id="id506" class="indexterm"></a>result but we will also have the pagination and loaded<a id="id507" class="indexterm"></a> models that are only necessary for that page.</p><p>However, it would be more convenient for us to distribute an URL without special parameters, such as the <code class="literal">expand</code> and <code class="literal">fields</code>, for example, in order to avoid confusion among developers who will use these APIs.</p><p>We can use <code class="literal">actionIndexWithRooms</code> as a wrapper for <code class="literal">actionIndex</code> with an expanded parameter in this way:</p><div class="informalexample"><pre class="programlisting">    public function actionIndexWithRooms()
+    {
+            $_GET['expand'] = 'room';
+            return $this-&gt;runAction('index');
+    }</pre></div><p>With this solution, the <code class="literal">http://hostname/yiiadv/api/web/reservations/index-with-rooms</code> URL is simply a wrapper for h<code class="literal">ttp://hostname/yiiadv/api/web/reservations/index?expand=room</code> but this prevents developers from having to remember which parameters to pass to the URL to obtain the necessary nodes in the response.</p></div></div></body></html>

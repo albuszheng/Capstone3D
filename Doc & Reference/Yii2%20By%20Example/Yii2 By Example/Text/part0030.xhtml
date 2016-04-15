@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Custom URL rules</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Custom URL rules" id="aid-SJGS1"><div class="titlepage"><div><div><h1 class="title"><a id="ch03lvl1sec24"></a>Custom URL rules</h1></div></div></div><p>Yii2 give us the opportunity <a id="id124" class="indexterm"></a>to customize URL rules as we want. This can be done using the <code class="literal">rules</code> property in <code class="literal">urlManager</code>, an array where keys are patterns and values are corresponding routes. Patterns are common regular expression patterns, so it is necessary to have some familiarity with regular expression.</p><p>Patterns can contain parameters that will be passed to the route. In the next example, we will display a list of news that can be filtered through year or category parameter, based on parameters passed to the URL.</p><div class="section" title="Example &ndash; list news items by year or category"><div class="titlepage"><div><div><h2 class="title"><a id="ch03lvl2sec19"></a>Example &ndash; list news items by year or category</h2></div></div></div><p>In this example, we <a id="id125" class="indexterm"></a>will create a new Controller named <code class="literal">News</code> in <code class="literal">controllers/NewsController.php</code>. In this new controller, we will insert a <code class="literal">data()</code> function containing an array with test data, and a function named <code class="literal">actionItemsList</code>.</p><p>The first thing to do is to configure the <code class="literal">rules</code> property under the <code class="literal">urlManager</code> component under <code class="literal">config/web.php</code>:</p><div class="informalexample"><pre class="programlisting">'rules' =&gt; [
+    news/&lt;year:\d{4}&gt;/items-list' =&gt; ' news/items-list',
+    'news/&lt;category:\w+&gt;/items-list' =&gt; 'test-rules/items-list',
+],</pre></div><p>Here, we have two patterns:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">news/&lt;year:\d{4}&gt;/items-list</code></li><li class="listitem"><code class="literal">news/&lt;category:\w+&gt;/items-list</code></li></ul></div><p>The first pattern catches requests with a numeric parameter with four digits, passed to the <code class="literal">news /items-list</code> route as the <code class="literal">year</code> GET parameter. We can request 'news/2014/items-list' or 'news/2015/items-list'.</p><p>The second pattern catches requests with the word parameter, passed to the <code class="literal">news/items-list</code> route as the <code class="literal">category</code> GET parameter. We can request <code class="literal">news/business/items-list</code> or <code class="literal">news/shopping/items-list</code>.</p><p>Then, we <a id="id126" class="indexterm"></a>create <code class="literal">NewsController</code> where to define the <code class="literal">data()</code> function, to return static data to be used as data source, and the <code class="literal">actionItemsList()</code> function to handle requests to <code class="literal">news/year/or/category/itemsList</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace app\controllers;
+
+use Yii;
+use yii\web\Controller;
+
+class NewsController extends Controller
+{
+  public function data()
+  {
+    return [
+    [ "id" =&gt; 1, "date" =&gt; "2015-04-19", "category" =&gt; "business", "title" =&gt; "Test news of 2015-04-19" ],
+    [ "id" =&gt; 2, "date" =&gt; "2015-05-20", "category" =&gt; "shopping", "title" =&gt; "Test news of 2015-05-20" ],
+    [ "id" =&gt; 3, "date" =&gt; "2015-06-21", "category" =&gt; "business", "title" =&gt; "Test news of 2015-06-21" ],
+    [ "id" =&gt; 4, "date" =&gt; "2016-04-19", "category" =&gt; "shopping", "title" =&gt; "Test news of 2016-04-19" ],
+    [ "id" =&gt; 5, "date" =&gt; "2017-05-19", "category" =&gt; "business", "title" =&gt; "Test news of 2017-05-19" ],
+    [ "id" =&gt; 6, "date" =&gt; "2018-06-19", "category" =&gt; "shopping", "title" =&gt; "Test news of 2018-06-19" ]
+    ];
+  }
+
+  public function actionItemsList()
+  {
+    // if missing, value will be null
+    $year = Yii::$app-&gt;request-&gt;get('year');
+    // if missing, value will be null
+    $category = Yii::$app-&gt;request-&gt;get('category');
+
+    $data = $this-&gt;data();
+    $filteredData = [];
+
+    foreach($data as $d)
+    {
+      if(($year != null)&amp;&amp;(date('Y', strtotime($d['date'])) == $year)) $filteredData[] = $d;
+      if(($category != null)&amp;&amp;($d['category'] == $category)) $filteredData[] = $d;
+    }
+
+    return $this-&gt;render('itemsList', ['year' =&gt; $year, 'category' =&gt; $category, 'filteredData' =&gt; $filteredData] );
+    }</pre></div><p>Finally, we <a id="id127" class="indexterm"></a>create a view in <code class="literal">views/news/itemsList.php</code>, displaying the parameter used, year or category, and a list of results:</p><div class="informalexample"><pre class="programlisting">&lt;?php if($year != null) { ?&gt;
+&lt;b&gt;List for year &lt;?php echo $year ?&gt;&lt;/b&gt;
+&lt;?php } ?&gt;
+&lt;?php if($category != null) { ?&gt;
+&lt;b&gt;List for category &lt;?php echo $category ?&gt;&lt;/b&gt;
+&lt;?php } ?&gt;
+
+&lt;br /&gt;&lt;br /&gt;
+
+
+&lt;table border="1"&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Date&lt;/th&gt;
+        &lt;th&gt;Category&lt;/th&gt;
+        &lt;th&gt;Title&lt;/th&gt;
+    &lt;/tr&gt;
+
+&lt;?php foreach($filteredData as $fd) { ?&gt;
+    &lt;tr&gt;
+        &lt;td&gt;&lt;?php echo $fd['date'] ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo $fd['category'] ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo $fd['title'] ?&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+&lt;?php } ?&gt;
+&lt;/table&gt;</pre></div><p>Now, let's point to <code class="literal">http://hostname/basic/web/news/2015/items-list</code> to display the items list filtered out by year:</p><div class="mediaobject"><img src="../Images/image00252.jpeg" alt="Example &ndash; list news items by year or category"/><div class="caption"><p>List items filtered by year</p></div></div><p style="clear:both; height: 1em;"> </p><p>Try to change<a id="id128" class="indexterm"></a> the year between news and items list to see how the data result changes in the list. The rules that are created allow us to display the items list filtered by category. Point to <code class="literal">http://hostname/basic/web/news/business/items-list</code> to see the list filtered by business category:</p><div class="mediaobject"><img src="../Images/image00253.jpeg" alt="Example &ndash; list news items by year or category"/><div class="caption"><p>List items filtered by category</p></div></div><p style="clear:both; height: 1em;"> </p><p>We can also point to <code class="literal">http://hostname/basic/web/news/shopping/items-list</code> to see the list filtered by shopping category.</p></div></div></body></html>

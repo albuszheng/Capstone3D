@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Filters in GridView</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Filters in GridView"><div class="titlepage" id="aid-1IHDQ2"><div><div><h1 class="title"><a id="ch06lvl1sec47"></a>Filters in GridView</h1></div></div></div><p>GridView has a core <a id="id296" class="indexterm"></a>feature of being able to simplify filter rows just by putting an additional row below the header row.</p><p>Filters are mainly text input but in general they can be any type of control and we can customize them as much as we want.</p><p>Filters can be activated by filling out the GridView widget property <code class="literal">filterModel</code> with an instance of the model class and automatically a new row will be created below the header, containing working text inputs.</p><p>Filter text inputs have a name attribute filled with the model class name, which includes the field name. In this way, we will pass data to a controller, including everything in a single array; a variable that can easily be used to populate a search model massively.</p><div class="note" title="Note"><h3 class="title"><a id="note40"></a>Note</h3><p>Automatic text input filters are created only for attributes that belong to at least one rule in the <code class="literal">rules()</code> method of <code class="literal">ActiveDataProvider</code>; otherwise it is enough that attributes belong to the <code class="literal">safe</code> validator.</p></div><p>Let's create an example with the reservations grid.</p><p>We will fill out the <code class="literal">filterModel</code> property to apply filters to GridView, for example:</p><div class="informalexample"><pre class="programlisting">&lt;?= \yii\grid\GridView::widget([
+    ...
+    'filterModel' =&gt; $searchModel,
+    ...        
+?&gt;</pre></div><p>Here, <code class="literal">$searchModel</code> is an instance of the <code class="literal">Reservation</code> model class that we will pass to the view from the grid <a id="id297" class="indexterm"></a>action of <code class="literal">ReservationsController</code>.</p><p>Now let's create <code class="literal">actionGrid()</code> in <code class="literal">ReservationsController</code> in <code class="literal">basic/controllers/ReservationsController.php</code>:</p><div class="informalexample"><pre class="programlisting">    &lt;?php
+
+public function actionGrid()
+    {
+        $query = \app\models\Reservation::find();
+
+        $searchModel = new \app\models\Reservation();
+        if(isset($_GET['Reservation']))
+        {
+            $searchModel-&gt;load( \Yii::$app-&gt;request-&gt;get() );
+            
+            $query-&gt;andFilterWhere([
+                'id' =&gt; $searchModel-&gt;id,
+                'customer_id' =&gt; $searchModel-&gt;customer_id,
+                'room_id' =&gt; $searchModel-&gt;room_id,
+                'price_per_day' =&gt; $searchModel-&gt;price_per_day,
+            ]);
+        }
+        
+        $dataProvider = new \yii\data\ActiveDataProvider([
+            'query' =&gt; $query,
+            'pagination' =&gt; [
+                'pageSize' =&gt; 10,
+            ],
+        ]);
+        
+        
+        return $this-&gt;render('grid', [ 'dataProvider' =&gt; $dataProvider, 'searchModel' =&gt; $searchModel ]);
+        
+    }</pre></div><p>The <code class="literal">$searchModel</code> instance is filled with the content of <code class="literal">$_GET['Reservation']</code>, in line:</p><div class="informalexample"><pre class="programlisting">            $searchModel-&gt;load( Yii::$app-&gt;request-&gt;get() );</pre></div><p>Then, <code class="literal">$query</code> is updated with the content of non-null attributes.</p><div class="note" title="Note"><h3 class="title"><a id="note41"></a>Note</h3><p>Remember that the ActiveRecord's <code class="literal">load()</code> method will get values from the array enclosed in the model class name, applied as the key to the array passed as the first function parameter.</p></div><p>Browse to <code class="literal">http://hostname/basic/reservations/grid</code> and type <code class="literal">2</code> in the <span class="strong"><strong>Room ID</strong></span> column<a id="id298" class="indexterm"></a> filter (the second column). This should be the output:</p><div class="mediaobject"><img src="../Images/image00272.jpeg" alt="Filters in GridView"/><div class="caption"><p>Using filters in the GridView widget</p></div></div><p style="clear:both; height: 1em;"> </p><p>We can also choose to customize the way we render a filter. Imagine using the <span class="strong"><strong>Room ID</strong></span> column filter as a drop-down list instead of an input textbox.</p><p>We only need to fill out the <code class="literal">filter</code> property of <span class="strong"><strong>Room ID</strong></span> with <code class="literal">dropDownList</code>. It is advisable to use the <code class="literal">Html</code> helper class to render <code class="literal">dropDownList</code> using the <code class="literal">activeDropDownList()</code> method. The <code class="literal">active</code> prefix stands for ActiveRecord. This method <code class="literal">dropDownList()</code> requires three parameters: the model class, the attribute of the model class, and finally an array key-value where <code class="literal">key</code> is the value attribute of the <code class="literal">&lt;option&gt;</code> tag and <code class="literal">value</code> is the text of the <code class="literal">&lt;option&gt;</code> tag.</p><p>We will use <code class="literal">yii\helpers\ArrayHelper</code> to create the array key-value, where the key is the <code class="literal">id</code> attribute of the model and the value is the return value of a callback function.</p><p>This is how the file in <code class="literal">basic/views/reservations/grid.php</code> changes:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+$roomsFilterData = yii\helpers\ArrayHelper::map( app\models\Room::find()-&gt;all(), 'id', function($model, $defaultValue) {
+    return sprintf('Floor: %d - Number: %d', $model-&gt;floor, $model-&gt;room_number);
+});
+?&gt;
+
+&lt;?= \yii\grid\GridView::widget([
+    'dataProvider' =&gt; $dataProvider,
+    'filterModel' =&gt; $searchModel,
+    'columns' =&gt; [
+        'id',
+         
+        [
+            'header' =&gt; 'Room',
+            'filter' =&gt; \Html::activeDropDownList($searchModel, 'room_id', $roomsFilterData, ['prompt' =&gt; '--- all']),
+            'content' =&gt; function($model) {
+                return $model-&gt;room-&gt;floor;
+            }
+        ],</pre></div><p>This is the <a id="id299" class="indexterm"></a>expected output:</p><div class="mediaobject"><img src="../Images/image00273.jpeg" alt="Filters in GridView"/><div class="caption"><p>GridView with the dropdown list filter</p></div></div><p style="clear:both; height: 1em;"> </p></div></body></html>

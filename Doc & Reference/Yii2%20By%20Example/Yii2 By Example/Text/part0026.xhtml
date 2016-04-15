@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Layout with dynamic block</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Layout with dynamic block" id="aid-OPEK1"><div class="titlepage"><div><div><h1 class="title"><a id="ch02lvl1sec20"></a>Layout with dynamic block</h1></div></div></div><p>The use of the <code class="literal">params</code> property to allow<a id="id114" class="indexterm"></a> communication between view and layout, is advisable for simple cases, but there are some more complex cases where we must share the block of HTML.</p><p>For example, think about the advertising box in layout (usually left or right column of the template), that could change according to the view that is being displayed.</p><p>In this case, we need to pass the entire block of HTML code from view to layout.</p><p>For this purpose, this framework provides Block statements, where we can define entire blocks of data to send from view to layout.</p><p>Using Blocks means to define the <code class="literal">Block</code> statement in view and display it in another view, usually layout.</p><p>We define the <code class="literal">Block</code> statement in view as follows:</p><div class="informalexample"><pre class="programlisting">&lt;?php $this-&gt;beginBlock('block1'); ?&gt;
+...content of block1...
+$this-&gt;endBlock(); ?&gt;</pre></div><p>Here, <code class="literal">beginBlock</code> and <code class="literal">endBlock</code> define the beginning and the end of the <code class="literal">block1</code> named statement. This content is saved into the <code class="literal">blocks</code> property of the view component with the <code class="literal">block1</code> attribute.</p><p>We can access this block through <code class="literal">$view&gt;blocks[$blockID]</code> in every view, including layout.</p><p>To render a block in layout view, if available, use the following code:</p><div class="informalexample"><pre class="programlisting">&lt;?php if(isset($this-&gt;blocks['block1']) { ?&gt;
+     &lt;?php echo $this-&gt;blocks['block1'] ?&gt;
+&lt;?php } else { ?&gt;
+    &hellip; default content if missing block1 attribute
+&lt;?php } ?&gt;</pre></div><p>Obviously, we can<a id="id115" class="indexterm"></a> define all the blocks that we want.</p><div class="section" title="Example &ndash; add a dynamic box to display advertising info"><div class="titlepage"><div><div><h2 class="title"><a id="ch02lvl2sec17"></a>Example &ndash; add a dynamic box to display advertising info</h2></div></div></div><p>In this example, we will see how to<a id="id116" class="indexterm"></a> display, when available, a box with advertising info that displays data sent from view.</p><p>The first thing to do is to add a block in layout displaying data.</p><p>Enter in <code class="literal">views/layouts/main.php</code> and change <code class="literal">div</code> with container class as follows:</p><div class="informalexample"><pre class="programlisting">&lt;div class="container"&gt;
+    &lt;?= Breadcrumbs::widget([
+      'links' =&gt; isset($this-&gt;params['breadcrumbs']) ? $this-&gt;params['breadcrumbs'] : [],
+    ]) ?&gt;
+    
+    &lt;div class="well"&gt;
+        This is content for blockADV from view
+        &lt;br /&gt;
+        &lt;?php if(isset($this-&gt;blocks['blockADV'])) { ?&gt;
+            &lt;?php echo $this-&gt;blocks['blockADV']; ?&gt;
+        &lt;?php } else { ?&gt;
+               &lt;i&gt;No content available&lt;/i&gt;
+        &lt;?php } ?&gt;    
+    &lt;/div&gt;
+    
+    &lt;?= $content ?&gt;
+&lt;/div&gt;</pre></div><p>We have added a div with the <code class="literal">well</code> class to display the content of <code class="literal">blockADV</code>, if available. If <code class="literal">blockADV</code> is available in <code class="literal">$this-&gt;blocks</code>, it will display its content; otherwise, it will display <code class="literal">no content available</code>, as a courtesy message.</p><p>Now, we will create a new action in <code class="literal">NewsController</code>, called <code class="literal">advTest</code>, and then will create a brand new view.</p><p>Let's start off by creating<a id="id117" class="indexterm"></a> a file in <code class="literal">views/news/advTest.php</code> with the following content:</p><div class="informalexample"><pre class="programlisting">&lt;span&gt;
+This is a test where we display an adv box in layout view
+&lt;/span&gt;
+&lt;?php $this-&gt;beginBlock('blockADV'); ?&gt;
+
+    &lt;b&gt;Buy this fantastic book!&lt;/b&gt;
+
+&lt;?php $this-&gt;endBlock(); ?&gt;</pre></div><p>We can insert any content in a block; in this case, we have put in text.</p><div class="note" title="Note"><h3 class="title"><a id="note12"></a>Note</h3><p>The position where block is defined in view is not important.</p></div><p>Then, open <code class="literal">NewsController</code> and add a new action <code class="literal">advTest</code>:</p><div class="informalexample"><pre class="programlisting">public function actionAdvTest()
+{
+        return $this-&gt;render('advTest');
+}</pre></div><p>Now, point the browser to <code class="literal">http://hostname/basic/web/index.php?r=news/adv-test</code> and we will see the following screenshot:</p><div class="mediaobject"><img src="../Images/image00251.jpeg" alt="Example &ndash; add a dynamic box to display advertising info"/></div><p style="clear:both; height: 1em;"> </p><p>All other pages will only show <code class="literal">no content available</code> in the screenshot.</p></div></div></body></html>

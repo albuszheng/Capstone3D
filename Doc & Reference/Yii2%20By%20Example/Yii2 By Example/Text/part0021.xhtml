@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Creating a view to display a news list</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Creating a view to display a news list" id="aid-K0RQ1"><div class="titlepage"><div><div><h1 class="title"><a id="ch02lvl1sec15"></a>Creating a view to display a news list</h1></div></div></div><p>Now, we will create a <a id="id87" class="indexterm"></a>simple news list in a view named <code class="literal">itemsList</code>. We will point to this view from <code class="literal">NewsController</code>, so we have to:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Create a <code class="literal">news</code> folder under <code class="literal">basic/views</code>, that <code class="literal">NewsController</code> will use as the base folder to search for the views to be rendered (according to the view names' rules explained in the previous chapter)</li><li class="listitem">Create an <code class="literal">itemsList.php</code> file under <code class="literal">basic/views/news</code></li></ul></div><p>Now, open <code class="literal">basic/views/news/itemsList.php</code>, create an array with a list of data and display the output with a simple table of items:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+    $newsList = [
+        [ 'title' =&gt; 'First World War', 'date' =&gt; '1914-07-28' ],
+        [ 'title' =&gt; 'Second World War', 'date' =&gt; '1939-09-01' ],
+        [ 'title' =&gt; 'First man on the moon', 'date' =&gt; '1969-07-20' ]
+    ];
+?&gt;
+
+&lt;table&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Title&lt;/th&gt;
+        &lt;th&gt;Date&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;?php foreach($newsList as $item) { ?&gt;
+    &lt;tr&gt;
+        &lt;td&gt;&lt;?php echo $item['title'] ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo $item['date'] ?&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;?php } ?&gt;
+&lt;/table&gt;</pre></div><p>Then, we need to <a id="id88" class="indexterm"></a>create an action provided by a function named <code class="literal">actionItemsList</code> that will be rendered by <code class="literal">http://hostname/basic/web/index.php?r=news/items-list</code>.</p><div class="note" title="Note"><h3 class="title"><a id="tip02"></a>Tip</h3><p>
+<span class="strong"><strong>Downloading the example code</strong></span>
+</p><p>You can download the example code files from your account at <a class="ulink" href="http://www.packtpub.com">http://www.packtpub.com</a> for all the Packt Publishing books you have purchased. If you purchased this book elsewhere, you can visit <a class="ulink" href="http://www.packtpub.com/support">http://www.packtpub.com/support</a> and register to have the files e-mailed directly to you.</p></div><div class="note" title="Note"><h3 class="title"><a id="note05"></a>Note</h3><p>Pay attention to names for routes, controllers, and actions:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">The route for this action is <code class="literal">news/items-list</code> (lowercase and words separated by dashes);</li><li class="listitem">The controller class name is <code class="literal">NewsController</code> (uppercase with the word Controller in the end);</li><li class="listitem">The action function name in <code class="literal">NewsController</code> is <code class="literal">actionItemsList</code> (the function name has <code class="literal">action</code> word as prefix, dashes in the route are removed, and the first letter of each word is in uppercase);</li></ul></div></div><p>The function to append in the <code class="literal">NewsController</code> class is as follows:</p><div class="informalexample"><pre class="programlisting">public function actionItemsList()
+{
+     return $this-&gt;render('itemsList');
+}</pre></div><p>The <code class="literal">render()</code> method that belongs to <code class="literal">\yii\web\Controller</code>, displays in the layout content of the view passed as the first parameter. When the framework is looking for the view, it will append <code class="literal">.php</code> extension to the name passed as the first parameter of the <code class="literal">render()</code> method and it will look for it in <code class="literal">basic/view/news</code>. The last member of the path is the name that is calling the <code class="literal">render()</code> method.</p><p>Now, we can <a id="id89" class="indexterm"></a>point to <code class="literal">http://hostname/basic/web/index.php?r=news/items-list</code>, to see our beautiful table!</p></div></body></html>

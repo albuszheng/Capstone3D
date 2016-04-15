@@ -1,0 +1,1035 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1" xml:lang="en">
+<head>
+<meta content="1958406356" name="dtb:uid"/>
+<meta content="5" name="dtb:depth"/>
+<meta content="mobiunpack.py" name="dtb:generator"/>
+<meta content="0" name="dtb:totalPageCount"/>
+<meta content="0" name="dtb:maxPageNumber"/>
+</head>
+<docTitle>
+<text>Yii2 By Example</text>
+</docTitle>
+<navMap>
+    <navPoint id="np_1" playOrder="1">
+    <navLabel>
+    <text>Yii2 By Example</text>
+    </navLabel>
+    <content src="Text/part0000.xhtml#aid-1"/>
+      <navPoint id="np_2" playOrder="2">
+      <navLabel>
+      <text>Table of Contents</text>
+      </navLabel>
+      <content src="Text/part0001.xhtml"/>
+      </navPoint>
+      <navPoint id="np_3" playOrder="3">
+      <navLabel>
+      <text>Yii2 By Example</text>
+      </navLabel>
+      <content src="Text/part0003.xhtml#aid-2RHM1"/>
+      </navPoint>
+      <navPoint id="np_4" playOrder="4">
+      <navLabel>
+      <text>Credits</text>
+      </navLabel>
+      <content src="Text/part0004.xhtml#aid-3Q281"/>
+      </navPoint>
+      <navPoint id="np_5" playOrder="5">
+      <navLabel>
+      <text>About the Author</text>
+      </navLabel>
+      <content src="Text/part0005.xhtml#aid-4OIQ1"/>
+      </navPoint>
+      <navPoint id="np_6" playOrder="6">
+      <navLabel>
+      <text>About the Reviewers</text>
+      </navLabel>
+      <content src="Text/part0006.xhtml#aid-5N3C1"/>
+      </navPoint>
+      <navPoint id="np_7" playOrder="7">
+      <navLabel>
+      <text>www.PacktPub.com</text>
+      </navLabel>
+      <content src="Text/part0007.xhtml#aid-6LJU1"/>
+        <navPoint id="np_8" playOrder="8">
+        <navLabel>
+        <text>Support files, eBooks, discount offers, and more</text>
+        </navLabel>
+        <content src="Text/part0007.xhtml#ch00lvl1sec01"/>
+          <navPoint id="np_9" playOrder="9">
+          <navLabel>
+          <text>Why subscribe?</text>
+          </navLabel>
+          <content src="Text/part0007.xhtml#ch00lvl2sec01"/>
+          </navPoint>
+          <navPoint id="np_10" playOrder="10">
+          <navLabel>
+          <text>Free access for Packt account holders</text>
+          </navLabel>
+          <content src="Text/part0007.xhtml#ch00lvl2sec02"/>
+          </navPoint>
+        </navPoint>
+      </navPoint>
+      <navPoint id="np_11" playOrder="11">
+      <navLabel>
+      <text>Preface</text>
+      </navLabel>
+      <content src="Text/part0008.xhtml#aid-7K4G1"/>
+        <navPoint id="np_12" playOrder="12">
+        <navLabel>
+        <text>What this book covers</text>
+        </navLabel>
+        <content src="Text/part0008.xhtml#ch00lvl1sec02"/>
+        </navPoint>
+        <navPoint id="np_13" playOrder="13">
+        <navLabel>
+        <text>What you need for this book</text>
+        </navLabel>
+        <content src="Text/part0009.xhtml#aid-8IL21"/>
+        </navPoint>
+        <navPoint id="np_14" playOrder="14">
+        <navLabel>
+        <text>Who this book is for</text>
+        </navLabel>
+        <content src="Text/part0010.xhtml#aid-9H5K1"/>
+        </navPoint>
+        <navPoint id="np_15" playOrder="15">
+        <navLabel>
+        <text>Conventions</text>
+        </navLabel>
+        <content src="Text/part0011.xhtml#aid-AFM61"/>
+        </navPoint>
+        <navPoint id="np_16" playOrder="16">
+        <navLabel>
+        <text>Reader feedback</text>
+        </navLabel>
+        <content src="Text/part0012.xhtml#aid-BE6O1"/>
+        </navPoint>
+        <navPoint id="np_17" playOrder="17">
+        <navLabel>
+        <text>Customer support</text>
+        </navLabel>
+        <content src="Text/part0013.xhtml#aid-CCNA1"/>
+          <navPoint id="np_18" playOrder="18">
+          <navLabel>
+          <text>Downloading the example code</text>
+          </navLabel>
+          <content src="Text/part0013.xhtml#ch00lvl2sec03"/>
+          </navPoint>
+          <navPoint id="np_19" playOrder="19">
+          <navLabel>
+          <text>Errata</text>
+          </navLabel>
+          <content src="Text/part0013.xhtml#ch00lvl2sec04"/>
+          </navPoint>
+          <navPoint id="np_20" playOrder="20">
+          <navLabel>
+          <text>Piracy</text>
+          </navLabel>
+          <content src="Text/part0013.xhtml#ch00lvl2sec05"/>
+          </navPoint>
+          <navPoint id="np_21" playOrder="21">
+          <navLabel>
+          <text>Questions</text>
+          </navLabel>
+          <content src="Text/part0013.xhtml#ch00lvl2sec06"/>
+          </navPoint>
+        </navPoint>
+      </navPoint>
+      <navPoint id="np_22" playOrder="22">
+      <navLabel>
+      <text>1. Starting with Yii2</text>
+      </navLabel>
+      <content src="Text/part0014.xhtml#aid-DB7S1"/>
+        <navPoint id="np_23" playOrder="23">
+        <navLabel>
+        <text>Requirements and tools</text>
+        </navLabel>
+        <content src="Text/part0014.xhtml#ch01lvl1sec08"/>
+        </navPoint>
+        <navPoint id="np_24" playOrder="24">
+        <navLabel>
+        <text>Installing Yii2 with Composer</text>
+        </navLabel>
+        <content src="Text/part0015.xhtml#aid-E9OE1"/>
+        </navPoint>
+        <navPoint id="np_25" playOrder="25">
+        <navLabel>
+        <text>Application structure</text>
+        </navLabel>
+        <content src="Text/part0016.xhtml#aid-F8901"/>
+        </navPoint>
+        <navPoint id="np_26" playOrder="26">
+        <navLabel>
+        <text>Application properties</text>
+        </navLabel>
+        <content src="Text/part0017.xhtml#aid-G6PI2"/>
+          <navPoint id="np_27" playOrder="27">
+          <navLabel>
+          <text>Common application components</text>
+          </navLabel>
+          <content src="Text/part0017.xhtml#ch01lvl2sec07"/>
+          </navPoint>
+          <navPoint id="np_28" playOrder="28">
+          <navLabel>
+          <text>Handling application events</text>
+          </navLabel>
+          <content src="Text/part0017.xhtml#ch01lvl2sec08"/>
+          </navPoint>
+          <navPoint id="np_29" playOrder="29">
+          <navLabel>
+          <text>The MVC pattern in Yii2</text>
+          </navLabel>
+          <content src="Text/part0017.xhtml#ch01lvl2sec09"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_30" playOrder="30">
+        <navLabel>
+        <text>Naming convention</text>
+        </navLabel>
+        <content src="Text/part0018.xhtml#aid-H5A42"/>
+          <navPoint id="np_31" playOrder="31">
+          <navLabel>
+          <text>Configuring the debug toolbar</text>
+          </navLabel>
+          <content src="Text/part0018.xhtml#ch01lvl2sec10"/>
+          </navPoint>
+          <navPoint id="np_32" playOrder="32">
+          <navLabel>
+          <text>Using the logger</text>
+          </navLabel>
+          <content src="Text/part0018.xhtml#ch01lvl2sec11"/>
+          </navPoint>
+          <navPoint id="np_33" playOrder="33">
+          <navLabel>
+          <text>Example – Hello world from scratch with the Yii basic template and bootstrap template</text>
+          </navLabel>
+          <content src="Text/part0018.xhtml#ch01lvl2sec12"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_34" playOrder="34">
+        <navLabel>
+        <text>Summary</text>
+        </navLabel>
+        <content src="Text/part0019.xhtml#aid-I3QM1"/>
+        </navPoint>
+      </navPoint>
+      <navPoint id="np_35" playOrder="35">
+      <navLabel>
+      <text>2. Creating a Simple News Reader</text>
+      </navLabel>
+      <content src="Text/part0020.xhtml#aid-J2B81"/>
+        <navPoint id="np_36" playOrder="36">
+        <navLabel>
+        <text>Creating Controller and Action</text>
+        </navLabel>
+        <content src="Text/part0020.xhtml#ch02lvl1sec14"/>
+        </navPoint>
+        <navPoint id="np_37" playOrder="37">
+        <navLabel>
+        <text>Creating a view to display a news list</text>
+        </navLabel>
+        <content src="Text/part0021.xhtml#aid-K0RQ1"/>
+        </navPoint>
+        <navPoint id="np_38" playOrder="38">
+        <navLabel>
+        <text>How the controller sends data to view</text>
+        </navLabel>
+        <content src="Text/part0022.xhtml#aid-KVCC2"/>
+          <navPoint id="np_39" playOrder="39">
+          <navLabel>
+          <text>Example – create a controller to display the static news items list and details using the bootstrap template</text>
+          </navLabel>
+          <content src="Text/part0022.xhtml#ch02lvl2sec13"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_40" playOrder="40">
+        <navLabel>
+        <text>Splitting the common view content into reusable views</text>
+        </navLabel>
+        <content src="Text/part0023.xhtml#aid-LTSU1"/>
+          <navPoint id="np_41" playOrder="41">
+          <navLabel>
+          <text>Example – render partial in view</text>
+          </navLabel>
+          <content src="Text/part0023.xhtml#ch02lvl2sec14"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_42" playOrder="42">
+        <navLabel>
+        <text>Creating static pages</text>
+        </navLabel>
+        <content src="Text/part0024.xhtml#aid-MSDG1"/>
+          <navPoint id="np_43" playOrder="43">
+          <navLabel>
+          <text>Example – add a contact page</text>
+          </navLabel>
+          <content src="Text/part0024.xhtml#ch02lvl2sec15"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_44" playOrder="44">
+        <navLabel>
+        <text>Sharing data between views and layout</text>
+        </navLabel>
+        <content src="Text/part0025.xhtml#aid-NQU21"/>
+          <navPoint id="np_45" playOrder="45">
+          <navLabel>
+          <text>Example – change the layout background based on a URL parameter</text>
+          </navLabel>
+          <content src="Text/part0025.xhtml#ch02lvl2sec16"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_46" playOrder="46">
+        <navLabel>
+        <text>Layout with dynamic block</text>
+        </navLabel>
+        <content src="Text/part0026.xhtml#aid-OPEK1"/>
+          <navPoint id="np_47" playOrder="47">
+          <navLabel>
+          <text>Example – add a dynamic box to display advertising info</text>
+          </navLabel>
+          <content src="Text/part0026.xhtml#ch02lvl2sec17"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_48" playOrder="48">
+        <navLabel>
+        <text>Using multiple layouts</text>
+        </navLabel>
+        <content src="Text/part0027.xhtml#aid-PNV61"/>
+          <navPoint id="np_49" playOrder="49">
+          <navLabel>
+          <text>Example – using different layouts to create responsive and nonresponsive content layout for the same view</text>
+          </navLabel>
+          <content src="Text/part0027.xhtml#ch02lvl2sec18"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_50" playOrder="50">
+        <navLabel>
+        <text>Summary</text>
+        </navLabel>
+        <content src="Text/part0028.xhtml#aid-QMFO1"/>
+        </navPoint>
+      </navPoint>
+      <navPoint id="np_51" playOrder="51">
+      <navLabel>
+      <text>3. Making Pretty URLs</text>
+      </navLabel>
+      <content src="Text/part0029.xhtml#aid-RL0A1"/>
+        <navPoint id="np_52" playOrder="52">
+        <navLabel>
+        <text>Using pretty URLs</text>
+        </navLabel>
+        <content src="Text/part0029.xhtml#ch03lvl1sec23"/>
+        </navPoint>
+        <navPoint id="np_53" playOrder="53">
+        <navLabel>
+        <text>Custom URL rules</text>
+        </navLabel>
+        <content src="Text/part0030.xhtml#aid-SJGS1"/>
+          <navPoint id="np_54" playOrder="54">
+          <navLabel>
+          <text>Example – list news items by year or category</text>
+          </navLabel>
+          <content src="Text/part0030.xhtml#ch03lvl2sec19"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_55" playOrder="55">
+        <navLabel>
+        <text>Default parameters in rules</text>
+        </navLabel>
+        <content src="Text/part0031.xhtml#aid-TI1E1"/>
+          <navPoint id="np_56" playOrder="56">
+          <navLabel>
+          <text>Example – the index page to display the links list</text>
+          </navLabel>
+          <content src="Text/part0031.xhtml#ch03lvl2sec20"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_57" playOrder="57">
+        <navLabel>
+        <text>The complete URL rule parameters</text>
+        </navLabel>
+        <content src="Text/part0032.xhtml#aid-UGI01"/>
+        </navPoint>
+        <navPoint id="np_58" playOrder="58">
+        <navLabel>
+        <text>The URL pattern to support the multilanguage view</text>
+        </navLabel>
+        <content src="Text/part0033.xhtml#aid-VF2I1"/>
+        </navPoint>
+        <navPoint id="np_59" playOrder="59">
+        <navLabel>
+        <text>Creating the rule class</text>
+        </navLabel>
+        <content src="Text/part0034.xhtml#aid-10DJ41"/>
+        </navPoint>
+        <navPoint id="np_60" playOrder="60">
+        <navLabel>
+        <text>Summary</text>
+        </navLabel>
+        <content src="Text/part0035.xhtml#aid-11C3M1"/>
+        </navPoint>
+      </navPoint>
+      <navPoint id="np_61" playOrder="61">
+      <navLabel>
+      <text>4. Creating a Room through Forms</text>
+      </navLabel>
+      <content src="Text/part0036.xhtml#aid-12AK82"/>
+        <navPoint id="np_62" playOrder="62">
+        <navLabel>
+        <text>Creating a Model</text>
+        </navLabel>
+        <content src="Text/part0036.xhtml#ch04lvl1sec30"/>
+          <navPoint id="np_63" playOrder="63">
+          <navLabel>
+          <text>Example – a Model to store room data</text>
+          </navLabel>
+          <content src="Text/part0036.xhtml#ch04lvl2sec21"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_64" playOrder="64">
+        <navLabel>
+        <text>Using ActiveForm</text>
+        </navLabel>
+        <content src="Text/part0037.xhtml#aid-1394Q1"/>
+          <navPoint id="np_65" playOrder="65">
+          <navLabel>
+          <text>Example – creating a new room from the HTML form</text>
+          </navLabel>
+          <content src="Text/part0037.xhtml#ch04lvl2sec22"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_66" playOrder="66">
+        <navLabel>
+        <text>Format date, time, and numbers</text>
+        </navLabel>
+        <content src="Text/part0038.xhtml#aid-147LC1"/>
+        </navPoint>
+        <navPoint id="np_67" playOrder="67">
+        <navLabel>
+        <text>Uploading files</text>
+        </navLabel>
+        <content src="Text/part0039.xhtml#aid-1565U1"/>
+          <navPoint id="np_68" playOrder="68">
+          <navLabel>
+          <text>Example – uploading an image of a room</text>
+          </navLabel>
+          <content src="Text/part0039.xhtml#ch04lvl2sec23"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_69" playOrder="69">
+        <navLabel>
+        <text>Summary</text>
+        </navLabel>
+        <content src="Text/part0040.xhtml#aid-164MG1"/>
+        </navPoint>
+      </navPoint>
+      <navPoint id="np_70" playOrder="70">
+      <navLabel>
+      <text>5. Developing a Reservation System</text>
+      </navLabel>
+      <content src="Text/part0041.xhtml#aid-173722"/>
+        <navPoint id="np_71" playOrder="71">
+        <navLabel>
+        <text>Configuring a DB connection</text>
+        </navLabel>
+        <content src="Text/part0041.xhtml#ch05lvl1sec35"/>
+          <navPoint id="np_72" playOrder="72">
+          <navLabel>
+          <text>Example – creating rooms, customers, and reservations tables</text>
+          </navLabel>
+          <content src="Text/part0041.xhtml#ch05lvl2sec24"/>
+          </navPoint>
+          <navPoint id="np_73" playOrder="73">
+          <navLabel>
+          <text>Example – test connection and executing the SQL query</text>
+          </navLabel>
+          <content src="Text/part0041.xhtml#ch05lvl2sec25"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_74" playOrder="74">
+        <navLabel>
+        <text>Using Gii to create room, customer, and reservation models</text>
+        </navLabel>
+        <content src="Text/part0042.xhtml#aid-181NK2"/>
+        </navPoint>
+        <navPoint id="np_75" playOrder="75">
+        <navLabel>
+        <text>Using ActiveRecord to manipulate data</text>
+        </navLabel>
+        <content src="Text/part0043.xhtml#aid-190862"/>
+          <navPoint id="np_76" playOrder="76">
+          <navLabel>
+          <text>Example – query rooms list with ActiveRecord</text>
+          </navLabel>
+          <content src="Text/part0043.xhtml#ch05lvl2sec26"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_77" playOrder="77">
+        <navLabel>
+        <text>Working with relationships</text>
+        </navLabel>
+        <content src="Text/part0044.xhtml#aid-19UOO2"/>
+          <navPoint id="np_78" playOrder="78">
+          <navLabel>
+          <text>Example – using a relationship to connect rooms, reservations, and customers</text>
+          </navLabel>
+          <content src="Text/part0044.xhtml#ch05lvl2sec27"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_79" playOrder="79">
+        <navLabel>
+        <text>How to save a model from a form</text>
+        </navLabel>
+        <content src="Text/part0045.xhtml#aid-1AT9A2"/>
+          <navPoint id="np_80" playOrder="80">
+          <navLabel>
+          <text>Example – creating and updating a room from a form</text>
+          </navLabel>
+          <content src="Text/part0045.xhtml#ch05lvl2sec28"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_81" playOrder="81">
+        <navLabel>
+        <text>Setting up the GMT time zone</text>
+        </navLabel>
+        <content src="Text/part0046.xhtml#aid-1BRPS1"/>
+        </navPoint>
+        <navPoint id="np_82" playOrder="82">
+        <navLabel>
+        <text>Using multiple database connections</text>
+        </navLabel>
+        <content src="Text/part0047.xhtml#aid-1CQAE2"/>
+          <navPoint id="np_83" playOrder="83">
+          <navLabel>
+          <text>Example – configuring a second DB connection to export data to a local SQLite DB</text>
+          </navLabel>
+          <content src="Text/part0047.xhtml#ch05lvl2sec29"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_84" playOrder="84">
+        <navLabel>
+        <text>Summary</text>
+        </navLabel>
+        <content src="Text/part0048.xhtml#aid-1DOR01"/>
+        </navPoint>
+      </navPoint>
+      <navPoint id="np_85" playOrder="85">
+      <navLabel>
+      <text>6. Using a Grid for Data and Relations</text>
+      </navLabel>
+      <content src="Text/part0049.xhtml#aid-1ENBI1"/>
+        <navPoint id="np_86" playOrder="86">
+        <navLabel>
+        <text>Introduction</text>
+        </navLabel>
+        <content src="Text/part0049.xhtml#ch06lvl1sec43"/>
+        </navPoint>
+        <navPoint id="np_87" playOrder="87">
+        <navLabel>
+        <text>DataProvider for grids</text>
+        </navLabel>
+        <content src="Text/part0050.xhtml#aid-1FLS41"/>
+        </navPoint>
+        <navPoint id="np_88" playOrder="88">
+        <navLabel>
+        <text>Using a grid</text>
+        </navLabel>
+        <content src="Text/part0051.xhtml#aid-1GKCM1"/>
+        </navPoint>
+        <navPoint id="np_89" playOrder="89">
+        <navLabel>
+        <text>Custom columns in a grid</text>
+        </navLabel>
+        <content src="Text/part0052.xhtml#aid-1HIT82"/>
+          <navPoint id="np_90" playOrder="90">
+          <navLabel>
+          <text>Example – displaying a reservations list by clicking on a customer grid row</text>
+          </navLabel>
+          <content src="Text/part0052.xhtml#ch06lvl2sec30"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_91" playOrder="91">
+        <navLabel>
+        <text>Filters in GridView</text>
+        </navLabel>
+        <content src="Text/part0053.xhtml#aid-1IHDQ2"/>
+        </navPoint>
+        <navPoint id="np_92" playOrder="92">
+        <navLabel>
+        <text>Displaying and filtering ActiveRecord relational data in a grid's column</text>
+        </navLabel>
+        <content src="Text/part0054.xhtml#aid-1JFUC2"/>
+        </navPoint>
+        <navPoint id="np_93" playOrder="93">
+        <navLabel>
+        <text>A summarized footer row in a grid</text>
+        </navLabel>
+        <content src="Text/part0055.xhtml#aid-1KEEU1"/>
+          <navPoint id="np_94" playOrder="94">
+          <navLabel>
+          <text>Example – extending GridView to customize the footer row in a grid</text>
+          </navLabel>
+          <content src="Text/part0055.xhtml#ch06lvl2sec31"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_95" playOrder="95">
+        <navLabel>
+        <text>Multiple grids on one page</text>
+        </navLabel>
+        <content src="Text/part0056.xhtml#aid-1LCVG1"/>
+          <navPoint id="np_96" playOrder="96">
+          <navLabel>
+          <text>Example: managing the reservations and rooms grids in the same view</text>
+          </navLabel>
+          <content src="Text/part0056.xhtml#ch06lvl2sec32"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_97" playOrder="97">
+        <navLabel>
+        <text>Summary</text>
+        </navLabel>
+        <content src="Text/part0057.xhtml#aid-1MBG21"/>
+        </navPoint>
+      </navPoint>
+      <navPoint id="np_98" playOrder="98">
+      <navLabel>
+      <text>7. Working on the User Interface</text>
+      </navLabel>
+      <content src="Text/part0058.xhtml#aid-1NA0K2"/>
+        <navPoint id="np_99" playOrder="99">
+        <navLabel>
+        <text>Using Gii to generate CRUD</text>
+        </navLabel>
+        <content src="Text/part0058.xhtml#ch07lvl1sec52"/>
+          <navPoint id="np_100" playOrder="100">
+          <navLabel>
+          <text>Example – using CRUD to manage rooms, reservations, and customers using Gii</text>
+          </navLabel>
+          <content src="Text/part0058.xhtml#ch07lvl2sec33"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_101" playOrder="101">
+        <navLabel>
+        <text>Customize JavaScript and CSS</text>
+        </navLabel>
+        <content src="Text/part0059.xhtml#aid-1O8H61"/>
+          <navPoint id="np_102" playOrder="102">
+          <navLabel>
+          <text>Example – using JavaScript and CSS to display advertising columns that disappear if not enough space is available</text>
+          </navLabel>
+          <content src="Text/part0059.xhtml#ch07lvl2sec34"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_103" playOrder="103">
+        <navLabel>
+        <text>Using AJAX</text>
+        </navLabel>
+        <content src="Text/part0060.xhtml#aid-1P71O2"/>
+          <navPoint id="np_104" playOrder="104">
+          <navLabel>
+          <text>Example – reservation details loaded from the customers' drop-down lists</text>
+          </navLabel>
+          <content src="Text/part0060.xhtml#ch07lvl2sec35"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_105" playOrder="105">
+        <navLabel>
+        <text>Using the Bootstrap widget</text>
+        </navLabel>
+        <content src="Text/part0061.xhtml#aid-1Q5IA2"/>
+          <navPoint id="np_106" playOrder="106">
+          <navLabel>
+          <text>Example: using datepicker</text>
+          </navLabel>
+          <content src="Text/part0061.xhtml#ch07lvl2sec36"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_107" playOrder="107">
+        <navLabel>
+        <text>Multiple models in the same view</text>
+        </navLabel>
+        <content src="Text/part0062.xhtml#aid-1R42S1"/>
+          <navPoint id="np_108" playOrder="108">
+          <navLabel>
+          <text>Example – saving multiple customers at the same time</text>
+          </navLabel>
+          <content src="Text/part0062.xhtml#ch07lvl2sec37"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_109" playOrder="109">
+        <navLabel>
+        <text>Saving linked models in the same view</text>
+        </navLabel>
+        <content src="Text/part0063.xhtml#aid-1S2JE1"/>
+          <navPoint id="np_110" playOrder="110">
+          <navLabel>
+          <text>Example – creating a customer and reservation in the same view</text>
+          </navLabel>
+          <content src="Text/part0063.xhtml#ch07lvl2sec38"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_111" playOrder="111">
+        <navLabel>
+        <text>Summary</text>
+        </navLabel>
+        <content src="Text/part0064.xhtml#aid-1T1401"/>
+        </navPoint>
+      </navPoint>
+      <navPoint id="np_112" playOrder="112">
+      <navLabel>
+      <text>8. Log in to the App</text>
+      </navLabel>
+      <content src="Text/part0065.xhtml#aid-1TVKI2"/>
+        <navPoint id="np_113" playOrder="113">
+        <navLabel>
+        <text>Creating a user login</text>
+        </navLabel>
+        <content src="Text/part0065.xhtml#ch08lvl1sec59"/>
+          <navPoint id="np_114" playOrder="114">
+          <navLabel>
+          <text>Example – a login form to access</text>
+          </navLabel>
+          <content src="Text/part0065.xhtml#ch08lvl2sec39"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_115" playOrder="115">
+        <navLabel>
+        <text>Configuring user authorization</text>
+        </navLabel>
+        <content src="Text/part0066.xhtml#aid-1UU542"/>
+          <navPoint id="np_116" playOrder="116">
+          <navLabel>
+          <text>Example – creating an ACF to authorize the users</text>
+          </navLabel>
+          <content src="Text/part0066.xhtml#ch08lvl2sec40"/>
+          </navPoint>
+          <navPoint id="np_117" playOrder="117">
+          <navLabel>
+          <text>RBAC</text>
+          </navLabel>
+          <content src="Text/part0066.xhtml#ch08lvl2sec41"/>
+            <navPoint id="np_118" playOrder="118">
+            <navLabel>
+            <text>Example – configuring RBAC to set permissions for users</text>
+            </navLabel>
+            <content src="Text/part0066.xhtml#ch08lvl3sec01"/>
+            </navPoint>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_119" playOrder="119">
+        <navLabel>
+        <text>Mixing ACF and RBAC</text>
+        </navLabel>
+        <content src="Text/part0067.xhtml#aid-1VSLM1"/>
+          <navPoint id="np_120" playOrder="120">
+          <navLabel>
+          <text>Example – managing users' roles to access rooms, reservations, and customers</text>
+          </navLabel>
+          <content src="Text/part0067.xhtml#ch08lvl2sec42"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_121" playOrder="121">
+        <navLabel>
+        <text>Summary</text>
+        </navLabel>
+        <content src="Text/part0068.xhtml#aid-20R681"/>
+        </navPoint>
+      </navPoint>
+      <navPoint id="np_122" playOrder="122">
+      <navLabel>
+      <text>9. Frontend to Display Rooms to Everyone</text>
+      </navLabel>
+      <content src="Text/part0069.xhtml#aid-21PMQ1"/>
+        <navPoint id="np_123" playOrder="123">
+        <navLabel>
+        <text>Using an advanced template to split frontend and backend</text>
+        </navLabel>
+        <content src="Text/part0069.xhtml#ch09lvl1sec63"/>
+        </navPoint>
+        <navPoint id="np_124" playOrder="124">
+        <navLabel>
+        <text>Configuring an application using init</text>
+        </navLabel>
+        <content src="Text/part0070.xhtml#aid-22O7C2"/>
+          <navPoint id="np_125" playOrder="125">
+          <navLabel>
+          <text>Example – creating frontend for public access</text>
+          </navLabel>
+          <content src="Text/part0070.xhtml#ch09lvl2sec43"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_126" playOrder="126">
+        <navLabel>
+        <text>Sharing ActiveRecord models among applications</text>
+        </navLabel>
+        <content src="Text/part0071.xhtml#aid-23MNU2"/>
+          <navPoint id="np_127" playOrder="127">
+          <navLabel>
+          <text>Example – displaying available rooms in the frontend site</text>
+          </navLabel>
+          <content src="Text/part0071.xhtml#ch09lvl2sec44"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_128" playOrder="128">
+        <navLabel>
+        <text>Customizing a URL in the advanced template</text>
+        </navLabel>
+        <content src="Text/part0072.xhtml#aid-24L8G1"/>
+          <navPoint id="np_129" playOrder="129">
+          <navLabel>
+          <text>Example – using the advanced template in the same domain</text>
+          </navLabel>
+          <content src="Text/part0072.xhtml#ch09lvl2sec45"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_130" playOrder="130">
+        <navLabel>
+        <text>How to use the advanced template in the shared hosting</text>
+        </navLabel>
+        <content src="Text/part0073.xhtml#aid-25JP21"/>
+        </navPoint>
+        <navPoint id="np_131" playOrder="131">
+        <navLabel>
+        <text>Summary</text>
+        </navLabel>
+        <content src="Text/part0074.xhtml#aid-26I9K1"/>
+        </navPoint>
+      </navPoint>
+      <navPoint id="np_132" playOrder="132">
+      <navLabel>
+      <text>10. Localize the App</text>
+      </navLabel>
+      <content src="Text/part0075.xhtml#aid-27GQ61"/>
+        <navPoint id="np_133" playOrder="133">
+        <navLabel>
+        <text>Setting the default language</text>
+        </navLabel>
+        <content src="Text/part0075.xhtml#ch10lvl1sec69"/>
+        </navPoint>
+        <navPoint id="np_134" playOrder="134">
+        <navLabel>
+        <text>File-based translations</text>
+        </navLabel>
+        <content src="Text/part0076.xhtml#aid-28FAO2"/>
+          <navPoint id="np_135" playOrder="135">
+          <navLabel>
+          <text>Example – using file-based translation for the entire website</text>
+          </navLabel>
+          <content src="Text/part0076.xhtml#ch10lvl2sec46"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_136" playOrder="136">
+        <navLabel>
+        <text>Placeholders formatting</text>
+        </navLabel>
+        <content src="Text/part0077.xhtml#aid-29DRA1"/>
+        </navPoint>
+        <navPoint id="np_137" playOrder="137">
+        <navLabel>
+        <text>DB-based translations</text>
+        </navLabel>
+        <content src="Text/part0078.xhtml#aid-2ACBS1"/>
+          <navPoint id="np_138" playOrder="138">
+          <navLabel>
+          <text>Example – translating room descriptions using DB</text>
+          </navLabel>
+          <content src="Text/part0078.xhtml#ch10lvl2sec47"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_139" playOrder="139">
+        <navLabel>
+        <text>Summary</text>
+        </navLabel>
+        <content src="Text/part0079.xhtml#aid-2BASE1"/>
+        </navPoint>
+      </navPoint>
+      <navPoint id="np_140" playOrder="140">
+      <navLabel>
+      <text>11. Creating an API for Use in a Mobile App</text>
+      </navLabel>
+      <content src="Text/part0080.xhtml#aid-2C9D01"/>
+        <navPoint id="np_141" playOrder="141">
+        <navLabel>
+        <text>Configuring a REST app in the advanced template</text>
+        </navLabel>
+        <content src="Text/part0080.xhtml#ch11lvl1sec74"/>
+        </navPoint>
+        <navPoint id="np_142" playOrder="142">
+        <navLabel>
+        <text>Creating a controller</text>
+        </navLabel>
+        <content src="Text/part0081.xhtml#aid-2D7TI2"/>
+          <navPoint id="np_143" playOrder="143">
+          <navLabel>
+          <text>Example – creating a controller to manage rooms</text>
+          </navLabel>
+          <content src="Text/part0081.xhtml#ch11lvl2sec48"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_144" playOrder="144">
+        <navLabel>
+        <text>Authentication</text>
+        </navLabel>
+        <content src="Text/part0082.xhtml#aid-2E6E42"/>
+          <navPoint id="np_145" playOrder="145">
+          <navLabel>
+          <text>Example – using authentication to get a customers list</text>
+          </navLabel>
+          <content src="Text/part0082.xhtml#ch11lvl2sec49"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_146" playOrder="146">
+        <navLabel>
+        <text>New controller action</text>
+        </navLabel>
+        <content src="Text/part0083.xhtml#aid-2F4UM1"/>
+          <navPoint id="np_147" playOrder="147">
+          <navLabel>
+          <text>Example – getting a rooms list for a reservation</text>
+          </navLabel>
+          <content src="Text/part0083.xhtml#ch11lvl2sec50"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_148" playOrder="148">
+        <navLabel>
+        <text>Customizing authentication and response</text>
+        </navLabel>
+        <content src="Text/part0084.xhtml#aid-2G3F82"/>
+          <navPoint id="np_149" playOrder="149">
+          <navLabel>
+          <text>Example – status response node in data received</text>
+          </navLabel>
+          <content src="Text/part0084.xhtml#ch11lvl2sec51"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_150" playOrder="150">
+        <navLabel>
+        <text>Other forms of export – RSS</text>
+        </navLabel>
+        <content src="Text/part0085.xhtml#aid-2H1VQ1"/>
+          <navPoint id="np_151" playOrder="151">
+          <navLabel>
+          <text>Example – creating an RSS with a list of available rooms</text>
+          </navLabel>
+          <content src="Text/part0085.xhtml#ch11lvl2sec52"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_152" playOrder="152">
+        <navLabel>
+        <text>Summary</text>
+        </navLabel>
+        <content src="Text/part0086.xhtml#aid-2I0GC1"/>
+        </navPoint>
+      </navPoint>
+      <navPoint id="np_153" playOrder="153">
+      <navLabel>
+      <text>12. Create a Console Application to Automate the Periodic Task</text>
+      </navLabel>
+      <content src="Text/part0087.xhtml#aid-2IV0U1"/>
+        <navPoint id="np_154" playOrder="154">
+        <navLabel>
+        <text>Interacting with console applications</text>
+        </navLabel>
+        <content src="Text/part0087.xhtml#ch12lvl1sec81"/>
+        </navPoint>
+        <navPoint id="np_155" playOrder="155">
+        <navLabel>
+        <text>Creating a console controller</text>
+        </navLabel>
+        <content src="Text/part0088.xhtml#aid-2JTHG1"/>
+          <navPoint id="np_156" playOrder="156">
+          <navLabel>
+          <text>Example – setting an alarm flag for expired reservation</text>
+          </navLabel>
+          <content src="Text/part0088.xhtml#ch12lvl2sec53"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_157" playOrder="157">
+        <navLabel>
+        <text>Formatting the output from the console</text>
+        </navLabel>
+        <content src="Text/part0089.xhtml#aid-2KS221"/>
+        </navPoint>
+        <navPoint id="np_158" playOrder="158">
+        <navLabel>
+        <text>Implementing and executing cron jobs</text>
+        </navLabel>
+        <content src="Text/part0090.xhtml#aid-2LQIK1"/>
+          <navPoint id="np_159" playOrder="159">
+          <navLabel>
+          <text>Example – sending an e-mail with new reservations of the day</text>
+          </navLabel>
+          <content src="Text/part0090.xhtml#ch12lvl2sec54"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_160" playOrder="160">
+        <navLabel>
+        <text>Summary</text>
+        </navLabel>
+        <content src="Text/part0091.xhtml#aid-2MP361"/>
+        </navPoint>
+      </navPoint>
+      <navPoint id="np_161" playOrder="161">
+      <navLabel>
+      <text>13. Final Refactoring</text>
+      </navLabel>
+      <content src="Text/part0092.xhtml#aid-2NNJO1"/>
+        <navPoint id="np_162" playOrder="162">
+        <navLabel>
+        <text>Creating widgets</text>
+        </navLabel>
+        <content src="Text/part0092.xhtml#ch13lvl1sec86"/>
+          <navPoint id="np_163" playOrder="163">
+          <navLabel>
+          <text>Example – creating a widget with a carousel</text>
+          </navLabel>
+          <content src="Text/part0092.xhtml#ch13lvl2sec55"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_164" playOrder="164">
+        <navLabel>
+        <text>Creating components</text>
+        </navLabel>
+        <content src="Text/part0093.xhtml#aid-2OM4A1"/>
+          <navPoint id="np_165" playOrder="165">
+          <navLabel>
+          <text>Example – creating a component that creates a backup of the MySQL database and sends an e-mail to the administrator</text>
+          </navLabel>
+          <content src="Text/part0093.xhtml#ch13lvl2sec56"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_166" playOrder="166">
+        <navLabel>
+        <text>Creating modules</text>
+        </navLabel>
+        <content src="Text/part0094.xhtml#aid-2PKKS1"/>
+        </navPoint>
+        <navPoint id="np_167" playOrder="167">
+        <navLabel>
+        <text>Generating an API documentation</text>
+        </navLabel>
+        <content src="Text/part0095.xhtml#aid-2QJ5E2"/>
+          <navPoint id="np_168" playOrder="168">
+          <navLabel>
+          <text>Example – using an API documentation to generate a doc of app and services</text>
+          </navLabel>
+          <content src="Text/part0095.xhtml#ch13lvl2sec57"/>
+          </navPoint>
+        </navPoint>
+        <navPoint id="np_169" playOrder="169">
+        <navLabel>
+        <text>Summary</text>
+        </navLabel>
+        <content src="Text/part0096.xhtml#aid-2RHM01"/>
+        </navPoint>
+      </navPoint>
+      <navPoint id="np_170" playOrder="170">
+      <navLabel>
+      <text>Index</text>
+      </navLabel>
+      <content src="Text/part0097.xhtml"/>
+      </navPoint>
+    </navPoint>
+  </navMap>
+</ncx>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Chapter&nbsp;11.&nbsp;Creating an API for Use in a Mobile App</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="chapter" title="Chapter&nbsp;11.&nbsp;Creating an API for Use in a Mobile App" id="aid-2C9D01"><div class="titlepage"><div><div><h1 class="title"><a id="ch11"></a>Chapter&nbsp;11.&nbsp;Creating an API for Use in a Mobile App</h1></div></div></div><p>In this chapter, you will learn how to create RESTful Web Services with the new integrated management of Yii 2.</p><p>You will learn how to create a new application to manage the <code class="literal">api</code> environment and how to create a controller using the default base classes provided by the framework.</p><p>Then, we will cover authentication methods and you'll learn how to customize the response output format. We'll also discuss:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Configuring the REST app in the advanced template</li><li class="listitem">Creating a controller:<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">For example: creating a controller to manage rooms</li></ul></div></li><li class="listitem">Authentication:<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">For example: using authentication to get a customers list</li></ul></div></li><li class="listitem">New controller actions:<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">For example: getting a rooms list for a reservation</li></ul></div></li><li class="listitem">Customizing authentication and the response<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">For example: status response node in received data</li></ul></div></li><li class="listitem">Other forms of export &ndash; RSS:<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">For example: creating RSS with a list of available rooms</li></ul></div></li></ul></div><div class="section" title="Configuring a REST app in the advanced template"><div class="titlepage"><div><div><h1 class="title"><a id="ch11lvl1sec74"></a>Configuring a REST app in the advanced template</h1></div></div></div><p>Before <a id="id462" class="indexterm"></a>using <a id="id463" class="indexterm"></a>the advanced template, it is advisable to configure RESTful Web Services, since, as you saw in previous chapters, this configuration allows you to easily add a new application in the same project.</p><p>Yii provides many built-in features to create RESTful Web Services and it reduces the code needed to implement it that is always structured with models, controllers, and actions.</p><p>These are its main features:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Default actions (<code class="literal">index</code>, <code class="literal">view</code>, <code class="literal">create</code>, <code class="literal">update</code>, <code class="literal">delete</code>, and <code class="literal">options</code>) in <code class="literal">yii\rest\ActiveController</code>, which is the base controller suggested to override</li><li class="listitem">A response format selectable from input</li><li class="listitem">Customized authentication and authorization</li><li class="listitem">Caching and rate limiting</li></ul></div><p>Yii applies<a id="id464" class="indexterm"></a> well-established knowledge <a id="id465" class="indexterm"></a>about RESTful Web Services creation, such as how to present metadata in the response output. So, it is advisable that we follow the framework guidelines as far as possible; in this way, we will write commonly manageable REST APIs.</p><p>The first thing to do with an advanced template is to create a new application in the same project, for example renaming it <code class="literal">api</code>. Yii has not got a built-in functionality to create a new application, but it only takes a few steps to complete this task.</p><p>Starting from the root of our project, we will create, as well as for other applications (<code class="literal">common</code>, <code class="literal">backend</code>, <code class="literal">frontend</code>, and <code class="literal">console</code>), a new folder named <code class="literal">api</code> with the following command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ mkdir api</strong></span>
+</pre></div><p>Now, enter in <code class="literal">api</code> and let's create these five subfolders:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ mkdir config</strong></span>
+<span class="strong"><strong>$ mkdir web</strong></span>
+<span class="strong"><strong>$ mkdir controllers</strong></span>
+<span class="strong"><strong>$ mkdir runtime</strong></span>
+</pre></div><p>We must only create files for the first two folders, and the others will be left temporarily empty.</p><div class="note" title="Note"><h3 class="title"><a id="note69"></a>Note</h3><p>Another possible solution would be to copy complete content from other applications, such as <code class="literal">frontend</code> or <code class="literal">backend</code>, to the new application destination folder and then to clear content  that is not useful.</p></div><p>In the <code class="literal">config</code> folder, we must create two files: <code class="literal">main.php</code> and <code class="literal">params.php</code>. The second file, <code class="literal">params.php</code>, will be<a id="id466" class="indexterm"></a> temporarily empty as we have not got any parameters to store in it, such as:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+return [
+];</pre></div><p>The <a id="id467" class="indexterm"></a>content of <code class="literal">api/config/main.php</code> will, instead, be:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+$params = array_merge(
+    require(__DIR__ . '/../../common/config/params.php'),
+    require(__DIR__ . '/../../common/config/params-local.php'),
+    require(__DIR__ . '/params.php')
+);
+
+return [
+    'id' =&gt; 'app-api',
+    'basePath' =&gt; dirname(__DIR__),
+    'controllerNamespace' =&gt; 'api\controllers',
+    'bootstrap' =&gt; ['log'],
+    'modules' =&gt; [],
+    
+    'components' =&gt; [
+        
+        'urlManager' =&gt; [
+            'enablePrettyUrl' =&gt; true,
+            'showScriptName' =&gt; false,
+        ],        
+        
+        'user' =&gt; [
+            'identityClass' =&gt; '\common\models\User',
+            'enableSession' =&gt; false,
+            'loginUrl' =&gt; null
+        ],
+        
+        'log' =&gt; [
+            'traceLevel' =&gt; YII_DEBUG ? 3 : 0,
+            'targets' =&gt; [
+                [
+                    'class' =&gt; 'yii\log\FileTarget',
+                    'levels' =&gt; ['error', 'warning'],
+                ],
+            ],
+        ],
+
+    ],
+    'params' =&gt; $params,
+];</pre></div><p>Then, we will create an <code class="literal">index.php</code> file in the <code class="literal">web</code> folder with the following content:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+defined('YII_DEBUG') or define('YII_DEBUG', true);
+defined('YII_ENV') or define('YII_ENV', 'dev');
+
+require(__DIR__ . '/../../vendor/autoload.php');
+require(__DIR__ . '/../../vendor/yiisoft/yii2/Yii.php');
+require(__DIR__ . '/../../common/config/bootstrap.php');
+
+$config = yii\helpers\ArrayHelper::merge(
+    require(__DIR__ . '/../../common/config/main.php'),
+    require(__DIR__ . '/../../common/config/main-local.php'),
+    require(__DIR__ . '/../config/main.php')
+);
+
+$application = new yii\web\Application($config);
+$application-&gt;run();</pre></div><p>Still in <a id="id468" class="indexterm"></a>the <code class="literal">web</code> folder, we will create the <code class="literal">.htaccess</code> file to <a id="id469" class="indexterm"></a>handle a pretty URL:</p><div class="informalexample"><pre class="programlisting">RewriteEngine on
+
+# If a directory or a file exists, use it directly
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+# Otherwise forward it to index.php
+RewriteRule . index.php</pre></div><p>Finally, we have to add a new alias in <code class="literal">common/config/bootstrap </code>regarding the <code class="literal">api</code> application:</p><div class="informalexample"><pre class="programlisting">Yii::setAlias('api', dirname(dirname(__DIR__)) . '/api');</pre></div><p>Our job is complete, as we finally have a brand new application from scratch.</p><div class="note" title="Note"><h3 class="title"><a id="note70"></a>Note</h3><p>Be sure to make the <code class="literal">runtime</code> folder writable, since the framework will write in it runtime data such as log files.</p></div></div></div></body></html>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>File-based translations</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="File-based translations"><div class="titlepage" id="aid-28FAO2"><div><div><h1 class="title"><a id="ch10lvl1sec70"></a>File-based translations</h1></div></div></div><p>This is the most simple way to translate<a id="id442" class="indexterm"></a> text messages from one language to another. Basically, there are one or more files for each language containing keywords with text representations; we will put these keywords in the source code where the framework will replace them with text.</p><p>The pairs of keyword-text translations are grouped by categories representing the filenames where they are stored. These pairs are array keys-values, where key indicates keywords, and value indicates text translations.</p><p>By default, the path folder containing translations for a specific language is in <code class="literal">@app/messages/&lt;language&gt;/&lt;category&gt;.php</code>. Therefore, if we are writing translations for the <code class="literal">app</code> category and the <code class="literal">en-US</code> language, for example, the complete path for the translation file will be in <code class="literal">@app/messages/en-US/app.php</code>.</p><p>Going to the source code, translations are activated using the <code class="literal">Yii::t()</code> static method that accepts four parameters, but only the first two are required; the first one is the category, and the second one is the message to translate.</p><p>Now, we want to make an example where we will write a classic <code class="literal">Hello World!</code> in two languages: English and Italian. However, it will be just as easy to translate it in any other language.</p><p>Working on the previous basic templated project, write a new controller named <code class="literal">FileTranslatorController</code> in <code class="literal">basic/controllers/FileTranslatorController.php</code> with the following content:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace app\controllers;
+
+use Yii;
+use yii\web\Controller;
+
+class FileTranslatorController extends Controller
+{
+    public function actionIndex()
+    {
+        \Yii::$app-&gt;language = 'en-US';
+        $englishText = \Yii::t('app', 'Hello World!');
+        
+        \Yii::$app-&gt;language = 'it-IT';
+        $italianText = \Yii::t('app', 'Hello World!');
+        
+        return $this-&gt;render('index', ['englishText' =&gt; $englishText, 'italianText' =&gt; $italianText]);
+    }
+}</pre></div><p>The first two <a id="id443" class="indexterm"></a>source code rows in <code class="literal">actionIndex()</code> will set the app language to <code class="literal">en-US</code>, and then they will store the content of <code class="literal">Hello World!</code> key of the <code class="literal">basic/messages/en-US/app.php</code> file in the <code class="literal">$englishText</code> variable.</p><p>In the same way, the last two source code rows in <code class="literal">actionIndex()</code> will set the app language to <code class="literal">it-IT</code>, and then they will store the content of <code class="literal">Hello World!</code> key of the <code class="literal">basic/messages/it-IT/app.php</code> file in the <code class="literal">$italianText</code> variable.</p><p>The view content in <code class="literal">basic/views/file-translator/index.php</code> is simply as follows:</p><div class="informalexample"><pre class="programlisting">&lt;b&gt;Display Hello World! in two language: English and Italian&lt;/b&gt;
+
+&lt;br /&gt;&lt;br /&gt;
+
+In English:
+&lt;?= $englishText ?&gt;
+
+&lt;br /&gt;&lt;br /&gt;
+In Italian:
+&lt;?= $italianText ?&gt;</pre></div><p>Now, we need to define file languages for English and Italian translations.</p><p>If the <code class="literal">messages</code> folder does not exist in <code class="literal">basic/messages</code>, we will just create it; then, create two new folders named <code class="literal">en-US</code> and <code class="literal">it-IT</code>. In each folder, add a new file named <code class="literal">app.php</code>.</p><p>For the file with the English translations in <code class="literal">basic/messages/en-US/app.php</code>, let's write:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+return [
+    'Hello World!' =&gt; 'Hello world!',
+];
+
+?&gt;</pre></div><p>While for Italian translations in <code class="literal">basic/messages/it-IT/app.php</code>, let's write:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+return [
+    'Hello World!' =&gt; 'Ciao Mondo!',
+];
+
+?&gt;</pre></div><p>You can browse<a id="id444" class="indexterm"></a> to <code class="literal">http://hostname/basic/file-translator/index</code> to view the output.</p><div class="section" title="Example &ndash; using file-based translation for the entire website"><div class="titlepage"><div><div><h2 class="title"><a id="ch10lvl2sec46"></a>Example &ndash; using file-based translation for the entire website</h2></div></div></div><p>Applying translations to the<a id="id445" class="indexterm"></a> entire website is tedious, and, above all, there is a high possibility that you will miss some translations. Yii provides a powerful tool to automatically produce the message's PHP files for all the languages we want.</p><div class="note" title="Note"><h3 class="title"><a id="note66"></a>Note</h3><p>This powerful tool is a console command <a id="id446" class="indexterm"></a>named <code class="literal">message</code>; therefore, we require a console access.</p></div><p>This command requires two steps:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">Creating a configuration file where we will indicate the <code class="literal">languages</code> property, or which languages we want to support in the project and the <code class="literal">messagePath</code> property, or rather, where to store translated messages.</li><li class="listitem">Launching the <code class="literal">message</code> command.</li></ol><div style="height:10px; width: 1px"></div></div><p>For step 1, go to the console, in the project's root folder, where the <code class="literal">yii</code> file is located.</p><p>If we are working on a basic template, we will launch the following command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ ./yii message/config config/i18n.php</strong></span>
+</pre></div><p>The first parameter, <code class="literal">message/config</code>, is the action <code class="literal">config</code> invoked on the controller <code class="literal">message</code>, and the second parameter is the file path where we want to save the configuration (in this case, <code class="literal">config/i18n.php</code>, but we can write anything).</p><p>If we are working on an advanced template, we will launch the following command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>./yii message/config common/config/i18n.php</strong></span>
+</pre></div><p>The only difference is that, in the last command, we specified that the configuration file for message command translations is in <code class="literal">common/config</code> instead of the <code class="literal">config</code> folder.</p><p>Now, if we open <code class="literal">config/i18n.php</code>, we should see the default configuration file for the <code class="literal">message</code> command<a id="id447" class="indexterm"></a> that should look like this:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+return [
+    // string, required, root directory of all source files
+    'sourcePath' =&gt; __DIR__ . DIRECTORY_SEPARATOR . '..',
+    // array, required, list of language codes that the extracted messages
+    // should be translated to. For example, ['zh-CN', 'de'].
+    'languages' =&gt; ['de'],
+    // string, the name of the function for translating messages.
+    // Defaults to 'Yii::t'. This is used as a mark to find the messages to be
+    // translated. You may use a string for single function name or an array for
+    // multiple function names.
+    'translator' =&gt; 'Yii::t',
+    // boolean, whether to sort messages by keys when merging new messages
+    // with the existing ones. Defaults to false, which means the new (untranslated)
+    // messages will be separated from the old (translated) ones.
+    'sort' =&gt; false,
+    // boolean, whether to remove messages that no longer appear in the source code.
+    // Defaults to false, which means each of these messages will be enclosed with a pair of '@@' marks.
+    'removeUnused' =&gt; false,
+    // array, list of patterns that specify which files/directories should NOT be processed.
+    // If empty or not set, all files/directories will be processed.
+    // A path matches a pattern if it contains the pattern string at its end. For example,
+    // '/a/b' will match all files and directories ending with '/a/b';
+    // the '*.svn' will match all files and directories whose name ends with '.svn'.
+    // and the '.svn' will match all files and directories named exactly '.svn'.
+    // Note, the '/' characters in a pattern matches both '/' and '\'.
+    // See helpers/FileHelper::findFiles() description for more details on pattern matching rules.
+    'only' =&gt; ['*.php'],
+    // array, list of patterns that specify which files (not directories) should be processed.
+    // If empty or not set, all files will be processed.
+    // Please refer to "except" for details about the patterns.
+    // If a file/directory matches both a pattern in "only" and "except", it will NOT be processed.
+    'except' =&gt; [
+        '.svn',
+        '.git',
+        '.gitignore',
+        '.gitkeep',
+        '.hgignore',
+        '.hgkeep',
+        '/messages',
+    ],
+
+    // 'php' output format is for saving messages to php files.
+    'format' =&gt; 'php',
+    // Root directory containing message translations.
+    'messagePath' =&gt; __DIR__,
+    // boolean, whether the message file should be overwritten with the merged messages
+    'overwrite' =&gt; true,
+
+
+    /*
+    // 'db' output format is for saving messages to database.
+    'format' =&gt; 'db',
+    // Connection component to use. Optional.
+    'db' =&gt; 'db',
+    // Custom source message table. Optional.
+    // 'sourceMessageTable' =&gt; '{{%source_message}}',
+    // Custom name for translation message table. Optional.
+    // 'messageTable' =&gt; '{{%message}}',
+    */
+
+    /*
+    // 'po' output format is for saving messages to gettext po files.
+    'format' =&gt; 'po',
+    // Root directory containing message translations.
+    'messagePath' =&gt; __DIR__ . DIRECTORY_SEPARATOR . 'messages',
+    // Name of the file that will be used for translations.
+    'catalog' =&gt; 'messages',
+    // boolean, whether the message file should be overwritten with the merged messages
+    'overwrite' =&gt; true,
+    */
+];</pre></div><p>The configuration is very clear to read, so we will only explain its main properties: <code class="literal">languages</code>, <code class="literal">messagePath</code>, and <code class="literal">except</code>.</p><p>The <code class="literal">languages</code> property defines <a id="id448" class="indexterm"></a>which languages are supported in the web project. For example, we could write:</p><div class="informalexample"><pre class="programlisting">'languages' =&gt; ['en', 'it', 'fr'],</pre></div><p>The preceding command supports and autogenerates messages for the English, Italian, and French languages.</p><p>The <code class="literal">messagePath</code> property defines where autogenerated messages should be saved. It is advisable to point to the <code class="literal">messages</code> folder (that must be created if it does not exist); in this way, we can write the following in the basic template:</p><div class="informalexample"><pre class="programlisting">'messagePath' =&gt;  __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'messages',</pre></div><p>Here, <code class="literal">__DIR__</code> refers to the <code class="literal">config</code> file folder, while in the basic template, it is the <code class="literal">basic/config</code> folder.</p><p>Once we have launched the <code class="literal">message</code> command, it will look for all folders and subfolders containing <code class="literal">.php</code> files, as indicated in the <code class="literal">only</code> property (only <code class="literal">.php</code> files will be processed).</p><p>Therefore, in the project's root folder, there are some folders, such as <code class="literal">vendor</code>, not relevant for our purpose.</p><p>So, we will add the <code class="literal">/vendor</code> value to the <code class="literal">except</code> property, in order to indicate that the <code class="literal">message</code> command will not look inside this folder, in this way:</p><div class="informalexample"><pre class="programlisting">    'except' =&gt; [
+        '.svn',
+        '.git',
+        '.gitignore',
+        '.gitkeep',
+        '.hgignore',
+        '.hgkeep',
+        '/messages',
+        '/vendor'
+    ],</pre></div><p>For step 2, we will now try to launch the command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ ./yii message config/i18n.php</strong></span>
+</pre></div><p>It will find the <code class="literal">Yii::t</code> marker, defined in the <code class="literal">translator</code> property, in all the files in the folders and subfolders specified in the <code class="literal">sourcePath</code> property, considering the <code class="literal">except</code> property to exclude files and folders where we do not want to look.</p><p>The translated messages will be created (if they do not exist) in the <code class="literal">messagePath</code> folder, in our case, in the <code class="literal">messages</code> folder starting from the project's root folder.</p><p>If there are no <code class="literal">Yii::t</code> markers in all the searched files, the relative language's subfolder will be empty.</p><p>For example, open <code class="literal">SiteController</code> in <code class="literal">basic/controller/SiteController.php</code> and change the<a id="id449" class="indexterm"></a> <code class="literal">actionIndex</code> content as follows:</p><div class="informalexample"><pre class="programlisting">    public function actionIndex()
+    {
+        $message = \Yii::t('app', 'this message must be translated!');
+        
+        return $this-&gt;render('index');
+    }</pre></div><p>Now, relaunch the <code class="literal">message</code> command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ ./yii message config/i18n.php</strong></span>
+</pre></div><p>Then, check the <code class="literal">basic/messages/en</code> folder. We will find an <code class="literal">app.php</code> file that contains the <code class="literal">this message must be translated</code> key to which we must fill the value to specify the translation.</p></div></div></body></html>

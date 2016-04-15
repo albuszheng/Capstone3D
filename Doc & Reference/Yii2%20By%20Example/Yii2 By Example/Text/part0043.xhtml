@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Using ActiveRecord to manipulate data</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Using ActiveRecord to manipulate data"><div class="titlepage" id="aid-190862"><div><div><h1 class="title"><a id="ch05lvl1sec37"></a>Using ActiveRecord to manipulate data</h1></div></div></div><p>ActiveRecord <a id="id225" class="indexterm"></a>offers a convenient way to access and <a id="id226" class="indexterm"></a>manipulate data stored in a database. This class is linked to a database table and represents a row of the linked table. Its attributes are the fields of the table and its methods allow us to perform common actions on database, such as selecting, inserting, or updating SQL statements.</p><p>Many common databases are supported by ActiveRecord, such as:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">MySQL</li><li class="listitem">PostgreSQL</li><li class="listitem">SQLite</li><li class="listitem">Oracle</li><li class="listitem">Microsoft SQL Server</li></ul></div><p>Also, some NoSQL databases are supported, such as:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Redis</li><li class="listitem">MongoDB</li></ul></div><p>ActiveRecord reads the table structure every time it is instanced and makes available table columns as its properties. Every change to the table structure is immediately available in the ActiveRecord object.</p><p>Therefore, if a table contains the fields <code class="literal">id</code>, <code class="literal">floor</code>, and <code class="literal">room_number</code>, and if <code class="literal">$model</code> is an instance of <code class="literal">yii\db\ActiveRecord</code>, in order to access these fields, it will be enough to type:</p><div class="informalexample"><pre class="programlisting">$id = $model-&gt;id;
+$floor = $model-&gt;floor;
+$room_number = $model-&gt;room_numer;</pre></div><p>ActiveRecord<a id="id227" class="indexterm"></a> handles properties request with the<code class="literal"> __get</code> magic <a id="id228" class="indexterm"></a>method and catches the respective content of a table column. In the previous paragraph, you saw how to create a model class from database tables to extend <code class="literal">yii\db\ActiveRecord</code> with Gii. The syntax used by ActiveRecord is simple and redundant, so it is easy to remember. Now let's look at how to query data from a database with ActiveRecord.</p><p>Data is fetched from a database through an <code class="literal">\yii\db\ActiveQuery</code> object to build the query, and finally calls on <code class="literal">one()</code> or <code class="literal">all()</code> methods to get an ActiveRecord object or a list of ActiveRecord objects.</p><p>An ActiveQuery object is returned from an ActiveRecord object by calling its static method <code class="literal">::find()</code>.</p><p>If <code class="literal">Room</code> is a model (and subclasses ActiveRecord), an ActiveQuery will be returned from:</p><div class="informalexample"><pre class="programlisting">// $query is an ActiveQuery object
+$query = Room::find();</pre></div><p>ActiveQuery objects provide methods to build the query with names such as in SQL expression.</p><p>The most common ones are:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">where()</code> to add conditions</li><li class="listitem"><code class="literal">orderBy()</code> to apply an order</li><li class="listitem"><code class="literal">groupBy()</code> to make aggregations</li></ul></div><p>Almost all of these methods support a parameter that can be a string or an array. If it is a string, it will be passed exactly as it is to the SQL query; if it is an array, a key will be used as the column name, and a value as the corresponding value. For example, we want to build query to find a room on the first floor:</p><div class="informalexample"><pre class="programlisting">$query = Room::find()-&gt;where('floor = 1');
+// equivalent to
+$query = Room::find()-&gt;where(['floor' =&gt; 1]);</pre></div><p>For complex conditions, <code class="literal">where()</code> supports the operator format where the condition is an array with:</p><div class="informalexample"><pre class="programlisting">[operator, operand1, operand2, &hellip;]</pre></div><p>For example, we want to build a query to find a room on the first floor:</p><div class="informalexample"><pre class="programlisting">$query = Room::find()-&gt;where(['&gt;=', 'floor', 1]);
+// equivalent to
+$query = Room::find()-&gt;where('floor &gt;= 1';</pre></div><p>Other conditions can be added using <code class="literal">andWhere()</code> or <code class="literal">orWhere()</code>, by just using the <code class="literal">and</code> or <code class="literal">or</code> logical link.</p><p>An array parameter of the <code class="literal">where()</code> method is preferable to a string, because we can easily split the field name from its content and set the second parameter of the <code class="literal">where()</code> method with an array with pair keys <code class="literal">=&gt;</code> values of parameters.</p><p>After creating a query object, to get data from an ActiveQuery, we will have:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">one()</code>: This method returns an ActiveRecord object or null if not found</li><li class="listitem"><code class="literal">all()</code>: This method returns a list of ActiveRecord objects or an empty array if not found</li></ul></div><p>So, to get rooms<a id="id229" class="indexterm"></a> on the first floor, we must write:</p><div class="informalexample"><pre class="programlisting">$query = Room::find()-&gt;where(['floor' =&gt; 1]);
+$items = $query-&gt;all();
+// equivalent to
+$items = Room::find()-&gt;where(['floor' =&gt; 1])-&gt;all();</pre></div><div class="note" title="Note"><h3 class="title"><a id="note28"></a>Note</h3><p>There is a more concise syntax to fetch data from an ActiveRecord: the <code class="literal">findOne()</code> and <code class="literal">findAll()</code> methods, which return a single ActiveRecord or a list of ActiveRecords. The only difference from the previous methods is that they accept a single parameter, which can be:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">A number to filter by primary key</li><li class="listitem">An array of scalar values to filter by a list of primary key values (only for <code class="literal">findAll()</code> because <code class="literal">findOne()</code> returns a single ActiveRecord)</li><li class="listitem">An array of name-value pair to filter by a set of attribute values</li></ul></div></div><p>Other common<a id="id230" class="indexterm"></a> methods of ActiveRecord<a id="id231" class="indexterm"></a> are:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">validate()</code>: This <a id="id232" class="indexterm"></a>method is used to apply rules validation to attributes of a model</li><li class="listitem"><code class="literal">save()</code>: This <a id="id233" class="indexterm"></a>method is used to save a new model or to update one that already exists (if the <code class="literal">save()</code> method is applied to a fetched ActiveRecord object)</li><li class="listitem"><code class="literal">delete()</code>: This<a id="id234" class="indexterm"></a> method is used to delete a model</li></ul></div><div class="section" title="Example &ndash; query rooms list with ActiveRecord"><div class="titlepage"><div><div><h2 class="title"><a id="ch05lvl2sec26"></a>Example &ndash; query rooms list with ActiveRecord</h2></div></div></div><p>In this example, we will <a id="id235" class="indexterm"></a>query the rooms list using ActiveRecord and filter<a id="id236" class="indexterm"></a> through the following fields: <code class="literal">floor</code>, <code class="literal">room_number</code>, and <code class="literal">price_per_day</code> with operators (<code class="literal"> &gt;=</code>, <code class="literal">&lt;=</code>, and <code class="literal">=</code>).</p><p>A data filter will take place using the <code class="literal">SearchFilter</code> container to encapsulate all of the filter data inside a single array.</p><p>Starting from a view, create a new file with the path <code class="literal">basic/views/rooms/indexFiltered.php</code>.</p><p>In this view, we will put the search filter on the top and then a table to display the results.</p><p>We have three fields to filter: <code class="literal">floor</code>, <code class="literal">room_number</code>, and <code class="literal">price_per_day</code>, all with an operator. The data filter will be passed to the controller and the filter selected will be kept after executing <code class="literal">actionIndexFiltered</code> in the controller.</p><p>This is the content of the view concerning the filtered form:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+use yii\helpers\Url;
+
+$operators = [ '=', '&lt;=', '&gt;=' ];
+
+$sf = $searchFilter;
+
+?&gt;
+
+&lt;form method="post" action="&lt;?php echo Url::to(['rooms/index-filtered']) ?&gt;"&gt;
+    &lt;input type="hidden" name="&lt;?= Yii::$app-&gt;request-&gt;csrfParam; ?&gt;" value="&lt;?= Yii::$app-&gt;request-&gt;csrfToken; ?&gt;" /&gt;
+    
+    &lt;div class="row"&gt;
+        &lt;?php $operator = $sf['floor']['operator']; ?&gt;
+        &lt;?php $value = $sf['floor']['value']; ?&gt;
+        &lt;div class="col-md-3"&gt;
+            &lt;label&gt;Floor&lt;/label&gt;
+            &lt;br /&gt;    
+            &lt;select name="SearchFilter[floor][operator]"&gt;
+                &lt;?php foreach($operators as $op) { ?&gt;
+                    &lt;?php $selected = ($operator == $op)?'selected':''; ?&gt;
+                    &lt;option value="&lt;?=$op?&gt;" &lt;?=$selected?&gt;&gt;&lt;?=$op?&gt;&lt;/option&gt;
+                &lt;?php } ?&gt;=
+            &lt;/select&gt;
+            &lt;input type="text" name="SearchFilter[floor][value]" value="&lt;?=$value?&gt;" /&gt;
+        &lt;/div&gt;
+        
+        &lt;?php $operator = $sf['room_number']['operator']; ?&gt;
+        &lt;?php $value = $sf['room_number']['value']; ?&gt;
+        &lt;div class="col-md-3"&gt;
+            &lt;label&gt;Room Number&lt;/label&gt;
+            &lt;br /&gt;    
+            &lt;select name="SearchFilter[room_number][operator]"&gt;
+                &lt;?php foreach($operators as $op) { ?&gt;
+                    &lt;?php $selected = ($operator == $op)?'selected':''; ?&gt;
+                    &lt;option value="&lt;?=$op?&gt;" &lt;?=$selected?&gt;&gt;&lt;?=$op?&gt;&lt;/option&gt;
+                &lt;?php } ?&gt;
+            &lt;/select&gt;
+            &lt;input type="text" name="SearchFilter[room_number][value]" value="&lt;?=$value?&gt;" /&gt;
+        &lt;/div&gt;
+        
+        &lt;?php $operator = $sf['price_per_day']['operator']; ?&gt;
+        &lt;?php $value = $sf['price_per_day']['value']; ?&gt;
+        &lt;div class="col-md-3"&gt;
+            &lt;label&gt;Price per day&lt;/label&gt;
+            &lt;br /&gt;    
+            &lt;select name="SearchFilter[price_per_day][operator]"&gt;
+                &lt;?php foreach($operators as $op) { ?&gt;
+                    &lt;?php $selected = ($operator == $op)?'selected':''; ?&gt;
+                    &lt;option value="&lt;?=$op?&gt;" &lt;?=$selected?&gt;&gt;&lt;?=$op?&gt;&lt;/option&gt;
+                &lt;?php } ?&gt;
+            &lt;/select&gt;
+            &lt;input type="text" name="SearchFilter[price_per_day][value]" value="&lt;?=$value?&gt;" /&gt;
+        &lt;/div&gt;    
+    &lt;/div&gt;
+    &lt;br /&gt;
+    &lt;div class="row"&gt;
+        &lt;div class="col-md-3"&gt;
+            &lt;input type="submit" value="filter" class="btn btn-primary" /&gt;
+            &lt;input type="reset" value="reset" class="btn btn-primary" /&gt;
+
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/form&gt;</pre></div><div class="note" title="Note"><h3 class="title"><a id="note29"></a>Note</h3><p>
+<span class="strong"><strong>Pay attention:</strong></span>
+</p><p>At the beginning of the view, there is a keyword <code class="literal">use</code>, which explains the complete path of the <code class="literal">Url</code> class. If we remove it, the framework will search the <code class="literal">Url</code> class requested in the <code class="literal">&lt;form&gt;</code> tag in the current namespace, that is <code class="literal">app/controllers</code>.</p><p>After declaring the <code class="literal">&lt;form&gt;</code> tag, we inserted:</p><div class="informalexample"><pre class="programlisting">&lt;input type="hidden" name="&lt;?= Yii::$app-&gt;request-&gt;csrfParam; ?&gt;" value="&lt;?= Yii::$app-&gt;request-&gt;csrfToken; ?&gt;" /&gt;</pre></div><p>This is mandatory to allow the framework to verify the sender of the post data.</p><p>The <code class="literal">$searchFilter</code> variable is used as <code class="literal">$sf</code> to provide a more concise form.</p></div><p>Now <a id="id237" class="indexterm"></a>update <code class="literal">RoomsController</code> in <code class="literal">basic/controllers/RoomsController.php</code> and add a new action named <code class="literal">actionIndexFiltered</code>. Create an ActiveQuery object from <code class="literal">Room</code> and check whether there is content in the <code class="literal">SearchFilter</code> keyword of the <code class="literal">$_POST</code> array.</p><p>For every present<a id="id238" class="indexterm"></a> filter, a condition will be added to <code class="literal">$query</code> using the <code class="literal">andWhere</code> method, passing an operator, field name, and value. For a more concise form of the actioned content, we put a filtered field in the loop, because they have the same redundant structure (operator and value):</p><div class="informalexample"><pre class="programlisting">    public function actionIndexFiltered()
+    {
+        $query = Room::find();
+        
+        $searchFilter = [
+            'floor' =&gt; ['operator' =&gt; '', 'value' =&gt; ''],
+            'room_number' =&gt; ['operator' =&gt; '', 'value' =&gt; ''],
+            'price_per_day' =&gt; ['operator' =&gt; '', 'value' =&gt; ''],
+        ];
+        
+        if(isset($_POST['SearchFilter']))
+        {
+            $fieldsList = ['floor', 'room_number', 'price_per_day'];
+            
+            foreach($fieldsList as $field)
+            {
+                $fieldOperator = $_POST['SearchFilter'][$field]['operator'];
+                $fieldValue = $_POST['SearchFilter'][$field]['value'];
+                
+                $searchFilter[$field] = ['operator' =&gt; $fieldOperator, 'value' =&gt; $fieldValue];
+                
+                if( $fieldValue != '' )
+                {
+                    $query-&gt;andWhere([$fieldOperator, $field, $fieldValue]);
+                }
+            }
+        }
+        
+        $rooms = $query-&gt;all();
+        
+        return $this-&gt;render('indexFiltered', [ 'rooms' =&gt; $rooms, 'searchFilter' =&gt; $searchFilter ]);
+        
+    }</pre></div><p>Finally, we need to <a id="id239" class="indexterm"></a>display the results in a table format. So at the bottom<a id="id240" class="indexterm"></a> of the view, add a table to display the content of the filtered rooms (copied from <code class="literal">basic/views/rooms/index.php</code>):</p><div class="informalexample"><pre class="programlisting">&lt;table class="table"&gt;
+    &lt;tr&gt;
+        &lt;th&gt;Floor&lt;/th&gt;
+        &lt;th&gt;Room number&lt;/th&gt;
+        &lt;th&gt;Has conditioner&lt;/th&gt;
+        &lt;th&gt;Has tv&lt;/th&gt;
+        &lt;th&gt;Has phone&lt;/th&gt;
+        &lt;th&gt;Available from&lt;/th&gt;
+        &lt;th&gt;Available from (db format)&lt;/th&gt;
+        &lt;th&gt;Price per day&lt;/th&gt;
+        &lt;th&gt;Description&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;?php foreach($rooms as $item) { ?&gt;
+    &lt;tr&gt;
+        &lt;td&gt;&lt;?php echo $item['floor'] ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo $item['room_number'] ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asBoolean($item['has_conditioner']) ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asBoolean($item['has_tv']) ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo ($item['has_phone'] == 1)?'Yes':'No' ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asDate($item['available_from']) ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asDate($item['available_from'], 'php:Y-m-d') ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo Yii::$app-&gt;formatter-&gt;asCurrency($item['price_per_day'], 'EUR') ?&gt;&lt;/td&gt;
+        &lt;td&gt;&lt;?php echo $item['description'] ?&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;?php } ?&gt;
+&lt;/table&gt;</pre></div><p>Now point the <a id="id241" class="indexterm"></a>browser to <code class="literal">http://hostname/basic/web/rooms/index-filtered</code> and this should be <a id="id242" class="indexterm"></a>displayed:</p><div class="mediaobject"><img src="../Images/image00265.jpeg" alt="Example &ndash; query rooms list with ActiveRecord"/><div class="caption"><p>A list of rooms with filters</p></div></div><p style="clear:both; height: 1em;"> </p><p>We can create tests by changing the filter values and operators as much as we want.</p></div></div></body></html>

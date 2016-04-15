@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Chapter&nbsp;12.&nbsp;Create a Console Application to Automate the Periodic Task</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="chapter" title="Chapter&nbsp;12.&nbsp;Create a Console Application to Automate the Periodic Task" id="aid-2IV0U1"><div class="titlepage"><div><div><h1 class="title"><a id="ch12"></a>Chapter&nbsp;12.&nbsp;Create a Console Application to Automate the Periodic Task</h1></div></div></div><p>In this chapter, we will learn how to write a console application and will discover the main differences between web and console apps.</p><p>Then, we will create our first console controller, using a practical example to illustrate how to update a database table.</p><p>In the final paragraphs, we will see how to set output colors and text formats and how to implement a complete periodic task, such as sending an e-mail with daily reservations. We will cover the following topics in this chapter:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Interacting with console applications</li><li class="listitem">Creating a console controller<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Example &ndash; setting an alarm flag for expired reservation </li></ul></div></li><li class="listitem">Formatting the output from the console</li><li class="listitem">Implementing and executing cron jobs<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Example &ndash; sending an e-mail with new reservations of the day</li></ul></div></li></ul></div><div class="section" title="Interacting with console applications"><div class="titlepage"><div><div><h1 class="title"><a id="ch12lvl1sec81"></a>Interacting with console applications</h1></div></div></div><p>The console is the <a id="id526" class="indexterm"></a>third application installed by default with the advanced template.</p><p>This app is configured to launch commands through a console access, and it has the same application structure of those already seen in the previous chapters. Therefore, in this section, we require a console access to the host.</p><p>Compared to the web and API applications used until now, there are some differences.</p><p>The <code class="literal">public</code> properties of a controller, in fact, are visible from the command line as <code class="literal">option</code>. It is required to extend the <code class="literal">option()</code> method of the controller to make those properties available. Also, based on specific action, action parameters are passed as arguments of the command line.</p><p>Finally, a console controller action can return an exit code, a number where 0 indicates that everything is OK, a best practice for console application development.</p><p>Here is a typical usage of the console application starting from a shell:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>yii &lt;route&gt; [--option1=value1 --option2=value2 ... argument1 argument2 ...]</strong></span>
+</pre></div><p>The elements of the <a id="id527" class="indexterm"></a>preceding code are explained as follows:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">route</code>: This indicates the <code class="literal">controller/action</code> path to be called</li><li class="listitem"><code class="literal">option</code>: This indicates the accessible <code class="literal">public</code> properties of the controller for that specific action; we can access only the public properties returned by the <code class="literal">options()</code> method of the controller</li><li class="listitem"><code class="literal">argument</code>: This indicates the arguments to be passed to the controller action<div class="note" title="Note"><h3 class="title"><a id="note74"></a>Note</h3><p>There is an option always available, <code class="literal">appconfig</code>, to indicate which path of the configuration files you must use. If it is not set, the default configuration file will be adopted.</p></div></li></ul></div><p>Yii provides a set of core console applications, which we can access by calling the <code class="literal">help</code> controller (being a web application, the default action will be <code class="literal">index</code>), so as to display everything concerning the list of available console controllers or details about a single controller or action controller.</p><p>Let's consider an example; open the command line (in this case, a Linux shell) and type the following from the project root:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ ./yii help</strong></span>
+</pre></div><p>This will display an output similar to the following (partially displayed):</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>This is Yii version 2.0.4.</strong></span>
+
+<span class="strong"><strong>The following commands are available:</strong></span>
+
+<span class="strong"><strong>- asset                         Allows you to combine and compress your JavaScript and CSS files.</strong></span>
+<span class="strong"><strong>    asset/compress (default)    Combines and compresses the asset files according to the given configuration.</strong></span>
+<span class="strong"><strong>    asset/template              Creates template of configuration file for [[actionCompress]].</strong></span>
+
+<span class="strong"><strong>- cache                         Allows you to flush cache.</strong></span>
+<span class="strong"><strong>    cache/flush                 Flushes given cache components.</strong></span>
+<span class="strong"><strong>    cache/flush-all             Flushes all caches registered in the system.</strong></span>
+<span class="strong"><strong>    cache/flush-schema          Clears DB schema cache for a given connection component.</strong></span>
+<span class="strong"><strong>    cache/index (default)       Lists the caches that can be flushed.</strong></span>
+<span class="strong"><strong>&hellip;</strong></span>
+<span class="strong"><strong>&hellip;</strong></span>
+</pre></div><p>Here, the first <a id="id528" class="indexterm"></a>grouping level represents the controller names (with relative descriptions on the right), and the second level includes the actions of the relative controller. We will require a more deep response when passing the name of controller to help it:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ ./yii help message</strong></span>
+</pre></div><p>To display the controller description and the list of the actions, we can also require help about the complete route (controller/action) typing:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ ./yii help message/config</strong></span>
+</pre></div><p>This returns an output containing the description of the action, its usage, and the options available:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>DESCRIPTION</strong></span>
+
+<span class="strong"><strong>Creates a configuration file for the "extract" command.</strong></span>
+
+<span class="strong"><strong>The generated configuration file contains detailed instructions on</strong></span>
+<span class="strong"><strong>how to customize it to fit for your needs. After customization,</strong></span>
+<span class="strong"><strong>you may use this configuration file with the "extract" command.</strong></span>
+
+<span class="strong"><strong>USAGE</strong></span>
+
+<span class="strong"><strong>yii message/config &lt;filePath&gt; [...options...]</strong></span>
+
+<span class="strong"><strong>- filePath (required): string</strong></span>
+<span class="strong"><strong>  output file name or alias.</strong></span>
+
+<span class="strong"><strong>OPTIONS</strong></span>
+
+<span class="strong"><strong>--appconfig: string</strong></span>
+<span class="strong"><strong>  custom application configuration file path.</strong></span>
+<span class="strong"><strong>  If not set, default application configuration is used.</strong></span>
+
+<span class="strong"><strong>--color: boolean, 0 or 1</strong></span>
+<span class="strong"><strong>  whether to enable ANSI color in the output.</strong></span>
+<span class="strong"><strong>  If not set, ANSI color will only be enabled for terminals that support it.</strong></span>
+
+<span class="strong"><strong>--interactive: boolean, 0 or 1 (defaults to 1)</strong></span>
+<span class="strong"><strong>  whether to run the command interactively.</strong></span>
+</pre></div></div></div></body></html>

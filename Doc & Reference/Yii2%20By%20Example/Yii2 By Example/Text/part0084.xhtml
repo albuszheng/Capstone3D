@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Customizing authentication and response</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Customizing authentication and response"><div class="titlepage" id="aid-2G3F82"><div><div><h1 class="title"><a id="ch11lvl1sec78"></a>Customizing authentication and response</h1></div></div></div><p>Yii allows us to quickly create a<a id="id508" class="indexterm"></a> custom authentication method for our application. This is useful because in some cases, the previously mentioned authentications are not sufficient.</p><p>A custom authentication model can be made by extending the <code class="literal">yii\filters\auth\AuthMethod</code> class, which implements <code class="literal">yii\filters\auth\AuthInterface</code> that requires overriding the <code class="literal">authenticate</code> (<code class="literal">$user</code>, <code class="literal">$request</code>, and <code class="literal">$response</code>) method:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace api\components;
+
+use yii\filters\auth\AuthMethod;
+use Yii;
+
+class CustomAuthMethod extends AuthMethod {
+
+    public function authenticate($user, $request, $response) {
+    &hellip;
+    &hellip;
+    &hellip;
+}
+&hellip;
+&hellip;
+&hellip;
+}</pre></div><p>Even though the REST API should be stateless, or rather should not save session data, it could be necessary to store some information or preferences during a session across requests.</p><p>So, if we need to <a id="id509" class="indexterm"></a>support a session, we can start it through the <code class="literal">authenticate()</code> method called in the <code class="literal">beforeAction()</code> event. The idea is to use <code class="literal">QueryParamAuth</code> using <code class="literal">access-token</code> as the session ID to identify the current session.</p><p>For this purpose, we will create a new folder in <code class="literal">api\components</code> to store the custom <code class="literal">SessionAuth</code> method.</p><p>This is the content of the <code class="literal">api/components/SessionAuth.php</code> file where the query URL parameter is named <code class="literal">sid</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace api\components;
+
+use yii\filters\auth\AuthMethod;
+use Yii;
+
+class SessionAuth extends AuthMethod {
+  public $tokenParam = 'sid';
+
+  public function authenticate($user, $request, $response) {
+    $accessToken = $request-&gt;get($this-&gt;tokenParam);
+    
+    if (is_string($accessToken)) {
+      
+       Yii::$app-&gt;session-&gt;id = $accessToken;
+       
+       $identity = isset(Yii::$app-&gt;session['loggedUser'])?Yii::$app-&gt;session['loggedUser']:null;
+            
+          if ($identity !== null) {
+             return $identity;
+          }
+    }
+    if ($accessToken !== null) {
+        $this -&gt; handleFailure($response);
+    }
+    return null;
+  }
+
+}</pre></div><p>It is also <a id="id510" class="indexterm"></a>necessary to create an action to start the session; otherwise, the user will not be stored in the session.</p><p>So, create a new controller called <code class="literal">UsersController</code> in <code class="literal">api/controllers/UsersController.php</code> to handle the login:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace api\controllers;
+
+use Yii;
+use yii\rest\ActiveController;
+use yii\filters\auth\CompositeAuth;
+use yii\filters\auth\HttpBasicAuth;
+use yii\filters\auth\QueryParamAuth;
+use api\components\SessionAuth;
+use common\models\User;
+
+class UsersController extends ActiveController
+{
+    public $modelClass = 'common\models\User';
+    
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+
+        $behaviors['authenticator'] = [
+                'except' =&gt; ['login'],
+                'class' =&gt; SessionAuth::className(),
+        ];
+        
+        return $behaviors;
+    }    
+
+    public function actionLogin($username, $passwordHash)
+    {
+        $dataOut = null;
+        
+        $user = User::findOne(['username' =&gt; $username, 'password_hash' =&gt; $passwordHash]);
+        if($user != null)
+        {
+            $session = Yii::$app-&gt;session;
+            $session-&gt;open();
+            
+            $session['loggedUser'] = $user;
+            
+            $sid = $session-&gt;id;
+            
+            $dataOut = ['sid' =&gt; $sid];        
+        }
+        
+        return $dataOut;
+    }
+}</pre></div><p>As earlier <a id="id511" class="indexterm"></a>defined, in the <code class="literal">behaviors()</code> method, the actions of this controller, except for <code class="literal">login</code>, will authenticate against the <code class="literal">SessionAuth</code> component that checks primarily whether a user has successfully executed the login action.</p><p>We now call <code class="literal">http://hostname/yiiadv/api/web/users/login?username=&amp;passwordHash=</code> and fill out the <code class="literal">username</code> and <code class="literal">passwordHash</code> fields. It returns the session ID to access the session data. Also, the <code class="literal">loggedUser</code> property is filled out in the session with the user model data.</p><p>Now, we can store shared information among requests as a typical web application.</p><p>Now, let's see how to customize a response in RESTful Web Services. First of all, this operation could be needed when we have to add, for example, extra information, such as explicit error messages to display in the client or operation status code.</p><p>The custom response must extend <code class="literal">\yii\web\Response</code> and override the <code class="literal">send()</code> method, as follows:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace api\components;
+
+use yii\rest\ActiveController;
+use Yii;
+use yii\web\Response;
+
+class ApiResponse extends \yii\web\Response
+{
+ 
+    public function send()
+    {
+      ..
+  ..
+  ..
+  }
+}</pre></div><p>This <code class="literal">send()</code> method manipulates data stored in the object properties, mainly in the <code class="literal">$this-&gt;data</code> variable.</p><p>This customization, which we will see in detail in the next example, is incomplete, as the <code class="literal">send()</code> method should implement all the manipulations of data made from the <code class="literal">\yii\web\Response</code> version. We must remember that Yii returns data based on the <code class="literal">Accept</code> HTTP header passed from the client and many other convenient functionalities.</p><p>It is possible to <a id="id512" class="indexterm"></a>maintain this behavior simply by calling <code class="literal">parent::send()</code> before returning from the <code class="literal">send()</code> function, as follows:</p><div class="informalexample"><pre class="programlisting">    public function send()
+    {
+        ..
+  ..
+        parent::send();
+ }</pre></div><p>Because, as said before, <code class="literal">send()</code> uses the <code class="literal">$this-&gt;data</code> variable as a container for data to be sent.</p><div class="section" title="Example &ndash; status response node in data received"><div class="titlepage"><div><div><h2 class="title"><a id="ch11lvl2sec51"></a>Example &ndash; status response node in data received</h2></div></div></div><p>Now, let's apply the <a id="id513" class="indexterm"></a>concepts seen in the previous chapter to add extra data into a response. This practice is useful when we need to return to client information about the operation status and extra data such as detailed error messages.</p><p>The purpose of this example is to return a response with two attributes:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">The <code class="literal">status</code> attribute containing three properties: <code class="literal">response_code</code> with an integer value indicating the operation state, <code class="literal">response_message</code> with a string value representation of <code class="literal">response_code</code> and <code class="literal">response_extra</code> with a custom text string</li><li class="listitem">The <code class="literal">data</code> attribute containing the expected output data</li></ul></div><p>We will use a class <a id="id514" class="indexterm"></a>containing all the integer codes and their text representations as a response code, since the integer value will be used to fill in the <code class="literal">response_code</code> property and a string representation to fill in the <code class="literal">response_message</code> property.</p><p>Create a new class file in <code class="literal">api/components/ApiResponseCode.php</code> with this content:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace api\components;
+
+class ApiResponseCode
+{
+    const ERR_OK = 0;
+    const ERR_LOGIN_REQUIRED = 1;
+    const ERR_METHOD_NOT_FOUND = 2;
+    const ERR_NOT_FOUND = 3;
+    const ERR_NOT_SAVED = 4;
+    const ERR_DUPLICATE = 5;
+    const ERR_INPUT_DATA_FORMAT = 6;
+    
+    public static function responsesExtras()
+    {
+        return [
+            ApiResponseCode::ERR_OK =&gt; '',
+            ApiResponseCode::ERR_LOGIN_REQUIRED =&gt; 'Login required to use this interface',
+            ApiResponseCode::ERR_METHOD_NOT_FOUND =&gt; 'Interface not found',
+            ApiResponseCode::ERR_NOT_FOUND =&gt; 'Record not found',
+            ApiResponseCode::ERR_NOT_SAVED =&gt; 'Error in saving',
+            ApiResponseCode::ERR_DUPLICATE =&gt; 'Duplicated record',
+            ApiResponseCode::ERR_INPUT_DATA_FORMAT =&gt; 'Input data format incompatible',
+        ];        
+    }
+    
+    public static function responseExtraFromCode($rc)
+    {
+        $al = ApiResponseCode::responsesExtras();
+        return (isset($al[$rc]))?$al[$rc]:null;
+    }     
+    
+    public static function responseMessages()
+    {
+        return [
+            ApiResponseCode::ERR_OK =&gt; 'OK',
+            ApiResponseCode::ERR_LOGIN_REQUIRED =&gt; 'ERR_LOGIN_REQUIRED',
+            ApiResponseCode::ERR_METHOD_NOT_FOUND =&gt; 'ERR_METHOD_NOT_FOUND',
+            ApiResponseCode::ERR_NOT_FOUND =&gt; 'ERR_NOT_FOUND',
+            ApiResponseCode::ERR_NOT_SAVED =&gt; 'ERR_NOT_SAVED',
+            ApiResponseCode::ERR_DUPLICATE =&gt; 'ERR_DUPLICATED',
+            ApiResponseCode::ERR_INPUT_DATA_FORMAT =&gt; 'ERR_INPUT_DATA_FORMAT',
+        ];        
+    }
+    
+    public static function responseMessageFromCode($rc)
+    {
+        $al = ApiResponseCode::responseMessages();
+        return (isset($al[$rc]))?$al[$rc]:null;
+    }            
+}</pre></div><p>In this component, we <a id="id515" class="indexterm"></a>defined a list of constants that represent all response codes that can be sent to a client. For each response code, there will be a relative text representation returned by the <code class="literal">responseMessage()</code> static method. Then, there will also be an array of extra text messages returned by <code class="literal">responseExtras()</code> that will fill the <code class="literal">response_extra</code> property if no specific text <code class="literal">extra</code> is passed.</p><p>Finally, we must write the component that extends <code class="literal">\yii\web\Response</code> named <code class="literal">ApiResponse</code> in <code class="literal">api/components/ApiResponse.php</code>. In this component, we will define three custom properties: <code class="literal">statusResponseCode</code>, <code class="literal">statusResponseMessage</code>, and <code class="literal">statusResponseExtra</code>, which we are going to fill with content composing in the <code class="literal">status</code> property.</p><p>In this way, we will have a convenient method, <code class="literal">fillStatusResponse()</code>, based on the <code class="literal">$code</code> parameter, which will automatically fill in both the <code class="literal">statusResponseExtra</code> and <code class="literal">statusResponseMessage</code> properties.</p><p>The core of this component is the overridden <code class="literal">send()</code> method that will return <code class="literal">status</code> with <code class="literal">ERR_OK</code> as response message and <code class="literal">0</code> as response code by default if there are no client errors (as authentication, not found, and so on.). This is unless a developer changes the values of <code class="literal">statusResponseCode</code>, <code class="literal">statusResponseExtra</code>, and <code class="literal">statusResponseMessage</code>, or manually or automatically calls its properties with <code class="literal">fillStatusResponse()</code>.</p><p>Otherwise, if there are<a id="id516" class="indexterm"></a> some client errors, we will support <code class="literal">Not Authenticated</code> and <code class="literal">Not Found</code> errors.</p><p>This is the content of the <code class="literal">api/components/ApiResponse.php</code> file:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace api\components;
+
+use Yii;
+use yii\web\Response;
+
+class ApiResponse extends Response
+{
+    public $statusResponseCode;
+    public $statusResponseMessage;
+    public $statusResponseExtra;
+    
+    /**
+     * Set response code and extra from code.
+     *
+     * Response extra will be filled based on $extraData value
+     * If $extraData is null, response extra will be value from ApiResponseCode::responseExtraFromCode($code)
+     * If $extraData is string, response extra will be filled with this value
+     */
+    public function fillStatusResponse($code, $extraData=null)
+    {
+        $responseExtra = ApiResponseCode::responseExtraFromCode($code);
+        $responseMessage = ApiResponseCode::responseMessageFromCode($code);
+        
+        if($extraData == null)
+        {
+            $statusResponseExtra = $responseExtra;
+        }
+        else
+        {
+            $statusResponseExtra = $extraData;
+        }
+        
+        $this-&gt;statusResponseCode = $code;
+        $this-&gt;statusResponseMessage = $responseMessage;
+        $this-&gt;statusResponseExtra = $statusResponseExtra;
+    }
+
+    /**
+     * Override send() method.
+     *
+     * $this-&gt;data member contains data released to client.
+     */
+    public function send()
+    {
+        $responseMessage = ApiResponseCode::responseMessageFromCode($this-&gt;statusResponseCode);
+        
+        if($this-&gt;isClientError)
+        {
+           $dataOut = $this-&gt;data;
+           
+           if($this-&gt;statusCode == 401) {   // Not authorized
+             $dataOut = null;
+             
+             $this-&gt;fillStatusResponse(ApiResponseCode::ERR_LOGIN_REQUIRED);
+            }
+            else if($this-&gt;statusCode == 404) {  // Non found
+                $dataOut = null;
+                
+                $this-&gt;fillStatusResponse(ApiResponseCode::ERR_METHOD_NOT_FOUND);
+            }            
+            
+            $this-&gt;data = ['status' =&gt; ['response_code' =&gt; $this-&gt;statusResponseCode, 'response_message' =&gt; $this-&gt;statusResponseMessage, 'response_extra' =&gt; $this-&gt;statusResponseExtra ], 'data' =&gt; $dataOut ];
+            
+        }
+        else
+        {
+            $this-&gt;data = ['status' =&gt; ['response_code' =&gt; $this-&gt;statusResponseCode, 'response_message' =&gt; $responseMessage, 'response_extra' =&gt; $this-&gt;statusResponseExtra ], 'data' =&gt; $this-&gt;data ];
+        }
+        
+        parent::send();
+    }
+
+    public function init()
+    {
+        parent::init();
+        
+        $this-&gt;statusResponseCode = ApiResponseCode::ERR_OK;
+    }
+  
+}</pre></div><p>Finally, we have to <a id="id517" class="indexterm"></a>change the configuration file <code class="literal">api/config/main.php</code> by adding the <code class="literal">response</code> property as a component to indicate to use a custom response class:</p><div class="informalexample"><pre class="programlisting">        'response' =&gt; [
+        
+            'format' =&gt; yii\web\Response::FORMAT_JSON,
+            'charset' =&gt; 'UTF-8',
+            'class' =&gt; '\api\components\ApiResponse',
+
+        ],</pre></div><p>Let's make some attempts. Try to call the non-existent URL <code class="literal">http://hostname/yiiadv/api/web/reservations/index-inexistent</code>.</p><p>This will be the output, correctly returning data as null and the status with the error explained:</p><div class="mediaobject"><img src="../Images/image00291.jpeg" alt="Example &ndash; status response node in data received"/><div class="caption"><p>The response with an error after calling a non-existent URL</p></div></div><p style="clear:both; height: 1em;"> </p><p>Then, try to call a URL that requires authentication: <code class="literal">http://hostname/yiiadv/api/web/customers/index</code>, which we already implemented in the previous paragraphs.</p><p>This will be the output, correctly returning data as null and the status with the error explained:</p><div class="mediaobject"><img src="../Images/image00292.jpeg" alt="Example &ndash; status response node in data received"/><div class="caption"><p>The response with an error when calling the URL with authentication</p></div></div><p style="clear:both; height: 1em;"> </p><p>Finally, we try to call a<a id="id518" class="indexterm"></a> URL that returns data: <code class="literal">http://hostname/yiiadv/api/web/rooms/index</code>, which is already implemented in the previous paragraphs.</p><p>This will be the output, correctly returning data as filled and successful as the status:</p><div class="mediaobject"><img src="../Images/image00293.jpeg" alt="Example &ndash; status response node in data received"/><div class="caption"><p>A response with a successful output</p></div></div><p style="clear:both; height: 1em;"> </p></div></div></body></html>

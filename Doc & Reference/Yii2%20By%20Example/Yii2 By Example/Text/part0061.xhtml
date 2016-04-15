@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Using the Bootstrap widget</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Using the Bootstrap widget"><div class="titlepage" id="aid-1Q5IA2"><div><div><h1 class="title"><a id="ch07lvl1sec55"></a>Using the Bootstrap widget</h1></div></div></div><p>Yii2 supports <a id="id348" class="indexterm"></a>Bootstrap as a core feature. Bootstrap framework CSS and JavaScript files are injected by default in all pages and we could even use this feature to only apply CSS classes or call our own JavaScript function provided by Bootstrap.</p><p>However, Yii2 embeds Bootstrap as a widget, and we can access this framework's capabilities like any other widget.</p><p>The most used are:</p><div class="informaltable"><table border="1"><colgroup><col></col><col></col></colgroup><thead><tr><th valign="bottom">
+<p>Class name</p>
+</th><th valign="bottom">
+<p>Description</p>
+</th></tr></thead><tbody><tr><td valign="top">
+<p>
+<code class="literal">yii\bootstrap\Alert</code>
+</p>
+</td><td valign="top">
+<p>This class renders an alert Bootstrap component</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">yii\bootstrap\Button</code>
+</p>
+</td><td valign="top">
+<p>This class renders a Bootstrap button</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">yii\bootstrap\Dropdown</code>
+</p>
+</td><td valign="top">
+<p>This class renders a Bootstrap drop-down menu component</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">yii\bootstrap\Nav</code>
+</p>
+</td><td valign="top">
+<p>This class renders a <code class="literal">nav</code> HTML component</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">yii\bootstrap\NavBar</code>
+</p>
+</td><td valign="top">
+<p>This class renders a <code class="literal">navbar</code> HTML component</p>
+</td></tr></tbody></table></div><p>For example, <code class="literal">yii\bootstrap\Nav</code> and <code class="literal">yii\bootstrap\NavBar</code> are used in the default main template.</p><p>This is an extract from the main layout view (in <code class="literal">basic/views/layouts/main.php</code>):</p><div class="informalexample"><pre class="programlisting">        &lt;?php
+            NavBar::begin([
+                'brandLabel' =&gt; 'My Company',
+                'brandUrl' =&gt; Yii::$app-&gt;homeUrl,
+                'options' =&gt; [
+                    'class' =&gt; 'navbar-inverse navbar-fixed-top',
+                ],
+            ]);
+            echo Nav::widget([
+                'options' =&gt; ['class' =&gt; 'navbar-nav navbar-right'],
+                'items' =&gt; [
+                    ['label' =&gt; 'Home', 'url' =&gt; ['/site/index']],
+                    ['label' =&gt; 'About', 'url' =&gt; ['/site/about']],
+                    ['label' =&gt; 'Contact', 'url' =&gt; ['/site/contact']],
+                    Yii::$app-&gt;user-&gt;isGuest ?
+                        ['label' =&gt; 'Login', 'url' =&gt; ['/site/login']] :
+                        ['label' =&gt; 'Logout (' . Yii::$app-&gt;user-&gt;identity-&gt;username . ')',
+                            'url' =&gt; ['/site/logout'],
+                            'linkOptions' =&gt; ['data-method' =&gt; 'post']],
+                ],
+            ]);
+            NavBar::end();
+        ?&gt;</pre></div><div class="section" title="Example: using datepicker"><div class="titlepage"><div><div><h2 class="title"><a id="ch07lvl2sec36"></a>Example: using datepicker</h2></div></div></div><p>Yii2 also supports, by<a id="id349" class="indexterm"></a> itself, many jQuery UI widgets through the JUI extension for Yii2,<code class="literal"> yii2-jui</code>.</p><p>If we do not have the <code class="literal">yii2-jui</code> extension in the <code class="literal">vendor</code> folder, we can get it from Composer using this command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>php composer.phar require --prefer-dist yiisoft/yii2-jui</strong></span>
+</pre></div><p>In this example, we will discuss the two most used widgets: <code class="literal">datepicker</code> and <code class="literal">autocomplete</code>. First let's have a look at the <code class="literal">datepicker</code> widget. This widget can be initialized using a model attribute or by filling out a value property. The following is an example made using a model instance and one of its attributes:</p><div class="informalexample"><pre class="programlisting">echo DatePicker::widget([
+    'model' =&gt; $model,
+    'attribute' =&gt; 'from_date',
+    //'language' =&gt; 'it',
+    //'dateFormat' =&gt; 'yyyy-MM-dd',
+]);</pre></div><p>And here is a sample of the value property's use:</p><div class="informalexample"><pre class="programlisting">echo DatePicker::widget([
+    'name'  =&gt; 'from_date',
+    'value'  =&gt; $value,
+    //'language' =&gt; 'it',
+    //'dateFormat' =&gt; 'yyyy-MM-dd',
+]);</pre></div><p>Now create a new <a id="id350" class="indexterm"></a>controller named <code class="literal">JuiWidgetsController</code> in <code class="literal">basic/controllers/JuiWidgetsController.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace app\controllers;
+
+use Yii;
+use yii\web\Controller;
+use app\models\Reservation;
+
+class JuiWidgetsController extends Controller
+{
+    public function actionDatePicker()
+    {
+        $reservationUpdated = false;
+        
+        $reservation = Reservation::findOne(1);
+        
+        if(isset($_POST['Reservation']))
+        {
+            $reservation-&gt;load( Yii::$app-&gt;request-&gt;post() );
+            
+            $reservation-&gt;date_from = Yii::$app-&gt;formatter-&gt;asDate(  date_create_from_format('d/m/Y', $reservation-&gt;date_from), 'php:Y-m-d' );
+            $reservation-&gt;date_to = Yii::$app-&gt;formatter-&gt;asDate(  date_create_from_format('d/m/Y', $reservation-&gt;date_to), 'php:Y-m-d' );
+            
+            $reservationUpdated = $reservation-&gt;save();
+        }
+        
+        return $this-&gt;render('datePicker', ['reservation' =&gt; $reservation, 'reservationUpdated' =&gt; $reservationUpdated]);
+    }
+}</pre></div><p>In this action, we define the <code class="literal">$reservation</code> model, picking from the reservations database table with <code class="literal">id</code> 1.</p><p>When data is sent via POST, the <code class="literal">date_from</code> and <code class="literal">date_to</code> fields will be converted from the d/m/y to the y-m-d format to make it possible for the database to save data. Then the model object is updated through the <code class="literal">save()</code> method. Using the Bootstrap widget, an alert box will be displayed in the view after updating the model.</p><p>Create the <code class="literal">datePicker</code> view <a id="id351" class="indexterm"></a>in <code class="literal">basic/views/jui-widgets/datePicker.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+use yii\helpers\Html;
+use yii\widgets\ActiveForm;
+use yii\jui\DatePicker;
+
+?&gt;
+
+&lt;div class="row"&gt;
+    &lt;div class="col-lg-6"&gt;
+        &lt;h3&gt;Date Picker from Value&lt;br /&gt;(using MM/dd/yyyy format and English language)&lt;/h3&gt;
+        &lt;?php
+            $value = date('Y-m-d');
+            
+        echo DatePicker::widget([
+            'name'  =&gt; 'from_date',
+            'value'  =&gt; $value,
+            'language' =&gt; 'en',
+            'dateFormat' =&gt; 'MM/dd/yyyy',
+        ]);
+        ?&gt;
+    &lt;/div&gt;
+    &lt;div class="col-lg-6"&gt;
+        
+        &lt;?php if($reservationUpdated) { ?&gt;
+            &lt;?php
+            echo yii\bootstrap\Alert::widget([
+                'options' =&gt; [
+                    'class' =&gt; 'alert-success',
+                ],
+                'body' =&gt; 'Reservation successfully updated',
+            ]);   
+            ?&gt;         
+        &lt;?php } ?&gt;
+        
+        &lt;?php $form = ActiveForm::begin(); ?&gt;
+        
+        &lt;h3&gt;Date Picker from Model&lt;br /&gt;(using dd/MM/yyyy format and italian language)&lt;/h3&gt;
+        
+        &lt;br /&gt;
+        
+        &lt;label&gt;Date from&lt;/label&gt;
+        &lt;?php
+        // First implementation of DatePicker Widget
+        echo DatePicker::widget([
+            'model'  =&gt; $reservation,
+            'attribute' =&gt; 'date_from',
+            'language' =&gt; 'it',
+            'dateFormat' =&gt; 'dd/MM/yyyy',
+        ]);
+        ?&gt;
+   
+        &lt;br /&gt;
+        &lt;br /&gt;
+        
+        &lt;?php
+        // Second implementation of DatePicker Widget
+        echo $form-&gt;field($reservation, 'date_to')-&gt;widget(\yii\jui\DatePicker::classname(), [
+                'language' =&gt; 'it',
+                'dateFormat' =&gt; 'dd/MM/yyyy',
+        ]) ?&gt;        
+        
+        &lt;?php     
+            echo Html::submitButton('Send', ['class' =&gt; 'btn btn-primary'])
+        ?&gt;
+
+        &lt;?php $form = ActiveForm::end(); ?&gt;
+        
+    &lt;/div&gt;
+&lt;/div&gt;</pre></div><p>The view is split into<a id="id352" class="indexterm"></a> two columns, left and right. The left column simply displays a <code class="literal">DataPicker</code> example from the value (fixed to the current date). The right column displays an alert box if the <code class="literal">$reservation</code> model has been updated and the next two kinds of widget declaration too; the first one without using <code class="literal">$form</code> and the second one using <code class="literal">$form</code>, both outputting the same HTML code.</p><p>In either case, the <code class="literal">DatePicker</code> date output format is set to dd/MM/yyyy through the <code class="literal">dateFormat</code> property and the language is set to Italian through the <code class="literal">language</code> property.</p><p>Point your browser to <code class="literal">http://hostname/basic/web/jui-widgets/date-picker</code> to see the following output:</p><div class="mediaobject"><img src="../Images/image00279.jpeg" alt="Example: using datepicker"/><div class="caption"><p>Using datepicker</p></div></div><p style="clear:both; height: 1em;"> </p></div></div></body></html>

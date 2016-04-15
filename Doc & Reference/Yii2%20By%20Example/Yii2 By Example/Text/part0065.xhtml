@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Chapter&nbsp;8.&nbsp;Log in to the App</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="chapter" title="Chapter&nbsp;8.&nbsp;Log in to the App"><div class="titlepage" id="aid-1TVKI2"><div><div><h1 class="title"><a id="ch08"></a>Chapter&nbsp;8.&nbsp;Log in to the App</h1></div></div></div><p>This chapter will explain how to set up login authentication and authorization. Logging in is a fundamental step to protect our application and you will learn how to reach these goals from scratch, using the web management free extension that is broadly available on the Internet.</p><p>We will cover the following topics in this chapter:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Creating a user login:<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">For example: creating login form to access</li></ul></div></li><li class="listitem">Configure a user authorization<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">For example: creating an access control filter to authorize</li></ul></div></li><li class="listitem"><span class="strong"><strong>Role Based Access Control</strong></span> (<span class="strong"><strong>RBAC</strong></span>)<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">For example: configuring RBAC to set permissions for users</li></ul></div></li><li class="listitem">Mixing <span class="strong"><strong>Access Control Filter</strong></span> (<span class="strong"><strong>ACF</strong></span>) and RBAC<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">For example: managing users' roles to access rooms, reservations, and customers</li></ul></div></li></ul></div><p>The first step will be creating an authenticated access to our app using a database table to manage users and associate it to the Yii user component, through a user model that extends <code class="literal">IdentityInterface</code>. We will provide an example of how to use it: building a login form to authenticate the user.</p><p>The next step will be to control what actions a user can perform, using ACF and RBAC. We will follow some examples using ACF and RBAC, and in the latter case we will build a complete authorization manager from scratch.</p><div class="section" title="Creating a user login"><div class="titlepage"><div><div><h1 class="title"><a id="ch08lvl1sec59"></a>Creating a user login</h1></div></div></div><p>The application's<a id="id363" class="indexterm"></a> security starts with two well distinguished phases of the same user login: authentication and authorization.</p><p>The first one, authentication, is the process of verifying a user's identity, usually using a username and password, or email and password, process. Authentication is completed when the user has been recognized and their state has been preserved for further requests.</p><p>The second one, authorization, is the process of verifying that the user has the permission to execute a specific action.</p><div class="note" title="Note"><h3 class="title"><a id="note50"></a>Note</h3><p>Since http requests are stateless, we need to preserve the login status, which means that there is no data context sharing among them. This limit is solved by sessions, mainly files where the web server stores the data. A filename is used as a session identifier and passed to the browser through a cookie or URL parameter of links contained in the HTML response. In this way, the browser keeps the session active by sending the session identifier to the web server through a cookie or a parameter in the request URL, and the web server knows which file contains the session data.</p><p>A database table can be used instead of files with the same functionalities.</p></div><p>Yii2 implements authentication through the <code class="literal">yii\web\User</code> component, which manages the user authentication status and also contains a reference to the <code class="literal">identityClass</code> that represents the concrete object that we are referring to.</p><p>An <code class="literal">identityClass</code> class<a id="id364" class="indexterm"></a> should implement five methods:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">findIdentity()</code>: This<a id="id365" class="indexterm"></a> method looks for an instance of an identity class using the ID provided as parameter. It is commonly used when we need to keep the login status via a session.</li><li class="listitem"><code class="literal">findIdentityByAccessToken()</code>: This one looks for an instance of the identity class using the <a id="id366" class="indexterm"></a>access token provided by the parameter. It is commonly used when we need to authenticate using a single secret token.</li><li class="listitem"><code class="literal">getId()</code>: This<a id="id367" class="indexterm"></a> one returns the ID of the identity instance.</li><li class="listitem"><code class="literal">getAuthKey()</code>: This <a id="id368" class="indexterm"></a>method returns the key used to verify the cookie-based login when the login has been completed using a cookie sent by the  browser (when <span class="strong"><strong>Remember me</strong></span> is checked during the login).</li><li class="listitem"><code class="literal">validateAuthKey()</code>: This<a id="id369" class="indexterm"></a> method <a id="id370" class="indexterm"></a>verifies that the provided <code class="literal">authKey</code> passed as a parameter is correct (in the cookie-based login).</li></ul></div><p>Often the <code class="literal">identityClass</code> class corresponds to a record of the <code class="literal">User</code> database table. For this reason, usually the <code class="literal">identityClass</code> class implements <code class="literal">IdentityInterface</code> and extends <code class="literal">ActiveRecord</code>.</p><p>It is now time to implement authentication. The first thing to do is to configure <code class="literal">yii\web\User</code> components and its <code class="literal">identityClass</code>. Open the <code class="literal">basic/config/web.php</code> file and add the <code class="literal">user</code> property to <code class="literal">components</code> if it does not already exist:</p><div class="informalexample"><pre class="programlisting">    'components' =&gt; [
+        &hellip;
+        &hellip;
+        'user' =&gt; [
+            'identityClass' =&gt; 'app\models\User',
+        ],
+    ],</pre></div><p>Next, we have to <a id="id371" class="indexterm"></a>create a database table where we store the users' records:</p><div class="informalexample"><pre class="programlisting">CREATE TABLE `user` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `username` varchar(255) NOT NULL,
+ `auth_key` varchar(32) NOT NULL,
+ `password_hash` varchar(255) NOT NULL,
+ `access_token` varchar(100) DEFAULT NULL,
+ PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8</pre></div><div class="note" title="Note"><h3 class="title"><a id="note51"></a>Note</h3><p>Notice that we do not have a password field, but we have a <code class="literal">password_hash</code> field. This because passwords are stored using the hashing method. In models, we will have a setter <code class="literal">setPassword()</code> method that gets plain text passwords to fill in the <code class="literal">password_hash</code> field.</p></div><p>Finally, let's update the <code class="literal">basic/models/User</code> class that handles the login status by implementing <code class="literal">IdentityInterface</code> and connect it to the <code class="literal">user</code> table of database. This is a common implementation for <code class="literal">basic/models/User</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace app\models;
+
+use Yii;
+use yii\base\NotSupportedException;
+use yii\db\ActiveRecord;
+use yii\web\IdentityInterface;
+
+class User extends ActiveRecord implements IdentityInterface
+{
+    public static function tableName()
+    {
+        return 'user';
+    }
+
+    public static function findIdentity($id)
+    {
+        return static::findOne(['id' =&gt; $id]);
+    }
+
+    public static function findIdentityByAccessToken($token, $type = null)
+    {
+        return static::findOne(['access_token' =&gt; $token]);
+    }
+
+    public static function findByUsername($username)
+    {
+        return static::findOne(['username' =&gt; $username]);
+    }
+
+    public function getId()
+    {
+        return $this-&gt;getPrimaryKey();
+    }
+
+    public function getAuthKey()
+    {
+        return $this-&gt;auth_key;
+    }
+
+    public function validateAuthKey($authKey)
+    {
+        return $this-&gt;getAuthKey() === $authKey;
+    }
+
+    public function validatePassword($password)
+    {
+        return Yii::$app-&gt;security-&gt;validatePassword($password, $this-&gt;password_hash);
+    }
+
+    public function setPassword($password)
+    {
+        $this-&gt;password_hash = Yii::$app-&gt;security-&gt;generatePasswordHash($password);
+    }
+
+    public function generateAuthKey()
+    {
+        $this-&gt;auth_key = Yii::$app-&gt;security-&gt;generateRandomString();
+    }
+
+}</pre></div><div class="note" title="Note"><h3 class="title"><a id="note52"></a>Note</h3><p>If our application also uses a cookie-based authentication, we need to fill in the <code class="literal">auth_key</code> field too, as this will be passed to the client in the http response. It is convenient to populate the <code class="literal">auth_key</code> field automatically when a new user is inserted by overriding the <code class="literal">beforeSave()</code> method in the <code class="literal">\app\models\User</code> model:</p><div class="informalexample"><pre class="programlisting">    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert)) {
+            if ($this-&gt;isNewRecord) {
+                $this-&gt;auth_key = \Yii::$app-&gt;security-&gt;generateRandomString();
+            }
+            return true;
+        }
+        return false;
+    }</pre></div></div><p>User components<a id="id372" class="indexterm"></a> provide methods to log in, log out, and access the <code class="literal">identityClass</code>, and they verify the effectiveness of the user authentication.</p><p>To verify whether the user is well authenticated, use the following:</p><div class="informalexample"><pre class="programlisting">// whether the current user is a guest (not authenticated)
+$isGuest = Yii::$app-&gt;user-&gt;isGuest;</pre></div><p>When a user is authenticated and we have an instance of the <code class="literal">\app\models\User</code> model, we could complete the authentication by calling:</p><div class="informalexample"><pre class="programlisting">// find a user identity with the specified username.
+// note that you may want to check the password if needed
+$userModel = User::findOne(['username' =&gt; $username]);
+
+// logs in the user
+Yii::$app-&gt;user-&gt;login($userModel);</pre></div><p>Then, when we <a id="id373" class="indexterm"></a>need to access the identity class:</p><div class="informalexample"><pre class="programlisting">// access to identity class that it is equivalent to $userModel
+$identity = Yii::$app-&gt;user-&gt;identity;</pre></div><p>Finally, to log the user out:</p><div class="informalexample"><pre class="programlisting">Yii::$app-&gt;user-&gt;logout();</pre></div><div class="section" title="Example &ndash; a login form to access"><div class="titlepage"><div><div><h2 class="title"><a id="ch08lvl2sec39"></a>Example &ndash; a login form to access</h2></div></div></div><p>In this example, we will create a <a id="id374" class="indexterm"></a>login form and complete the user authentication. To proceed it is necessary to create a <code class="literal">user</code> database table from a SQL query, as described in the previous paragraph.</p><p>To add a user, just insert a new record in the <code class="literal">user</code> table, with <code class="literal">foo</code> as the username and <code class="literal">foopassword</code> as the password:</p><div class="informalexample"><pre class="programlisting">INSERT INTO `user` (
+`username` ,
+`password_hash` ,
+)
+VALUES (
+'foo',
+'$2a$12$hL0rmIMjxhLqI.xr7jD1FugNWEgZNh62HuJj5.y34XBUfBWB4cppW'
+);</pre></div><div class="note" title="Note"><h3 class="title"><a id="note53"></a>Note</h3><p>A password is hashed using the bcrypt method and cost with value 12, available on the Internet through a quick Google search.</p></div><p>Then, create a new controller named <code class="literal">MyAuthentication</code> in <code class="literal">basic/controllers/MyAuthenticationController.php</code> and ensure it contains two actions: <code class="literal">actionLogin</code> and <code class="literal">actionLogout</code>.</p><p>The <code class="literal">actionLogin</code> method gets the username and password data from <code class="literal">$_POST</code> and uses an <code class="literal">$error</code> variable to pass an error description to the view. If the username and password data is filled in, the user will be found in the database table and the inserted password will be validated, and after that the user will be logged in.</p><p>Finally, <code class="literal">actionLogout</code> simply logs the user out from the session and redirects the browser to the login page:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace app\controllers;
+
+use Yii;
+use yii\web\Controller;
+
+use app\models\User;
+
+
+class MyAuthenticationController extends Controller
+{
+    public function actionLogin()
+    {
+        $error = null;
+        
+        $username = Yii::$app-&gt;request-&gt;post('username', null);
+        $password = Yii::$app-&gt;request-&gt;post('password', null);
+        
+        $user = User::findOne(['username' =&gt; $username]);
+        
+        if(($username!=null)&amp;&amp;($password!=null))
+        {
+            if($user != null)
+            {
+                if($user-&gt;validatePassword($password))
+                {
+                    Yii::$app-&gt;user-&gt;login($user);
+                }
+                else {
+                    $error = 'Password validation failed!';
+                }
+            }
+            else
+            {
+                $error = 'User not found';
+            }
+        }
+        
+        return $this-&gt;render('login', ['error' =&gt; $error]);
+    }
+    public function actionLogout()
+    {
+        Yii::$app-&gt;user-&gt;logout();
+        return $this-&gt;redirect(['login']);
+    }
+    
+}</pre></div><p>Now, create the view with this<a id="id375" class="indexterm"></a> content in <code class="literal">basic/views/my-authentication/login.php</code>. Before a user can log in, a form with the username and password to be filled in will be displayed. When the username and password match an entry in the user database table, a confirmation message and a logout button will be displayed:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+use \yii\bootstrap\ActiveForm;
+use \yii\helpers\Html;
+use \yii\bootstrap\Alert;
+?&gt;
+
+&lt;?php
+if($error != null) {
+    echo Alert::widget([ 'options' =&gt; [ 'class' =&gt; 'alert-danger' ], 'body' =&gt; $error ]);    
+}
+?&gt;
+
+&lt;?php if(Yii::$app-&gt;user-&gt;isGuest) { ?&gt;
+
+    &lt;?php ActiveForm::begin(); ?&gt;
+    
+    &lt;div class="form-group"&gt;
+    &lt;?php echo Html::label('Username', 'username'); ?&gt;
+    &lt;?php echo Html::textInput('username', '', ['class' =&gt; 'form-control']); ?&gt;
+    &lt;/div&gt;
+    
+    &lt;div class="form-group"&gt;
+    &lt;?php echo Html::label('Password', 'password'); ?&gt;
+    &lt;?php echo Html::passwordInput('password', '', ['class' =&gt; 'form-control']); ?&gt;
+    &lt;/div&gt;
+    
+    &lt;?php echo Html::submitButton('Login', ['class' =&gt; 'btn btn-primary']); ?&gt;
+
+    &lt;?php ActiveForm::end(); ?&gt;
+   
+&lt;?php } else { ?&gt;
+    
+    &lt;h2&gt;You are authenticated!&lt;/h2&gt;
+    &lt;br /&gt;&lt;br /&gt;
+    &lt;?php echo Html::a('Logout',  ['my-authentication/logout'], ['class' =&gt; 'btn btn-warning']); ?&gt;
+        
+&lt;?php } ?&gt;</pre></div><p>Test it by pointing the <a id="id376" class="indexterm"></a>browser to <code class="literal">http://hostname/basic/web/my-authentication/login</code> and after filling out the form with <code class="literal">foo</code> as the username and <code class="literal">foopassword</code> as the password, this should be displayed:</p><div class="mediaobject"><img src="../Images/image00282.jpeg" alt="Example &ndash; a login form to access"/><div class="caption"><p>Login form to access</p></div></div><p style="clear:both; height: 1em;"> </p><p>After clicking on the <span class="strong"><strong>Login</strong></span> button, you should see:</p><div class="mediaobject"><img src="../Images/image00283.jpeg" alt="Example &ndash; a login form to access"/><div class="caption"><p>Successful authentication</p></div></div><p style="clear:both; height: 1em;"> </p><p>This method does not<a id="id377" class="indexterm"></a> provide error handling for the fields, because we are not using a model to create form fields. If we had created a form model with username and password fields, we could have added rules validation to this model and seen input error handling (such as missing field value, wrong field length, and so on). Fortunately, Yii2 has a login form model ready to use in <code class="literal">basic/models/LoginForm.php</code>.</p><p>If we had wanted to use this model, we would have created a new action named <code class="literal">actionLoginWithForm</code> in <code class="literal">MyAuthenticationController</code> that handles login fields through the model instead of parameters from <code class="literal">$_POST</code>:</p><div class="informalexample"><pre class="programlisting">    public function actionLoginWithModel()
+    {
+        $error = null;
+        
+        $model = new \app\models\LoginForm();
+        if ($model-&gt;load(Yii::$app-&gt;request-&gt;post())) {
+            if(($model-&gt;validate())&amp;&amp;($model-&gt;user != null))
+            {
+                Yii::$app-&gt;user-&gt;login($model-&gt;user);
+            }
+            else
+            {
+                $error = 'Username/Password error';
+            }
+        }
+        
+        return $this-&gt;render('login-with-model', ['model' =&gt; $model, 'error' =&gt; $error]);
+    }</pre></div><p>This is the content of <code class="literal">basic/views/my-authentication/login-with-model.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+use \yii\bootstrap\ActiveForm;
+use \yii\helpers\Html;
+use \yii\bootstrap\Alert;
+?&gt;
+
+&lt;?php
+if($error != null) {
+    echo Alert::widget([ 'options' =&gt; [ 'class' =&gt; 'alert-danger' ], 'body' =&gt; $error ]);    
+}
+?&gt;
+&lt;?php if(Yii::$app-&gt;user-&gt;isGuest) { ?&gt;
+
+    &lt;?php $form = ActiveForm::begin([
+        'id' =&gt; 'login-form',
+    ]); ?&gt;
+
+    &lt;?= $form-&gt;field($model, 'username') ?&gt;
+
+    &lt;?= $form-&gt;field($model, 'password')-&gt;passwordInput() ?&gt;
+
+    &lt;div class="form-group"&gt;
+        &lt;?= Html::submitButton('Login', ['class' =&gt; 'btn btn-primary', 'name' =&gt; 'login-button']) ?&gt;
+    &lt;/div&gt;
+
+    &lt;?php ActiveForm::end(); ?&gt;
+   
+&lt;?php } else { ?&gt;
+    &lt;h2&gt;You are authenticated!&lt;/h2&gt;
+    &lt;br /&gt;&lt;br /&gt;
+    &lt;?php echo Html::a('Logout',  ['my-authentication/logout'], ['class' =&gt; 'btn btn-warning']); ?&gt;    
+&lt;?php } ?&gt;    </pre></div><p>We can look at the <a id="id378" class="indexterm"></a>output by pointing our browser to <code class="literal">http://hostname/basic/web/my-authentication/login-with-model</code>.</p><p>If we try to submit the form without filling out all the fields, we will immediately get errors because they are activated by the form client-side validation:</p><div class="mediaobject"><img src="../Images/image00284.jpeg" alt="Example &ndash; a login form to access"/><div class="caption"><p>Login error using the model</p></div></div><p style="clear:both; height: 1em;"> </p><p>We can customize the <code class="literal">LoginForm</code> model class as we want if standard behavior is not enough for<a id="id379" class="indexterm"></a> our purposes.</p></div></div></div></body></html>

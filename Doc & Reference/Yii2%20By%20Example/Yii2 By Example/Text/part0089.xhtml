@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Formatting the output from the console</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Formatting the output from the console" id="aid-2KS221"><div class="titlepage"><div><div><h1 class="title"><a id="ch12lvl1sec83"></a>Formatting the output from the console</h1></div></div></div><p>The base class <a id="id538" class="indexterm"></a>console controller <code class="literal">yii\console\Controller</code> supports<a id="id539" class="indexterm"></a> methods to display colored and formatted output.</p><p>There are two standard methods to display the output, which are as follows:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">stdout</code>: This prints a string to <code class="literal">STDOUT</code></li><li class="listitem"><code class="literal">strerr</code>: This prints a string to <code class="literal">STDERR</code></li></ul></div><p>Both these methods support more parameters: the first is the text string to be displayed, and the other includes the formatting options that can be passed to make a pretty output.</p><p>There are formatting options for colors and typing; these are defined by constants from <code class="literal">\yii\helpers\Console</code>; for example, <code class="literal">BG_CYAN</code> for cyan background color, <code class="literal">BG_RED</code> for red background color, and <code class="literal">UNDERLINE</code> for underlined text.</p><p>Let's see an example using the following code:</p><div class="informalexample"><pre class="programlisting">$this-&gt;stdout("Hello?\n", Console::BOLD);</pre></div><p>This will display <code class="literal">Hello?</code> (with a carriage return) with bold font. Sometimes, it could be possible that no effect will be displayed, since our terminal does not support colors.</p><p>In this case, a method of the console controller will help us verify our terminal capabilities: <code class="literal">isColorEnabled()</code> returns a Boolean indicating whether the terminal supports ANSI colors.</p><p>Both the methods <code class="literal">strout</code> and <code class="literal">strerr</code> are applied to the whole text string and are passed as the first parameter. If <a id="id540" class="indexterm"></a>we want to apply some features only to a single<a id="id541" class="indexterm"></a> part of the text, we must use the <code class="literal">ansiFormat</code> method that returns an ANSI-formatted string.</p><p>Let's take an example. Create a controller to check whether the console supports ANSI or not, and try to print the colored text if this feature is supported.</p><p>Then, create a new controller named <code class="literal">ColorController</code> in <code class="literal">console/controllers/ColorController.php</code> with this content:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace console\controllers;
+
+use \yii\console\Controller;
+use \yii\helpers\Console;
+
+/**
+ * Colors dedicated controller
+ */
+class ColorController extends Controller
+{
+    /**
+     * Simply return a welcome text
+     */
+    public function actionIsClientEnabled()
+    {
+        if($this-&gt;isColorEnabled())
+        {
+            $this-&gt;stdout('OK, terminal supports colors!');
+        }
+        else
+        {
+            $this-&gt;stdout('NOT OK, terminal does not support colors!'); 
+            
+        }
+
+        $this-&gt;stdOut("\n");        
+        
+        // equivalent to return 0;
+        return Controller::EXIT_CODE_NORMAL;
+    }
+    
+    public function actionPrintColouredText()
+    {
+        $colouredText = $this-&gt;ansiFormat('This text is coloured', Console::FG_RED);
+        $normalText ="This text is normal";
+        
+        $this-&gt;stdout(sprintf("%s - %s\n", $normalText, $colouredText));
+    }
+    
+    
+}
+
+?&gt;</pre></div><p>We call <a id="id542" class="indexterm"></a>launch to check if <a id="id543" class="indexterm"></a>client supports ANSI colors or not:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ ./yii color/is-client-enabled</strong></span>
+</pre></div><p>And to display colored text (if the client supports it):</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ ./yii color/print-coloured-text</strong></span>
+</pre></div><p>The <code class="literal">Console</code> class under <code class="literal">\yii\helpers\</code> contains many other useful methods to format text and output, such as <code class="literal">confirm()</code> or <code class="literal">prompt()</code> to get input from the user, or progress to create a progress bar to display the execution state.</p></div></body></html>

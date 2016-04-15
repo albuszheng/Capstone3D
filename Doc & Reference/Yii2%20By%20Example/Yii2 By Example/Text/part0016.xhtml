@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Application structure</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Application structure" id="aid-F8901"><div class="titlepage"><div><div><h1 class="title"><a id="ch01lvl1sec10"></a>Application structure</h1></div></div></div><p>Yii2's application <a id="id13" class="indexterm"></a>structure is very clear, precise, and redundant (for advanced applications).</p><p>The contents of the <code class="literal">basic</code> folder should be as follows:</p><div class="informaltable"><table border="1"><colgroup><col></col><col></col></colgroup><thead><tr><th valign="bottom">
+<p>Folder names</p>
+</th><th valign="bottom">
+<p>Description</p>
+</th></tr></thead><tbody><tr><td valign="top">
+<p>
+<code class="literal">assets</code>
+</p>
+</td><td valign="top">
+<p>This<a id="id14" class="indexterm"></a> includes the files (<code class="literal">.js</code> and <code class="literal">.css</code>) referenced in the web page and dependencies of the app.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">commands</code>
+</p>
+</td><td valign="top">
+<p>This <a id="id15" class="indexterm"></a>includes the controllers used from the command line.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">config</code>
+</p>
+</td><td valign="top">
+<p>This<a id="id16" class="indexterm"></a> includes the controllers used from web.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">mail</code>
+</p>
+</td><td valign="top">
+<p>This is the<a id="id17" class="indexterm"></a> mail layout repository.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">models</code>
+</p>
+</td><td valign="top">
+<p>This<a id="id18" class="indexterm"></a> includes the models used in the whole application.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">runtime</code>
+</p>
+</td><td valign="top">
+<p>This<a id="id19" class="indexterm"></a> is used from Yii2 to store runtime data as logs.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">tests</code>
+</p>
+</td><td valign="top">
+<p>This <a id="id20" class="indexterm"></a>includes all the test's repositories (unit, functional, fixtures, and so on).</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">vendor</code>
+</p>
+</td><td valign="top">
+<p>This <a id="id21" class="indexterm"></a>includes the third-party module repositories managed by Composer.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">views</code>
+</p>
+</td><td valign="top">
+<p>This<a id="id22" class="indexterm"></a> contains PHP files, divided into folders that refer to controller names, used to render the main content of the page template. It is mainly called from the controller's actions to render the display output. A folder named layout contains<a id="id23" class="indexterm"></a> the page template's PHP files.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">web</code>
+</p>
+</td><td valign="top">
+<p>This is <a id="id24" class="indexterm"></a>the entry point from web </p>
+</td></tr></tbody></table></div><p>Open <code class="literal">web/index.php</code> to view content:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+// comment out the following two lines when deployed to production
+defined('YII_DEBUG') or define('YII_DEBUG', true);
+defined('YII_ENV') or define('YII_ENV', 'dev');
+
+require(__DIR__ . '/../vendor/autoload.php');
+require(__DIR__ . '/../vendor/yiisoft/yii2/Yii.php');
+
+$config = require(__DIR__ . '/../config/web.php');
+
+(new yii\web\Application($config))-&gt;run();</pre></div><p>Here, the first two constant definitions are very important.</p><p>
+<code class="literal">YII_DEBUG</code> defines whether you are in debug mode or not. If we set this, we will have more log information and will see the detail error call stack.</p><p>
+<code class="literal">YII_ENV</code> defines the environment mode we are working in, and its default value is <code class="literal">prod</code>. The available values are <code class="literal">test</code>, <code class="literal">dev</code>, and <code class="literal">prod</code>. These values are used in configuration files to define, for example, a different DB connection (local database different from remote database) or other values, always in configuration files.</p><p>Since we are at the start of our project, it is recommended to set <code class="literal">YII_DEBUG</code> to <code class="literal">true</code>, in order to have more <a id="id25" class="indexterm"></a>detailed information in case we make a mistake in our code, instead of the unhelpful, blank.</p><p>The following table contains a list of all <a id="id26" class="indexterm"></a>Yii2's objects:</p><div class="informaltable"><table border="1"><colgroup><col></col><col></col></colgroup><thead><tr><th valign="bottom">
+<p>Objects</p>
+</th><th valign="bottom">
+<p>Description</p>
+</th></tr></thead><tbody><tr><td valign="top">
+<p>Models, Views, and Controllers</p>
+</td><td valign="top">
+<p>These are the <a id="id27" class="indexterm"></a>common objects to <a id="id28" class="indexterm"></a>apply the MVC pattern<a id="id29" class="indexterm"></a> to:</p>
+<div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Models are data representation and manipulation, usually from the database</li><li class="listitem">Views are used to present data to the end user</li><li class="listitem">Controllers are objects that process requests and generate responses</li></ul></div>
+</td></tr><tr><td valign="top">
+<p>Components</p>
+</td><td valign="top">
+<p>These are<a id="id30" class="indexterm"></a> objects that contain logic. The user can write his own components to create reusable functionalities.</p>
+<p>For example, a component could be a currency converter object, which can be used at many instances in our application.</p>
+</td></tr><tr><td valign="top">
+<p>Application Components</p>
+</td><td valign="top">
+<p>They are<a id="id31" class="indexterm"></a> singletons that can be called at any point in the app. Singleton means an object instanced just one time in the entire application (so the object will always be the same).</p>
+<p>The difference between Application Components and Components is that the first can have just one instance in the whole application.</p>
+</td></tr><tr><td valign="top">
+<p>Widgets</p>
+</td><td valign="top">
+<p>These <a id="id32" class="indexterm"></a>view reusable objects, containing both logic and rendering code. A widget could be, for example, a box displaying today's weather info.</p>
+</td></tr><tr><td valign="top">
+<p>Filters</p>
+</td><td valign="top">
+<p>These <a id="id33" class="indexterm"></a>are objects that run before or after the execution of Controller actions. A filter can be used to change the format response output of the page, for example, from HTML to JSON.</p>
+</td></tr><tr><td valign="top">
+<p>Modules</p>
+</td><td valign="top">
+<p>This<a id="id34" class="indexterm"></a> contains all the objects of an app, such as Models, Views, Controller, Components, and so on; we can consider them as subapp, containing reusable sections (for example, user management).</p>
+</td></tr><tr><td valign="top">
+<p>Extensions</p>
+</td><td valign="top">
+<p>Extensions<a id="id35" class="indexterm"></a> are<a id="id36" class="indexterm"></a> modules packaged, that we can easily manage using Composer.</p>
+</td></tr></tbody></table></div></div></body></html>

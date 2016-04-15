@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>DB-based translations</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="DB-based translations" id="aid-2ACBS1"><div class="titlepage"><div><div><h1 class="title"><a id="ch10lvl1sec72"></a>DB-based translations</h1></div></div></div><p>Yii also supports database as a <a id="id453" class="indexterm"></a>storage option for message translations.</p><p>It has to be explicitly configured in the <code class="literal">config/web.php</code> file if we are working in the basic template, or in <code class="literal">common/config/main.php</code>, if we are working in the advanced template.</p><p>Next, we need to add two more database tables to manage message sources and message translations.</p><p>Start by creating database tables, as suggested in<a id="id454" class="indexterm"></a> Yii's official documentation at <a class="ulink" href="http://www.yiiframework.com/doc-2.0/yii-i18n-dbmessagesource.html">http://www.yiiframework.com/doc-2.0/yii-i18n-dbmessagesource.html</a>:</p><div class="informalexample"><pre class="programlisting">CREATE TABLE source_message (
+    id INTEGER PRIMARY KEY AUTO_INCREMENT,
+    category VARCHAR(32),
+    message TEXT
+);
+
+CREATE TABLE message (
+    id INTEGER,
+    language VARCHAR(16),
+    translation TEXT,
+    PRIMARY KEY (id, language),
+    CONSTRAINT fk_message_source_message FOREIGN KEY (id)
+        REFERENCES source_message (id) ON DELETE CASCADE ON UPDATE RESTRICT
+);</pre></div><div class="note" title="Note"><h3 class="title"><a id="note67"></a>Note</h3><p>Table names can be customized in the configuration file.</p></div><p>Table <code class="literal">source_message</code> will store all messages written with the source language; table <code class="literal">message</code> will store all translations; both tables are joined together by the <code class="literal">id</code> field.</p><p>In the next example, let's insert one record for each table:</p><div class="informalexample"><pre class="programlisting">INSERT INTO `source_message` (`id`, `category`, `message`) VALUES
+(1, 'app', 'Hello World from Database!');
+
+INSERT INTO `message` (`id`, `language`, `translation`) VALUES
+(1, 'it', 'Ciao Mondo dal Database!');</pre></div><p>Now, it is time to apply some<a id="id455" class="indexterm"></a> changes to the configuration. We need to insert the <code class="literal">i18n</code> property in the <code class="literal">components</code> section of the configuration in <code class="literal">config/web.php</code> (based on the basic template):</p><div class="informalexample"><pre class="programlisting">'components' =&gt; [
+    // ...
+    'i18n' =&gt; [
+        'translations' =&gt; [
+            'app' =&gt; [
+                    'class' =&gt; 'yii\i18n\DbMessageSource',
+                    //'messageTable' =&gt; 'message,
+                    //'sourceMessageTable' =&gt; 'source_message,
+    
+            ],
+        ],
+    ],
+],</pre></div><p>This component, i18n, uses <code class="literal">yii\i18n\PhpMessageSource</code> as a class by default, and has employed itself for file-based translation.</p><p>Now, we want to display the message in Italian. Create a new action in <code class="literal">basic/controllers/FileTranslatorController.php</code> named <code class="literal">actionHelloWorldFromDatabase()</code>, with the following content:</p><div class="informalexample"><pre class="programlisting">     public function actionHelloWorldFromDatabase()
+    {
+        \Yii::$app-&gt;language = 'it';
+        $text = \Yii::t('app', 'Hello World from Database!');
+        
+        return $this-&gt;render('helloWorldFromDatabase', ['text' =&gt; $text]);        
+    }</pre></div><p>The view in <code class="literal">basic/views/file-translator/helloWorldFromDatabase</code> will show the <code class="literal">$text</code> content:</p><div class="informalexample"><pre class="programlisting">&lt;?= $text ?&gt;</pre></div><p>Test it by pointing the browser to <code class="literal">http://hostname/basic/web/file-translator/hello-world-from-database</code>. If all is correct, we should see <code class="literal">Ciao Mondo dal Database!</code>, which is the Italian version of <code class="literal">Hello World from Database!</code>.</p><div class="section" title="Example &ndash; translating room descriptions using DB"><div class="titlepage"><div><div><h2 class="title"><a id="ch10lvl2sec47"></a>Example &ndash; translating room descriptions using DB</h2></div></div></div><p>This example will show you how<a id="id456" class="indexterm"></a> to translate the room's description <a id="id457" class="indexterm"></a>using the database as the storage option. We will create models for <code class="literal">message</code> and <code class="literal">source_message</code> database tables, since we are going to use ActiveRecord to manage records in all the tables that control translations.</p><p>Firstly, we are going to create models for <code class="literal">message</code> and <code class="literal">source_message</code> database tables using Gii. In the basic template, point the browser to <code class="literal">http://hostname/basic/web/gii</code>, and then go to the model generator. Gii will create <code class="literal">Message</code> and <code class="literal">SourceMessage</code> models in the <code class="literal">basic/models</code> folder.</p><p>Next, we want to create a form that contains descriptions both in the original language and in all other translations.</p><p>For this purpose, we will create a view in <code class="literal">basic/views/rooms/indexWithTranslatedDescriptions.php</code>, as follows:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+use yii\helpers\Url;
+use yii\widgets\ActiveForm;
+?&gt;
+
+&lt;div class="row"&gt;
+    &lt;div class="col-md-4"&gt;
+        &lt;legend&gt;Rooms with translated descriptions&lt;/legend&gt;
+        
+        &lt;?php $form = ActiveForm::begin([]); ?&gt;
+        &lt;table class="table"&gt;
+            &lt;tr&gt;
+                &lt;th&gt;#&lt;/th&gt;
+                &lt;th&gt;Floor&lt;/th&gt;
+                &lt;th&gt;Room number&lt;/th&gt;
+                &lt;th&gt;Description - English&lt;/th&gt;
+                &lt;th&gt;Description - Italian&lt;/th&gt;
+                &lt;th&gt;Description - French&lt;/th&gt;
+            &lt;/tr&gt;
+            &lt;?php for($k=0;$k&lt;count($rooms);$k++) : ?&gt;
+                &lt;?php $room = $rooms[$k]; ?&gt;
+                &lt;input type="hidden" name="Room[&lt;?= $k ?&gt;][id]" value="&lt;?= $room-&gt;id ?&gt;" /&gt;
+                &lt;tr&gt;
+                    &lt;td&gt;&lt;?php echo $k+1 ?&gt;&lt;/td&gt;
+                    &lt;td&gt;&lt;?php echo $room-&gt;floor ?&gt;&lt;/td&gt;
+                    &lt;td&gt;&lt;?php echo $room-&gt;room_number ?&gt;&lt;/td&gt;
+                    &lt;td&gt;&lt;input type="text" name="Room[&lt;?= $k ?&gt;][description][en]" value="&lt;?= $room-&gt;description ?&gt;" /&gt;&lt;/td&gt;
+                    &lt;td&gt;&lt;input type="text" name="Room[&lt;?= $k ?&gt;][description][it]" value="&lt;?= Yii::$app-&gt;i18n-&gt;translate('app', $room-&gt;description, [], 'it') ?&gt;" /&gt;&lt;/td&gt;
+                    &lt;td&gt;&lt;input type="text" name="Room[&lt;?= $k ?&gt;][description][fr]" value="&lt;?= Yii::$app-&gt;i18n-&gt;translate('app', $room-&gt;description, [], 'fr') ?&gt;" /&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+            &lt;?php endfor; ?&gt;
+        &lt;/table&gt;
+        &lt;br /&gt;
+        &lt;input type="submit" class="btn btn-primary" value="Submit descriptions" /&gt;
+        &lt;?php ActiveForm::end(); ?&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</pre></div><p>We will check for <a id="id458" class="indexterm"></a>other language translations using<a id="id459" class="indexterm"></a> the <code class="literal">Yii::$app-&gt;i18n-&gt;translate</code> method that accepts:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">Category</li><li class="listitem">Message to be translated</li><li class="listitem">Parameters of messages</li><li class="listitem">Language</li></ul></div><p>It is now time to add <code class="literal">actionIndexWithTranslatedDescriptions()</code> in <code class="literal">basic/controllers/RoomsController.php</code>:</p><div class="informalexample"><pre class="programlisting">    public function actionIndexWithTranslatedDescriptions()
+    {
+        if(isset($_POST['Room']))
+        {
+            $roomsInput = $_POST['Room'];
+            foreach($roomsInput as $item)
+            {
+                $sourceMessage = \app\models\SourceMessage::findOne(['message' =&gt; $item['description']]);
+                
+                // If null, I need to create source message
+                if($sourceMessage == null)
+                {
+                    $sourceMessage = new \app\models\SourceMessage();
+                }
+                $sourceMessage-&gt;category = 'app';
+                $sourceMessage-&gt;message = $item['description']['en'];
+                $sourceMessage-&gt;save();
+                
+                $otherLanguages = ['it', 'fr'];
+                
+                foreach($otherLanguages as $otherLang)
+                {
+                    $message = \app\models\Message::findOne(['id' =&gt; $sourceMessage-&gt;id, 'language' =&gt; $otherLang]);
+                    if($message == null)
+                    {
+                        $message = new \app\models\Message();
+                    }
+                    $message-&gt;id = $sourceMessage-&gt;id;
+                    $message-&gt;language = $otherLang;
+                    $message-&gt;translation = $item['description'][$otherLang];
+                    $message-&gt;save();
+                }
+                
+                // Room to update
+                $roomToUpdate = \app\models\Room::findOne($item['id']);
+                $roomToUpdate-&gt;description = $item['description']['en'];
+                $roomToUpdate-&gt;save();
+            }
+        }
+
+        $rooms = Room::find()
+        -&gt;all();
+        
+        return $this-&gt;render('indexWithTranslatedDescriptions', ['rooms' =&gt; $rooms]);
+    }</pre></div><div class="note" title="Note"><h3 class="title"><a id="note68"></a>Note</h3><p>If we have trouble accessing the URL, check the <code class="literal">access</code> property returned by the <code class="literal">behaviors()</code> method of this controller to ensure that this action is allowed.</p></div><p>On top of this<a id="id460" class="indexterm"></a> code, we will check whether the <code class="literal">$_POST</code> array<a id="id461" class="indexterm"></a> is filled; in this case, we will get the <code class="literal">$sourceMessage</code> object from descriptions passed from the view. Next, we can create or update the message model for whatever language we want. In the end, we will also save the room object, eventually with its description field changed.</p><p>With this solution, anytime we want to change a description, a new record will be created since the text has been changed.</p></div></div></body></html>

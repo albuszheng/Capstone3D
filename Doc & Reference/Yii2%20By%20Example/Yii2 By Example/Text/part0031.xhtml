@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Default parameters in rules</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Default parameters in rules" id="aid-TI1E1"><div class="titlepage"><div><div><h1 class="title"><a id="ch03lvl1sec25"></a>Default parameters in rules</h1></div></div></div><p>In rules, all the parameters that are declared are required; if the URL misses some parameter, the rule will not be applied. This problem can be solved using the default property of rule.</p><p>The URL rule structure has a parameter, named defaults, containing default parameters to be passed as default. Parameter defaults is an array, where keys are names of parameters and values are their corresponding values.</p><p>For example, change the second rule to a complete array and add <code class="literal">['category' =&gt; 'shopping']</code> as the default property rule:</p><div class="informalexample"><pre class="programlisting">'rules' =&gt; [
+    'news/&lt;year:\d{4}&gt;/items-list' =&gt; 'news/items-list',
+    [
+        'pattern' =&gt; 'news/&lt;category:\w+&gt;/items-list',
+        'route' =&gt; 'news/items-list',
+        'defaults' =&gt; ['category' =&gt; 'shopping']
+    ]
+],</pre></div><p>Now, if we point to <code class="literal">http://hostname/basic/web/news/items-list</code> without specifying the year or category parameter, the first rule will be skipped and the second one will be executed using shopping as the default value, because the category is missing.</p><div class="section" title="Example &ndash; the index page to display the links list"><div class="titlepage"><div><div><h2 class="title"><a id="ch03lvl2sec20"></a>Example &ndash; the index page to display the links list</h2></div></div></div><p>Now, create an<a id="id129" class="indexterm"></a> index page to see how to create these custom URLs. In this page, we will display URL links to have the data filtered by year (for the last 5 years) and links to view the data filtered by category (shopping and business).</p><p>URLs are made using <code class="literal">yii\helpers\Url</code>, along with the <code class="literal">to()</code> method, where the first parameter can be:</p><p>The first parameter can be:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">An array that will be passed to the <code class="literal">toRoute()</code> method to generate the URL. The first item of this array is the route to be rendered and the other items are the parameters to be passed to the route; for example, <code class="literal">Url::to(['news/items-list', 'year' =&gt; 2015])</code>.</li><li class="listitem">A string with a leading <code class="literal">@</code>; this is treated as an alias, and the corresponding aliased string will be returned</li><li class="listitem">An empty string that returns the currently requested URL.</li><li class="listitem">A normal string that will be returned as it is.</li></ul></div><p>Create a simple <code class="literal">actionIndex</code> in <code class="literal">NewsController</code>:</p><div class="informalexample"><pre class="programlisting">public function actionIndex()
+{
+    return $this-&gt;render('index');
+}</pre></div><p>Then, create <a id="id130" class="indexterm"></a>a view for the index action under <code class="literal">views/news/index.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+use yii\helpers\Url;
+use yii\helpers\Html;
+
+?&gt;
+
+&lt;b&gt;Filter data by year:&lt;/b&gt;
+&lt;br /&gt;
+&lt;ul&gt;
+  &lt;?php $currentYear = date('Y'); ?&gt;
+  &lt;?php for($year=$currentYear;$year&gt;($currentYear-5);$year--) { ?&gt;
+  &lt;li&gt;&lt;?php echo Html::a( 'List items by year '.$year, Url::to(['news/items-list', 'year' =&gt; $year]) ) ?&gt;&lt;/li&gt;
+  &lt;?php } ?&gt;
+&lt;/ul&gt;
+
+&lt;br /&gt;
+
+&lt;b&gt;Filter data by category:&lt;/b&gt;
+&lt;br /&gt;
+&lt;ul&gt;
+  &lt;?php $categories = ['business', 'shopping']; ?&gt;
+  &lt;?php foreach($categories as $category) { ?&gt;
+  &lt;li&gt;&lt;?php echo Html::a( 'List items by category '.$category, Url::to(['news/items-list', 'category' =&gt; $category]) ) ?&gt;&lt;/li&gt;
+  &lt;?php } ?&gt;
+&lt;/ul&gt;
+
+&lt;br /&gt;&lt;br /&gt;</pre></div><p>Point to <code class="literal">http://hostname/news/index</code> and it will display:</p><div class="mediaobject"><img src="../Images/image00254.jpeg" alt="Example &ndash; the index page to display the links list"/><div class="caption"><p>Index of the available filtered data</p></div></div><p style="clear:both; height: 1em;"> </p></div></div></body></html>

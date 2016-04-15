@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Sharing ActiveRecord models among applications</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Sharing ActiveRecord models among applications"><div class="titlepage" id="aid-23MNU2"><div><div><h1 class="title"><a id="ch09lvl1sec65"></a>Sharing ActiveRecord models among applications</h1></div></div></div><p>Although every <a id="id419" class="indexterm"></a>folder in the main Yii project could be <a id="id420" class="indexterm"></a>considered a Yii standalone application, with its own controllers, models, views, and so on, it is conventionally accepted that all shared data are located in the <code class="literal">common</code> folder.</p><p>So every shared model (such as <code class="literal">User</code>, <code class="literal">Room</code>, <code class="literal">Reservation</code>, and <code class="literal">Customer</code>) that could be used in other Yii applications, should be inserted in <code class="literal">common/models</code>, under the <code class="literal">common\models</code> namespace.</p><p>From my point of view, when an application needs to use an ActiveRecord from <code class="literal">common/models</code>, I rather prefer to point to an extended version in its namespace, so as to have a chance again to add custom methods or properties to model for that application.</p><p>For example, consider we have the <code class="literal">Room</code> model in <code class="literal">common/models</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace common\models;
+class Room extends ActiveRecord
+{
+&hellip;.
+&hellip;.
+}</pre></div><p>In the backend application, we will create an empty extension to the <code class="literal">Room</code> class from common namespace:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace backend\models;
+class Room extends \common\models\Room
+{
+}</pre></div><p>In this way, we have the possibility to add custom methods or properties to that specific application (namespace), if needed.</p><p>Therefore, every controller, view, or model in backend namespace will point to <code class="literal">\backend\models\Room</code>, when it needs to refer to the <code class="literal">Room</code> ActiveRecord.</p><div class="section" title="Example &ndash; displaying available rooms in the frontend site"><div class="titlepage"><div><div><h2 class="title"><a id="ch09lvl2sec44"></a>Example &ndash; displaying available rooms in the frontend site</h2></div></div></div><p>This example will emphasize the<a id="id421" class="indexterm"></a> few differences between basic and<a id="id422" class="indexterm"></a> advanced applications occurring in the developing phase.</p><p>The first thing to do is to check whether the database configuration is right, since we have just initialized an advanced application.</p><div class="note" title="Note"><h3 class="title"><a id="note61"></a>Note</h3><p>The database configuration on the production server can be found in <code class="literal">common/config/main.php</code>, whereas the database configuration on the developing server is located in <code class="literal">common/config/main-local.php</code>, which overwrites the configuration in <code class="literal">common/config/main.php</code>.</p></div><p>Open <code class="literal">common/config/main.php</code> and add the <code class="literal">db</code> property to the configuration array:</p><div class="informalexample"><pre class="programlisting">        'db' =&gt; [
+            'class' =&gt; 'yii\db\Connection',
+            'dsn' =&gt; 'mysql:host=localhost;dbname=yii_db',
+            'username' =&gt; 'my_username',
+            'password' =&gt; 'my_password',
+            'charset' =&gt; 'utf8',   
+        ],</pre></div><p>Change the database properties (<code class="literal">host</code>, <code class="literal">username</code>, and <code class="literal">password</code>) according to our configuration parameters.</p><div class="note" title="Note"><h3 class="title"><a id="note62"></a>Note</h3><p>Remember to comment out the database configuration in <code class="literal">common/config/main-local.php</code> to avoid overwriting configurations.</p></div><p>In this way, we will have complete access to the database and tables previously created, and to rooms' data, indeed.</p><p>Now, we are ready to create:</p><div class="orderedlist"><ol class="orderedlist arabic"><li class="listitem">The <code class="literal">Room</code> model.</li><li class="listitem">The <code class="literal">Rooms</code> controller.</li><li class="listitem">View of index action of the <code class="literal">Rooms</code> controller.</li></ol><div style="height:10px; width: 1px"></div></div><p>The first step<a id="id423" class="indexterm"></a> requires the use of Gii. By default, Gii is <a id="id424" class="indexterm"></a>enabled with basic configuration in the frontend application (only from localhost).</p><p>We will overwrite this configuration so as to use Gii from everywhere. Therefore, in the frontend local configuration (<code class="literal">frontend/config/main-local.php</code>), which has the following lines:</p><div class="informalexample"><pre class="programlisting">    $config['bootstrap'][] = 'gii';
+    $config['modules']['gii'] = 'yii\gii\Module';</pre></div><p>Replace them with these ones:</p><div class="informalexample"><pre class="programlisting">    $config['bootstrap'][] = 'gii';
+    $config['modules']['gii'] = [
+            'class' =&gt; 'yii\gii\Module',
+            'allowedIPs' =&gt; ['*']
+    ];    </pre></div><p>Now, we can finally access Gii from everywhere. Using the browser, go to <code class="literal">http://hostname/yiiadv/frontend/web/gii</code>; a welcome page should be displayed.</p><p>Go to <span class="strong"><strong>Model Generator</strong></span> and fill the first field, <code class="literal">Table Name</code>, with <code class="literal">room</code>, the name of model we are creating, just as we have done in the previous chapters.</p><p>Since, we are working with the advanced template, model files (like other objects created by Gii) will be created in the <code class="literal">frontend</code> namespace, or rather in <code class="literal">frontend/models</code>.</p><p>Therefore, it is necessary to change the first field of <span class="strong"><strong>Model Generator</strong></span>, <span class="strong"><strong>Namespace</strong></span>, so as to switch from <code class="literal">app/models</code> to <code class="literal">common/models</code>, the shared area of common data:</p><div class="mediaobject"><img src="../Images/image00286.jpeg" alt="Example &ndash; displaying available rooms in the frontend site"/><div class="caption"><p>Gii model generator in advanced template</p></div></div><p style="clear:both; height: 1em;"> </p><p>In <code class="literal">common/models</code>, there should be a <code class="literal">Room.php</code> file containing the model of the <code class="literal">Room</code> table.</p><p>The second step it is <a id="id425" class="indexterm"></a>to create the controller and the action<a id="id426" class="indexterm"></a> of the controller to display the rooms list.</p><p>Let's create the controller under <code class="literal">frontend/controllers/RoomsController.php</code> with the following content:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace frontend\controllers;
+
+use Yii;
+use yii\web\Controller;
+use yii\data\ActiveDataProvider;
+use common\models\Room;
+
+class RoomsController extends Controller
+{
+    public function actionIndex()
+    {
+        $dataProvider = new ActiveDataProvider([
+            'query' =&gt; Room::find(),
+            'pagination' =&gt; [
+                'pageSize' =&gt; 20,
+            ],
+        ]);
+        
+        return $this-&gt;render('index', [
+            'dataProvider' =&gt; $dataProvider,
+        ]);
+    }
+}</pre></div><p>Make sure that the<a id="id427" class="indexterm"></a> namespace declaration on top<a id="id428" class="indexterm"></a> is <code class="literal">frontend\controllers</code>, since every application in the web project has its own namespace (in this case, <code class="literal">frontend</code>).</p><div class="note" title="Note"><h3 class="title"><a id="note63"></a>Note</h3><p>We should never directly subclass <code class="literal">yii\web\Controller</code>, instead we should create a custom controller for each application, for example, <code class="literal">frontend\controllers\BaseController</code>, and then subclass it from every controller that we will create in <code class="literal">frontend\controllers</code>.</p></div><p>Finally, the third step is to create view content of index action in <code class="literal">frontend/views/rooms/index.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;div class="row"&gt;
+&lt;?php foreach($dataProvider-&gt;getModels() as $model) { ?&gt;
+    &lt;div class="col-md-3" style="border:1px solid gray; margin-right:10px; padding:20px;"&gt;
+        &lt;h2&gt;Room #&lt;?= $model-&gt;id ?&gt;&lt;/h2&gt;
+        Floor: &lt;?= $model-&gt;floor ?&gt;
+        &lt;br /&gt;
+        Number: &lt;?= $model-&gt;room_number; ?&gt;
+    &lt;/div&gt;
+&lt;?php } ?&gt;
+&lt;/div&gt;</pre></div><p>This will produce the following output with the data available in the database:</p><div class="mediaobject"><img src="../Images/image00287.jpeg" alt="Example &ndash; displaying available rooms in the frontend site"/><div class="caption"><p>Rooms availability in the frontend</p></div></div><p style="clear:both; height: 1em;"> </p></div></div></body></html>

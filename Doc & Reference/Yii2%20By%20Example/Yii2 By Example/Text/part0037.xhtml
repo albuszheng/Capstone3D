@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Using ActiveForm</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Using ActiveForm" id="aid-1394Q1"><div class="titlepage"><div><div><h1 class="title"><a id="ch04lvl1sec31"></a>Using ActiveForm</h1></div></div></div><p>Now we will<a id="id157" class="indexterm"></a> create an HTML form in view to send data from view to controller. We could build a form in the standard way using the form tag and input fields, but Yii2 provides helper classes that simplify the building of a form and its content.</p><p>For this purpose, we will use <code class="literal">ActiveForm</code>, a widget that builds an interactive HTML form for one or multiple data models.</p><p>As for any Yii2 widget, we will indicate with the <code class="literal">begin()</code>static method, the moment we start using it, and with the <code class="literal">end()</code>static method, the moment we stop using it, from <code class="literal">yii\widgets\ActiveForm</code>. The code between these methods will be placed in the form:</p><div class="informalexample"><pre class="programlisting">$form = ActiveForm::begin();
+... content here ...
+ActiveForm::end();</pre></div><p>The first method, <code class="literal">begin()</code>, returns an object that we can use inside the content to create the input fields. This method accepts an array as the parameter to indicate configuration attributes to be applied. The last method, <code class="literal">end()</code>, marks the end of the widget, so this can be rendered with its content.</p><p>Now, we need some input fields to insert in the code, which is done using the <code class="literal">field()</code> method of the <code class="literal">ActiveForm</code> instance that we just created. This method requires two parameters: model and field name and returns an object of type <code class="literal">ActiveField</code>. With this method, we just demand <code class="literal">ActiveForm</code> to create a new field; however, in this case, we also need to specify the type of field we want.</p><p>This operation is made calling a method from <code class="literal">ActiveField</code> relative to the kind of input to the instance. The most common are:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">label()</code>: This is used to generate a label tag</li><li class="listitem"><code class="literal">textInput()</code>: This is used to generate an input field with type <code class="literal">text</code></li><li class="listitem"><code class="literal">textarea()</code>: This is used to generate a <code class="literal">textarea</code> tag</li><li class="listitem"><code class="literal">radio()</code>: This is used to generate an input field with type <code class="literal">radio</code></li><li class="listitem"><code class="literal">checkbox()</code>: This is used to generate an input field with type <code class="literal">checkbox</code></li></ul></div><div class="section" title="Example &ndash; creating a new room from the HTML form"><div class="titlepage"><div><div><h2 class="title"><a id="ch04lvl2sec22"></a>Example &ndash; creating a new room from the HTML form</h2></div></div></div><p>Firstly, create a new controller, <code class="literal">RoomsController</code>, under <code class="literal">basic/controllers/RoomsController.php</code> with an action named <code class="literal">create</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace app\controllers;
+
+use Yii;
+use yii\web\Controller;
+use app\models\Room;
+
+
+class RoomsController extends Controller
+{
+    public function actionCreate()
+    {
+        $model = new Room();
+        $modelCanSave = false;
+
+        if ($model-&gt;load(Yii::$app-&gt;request-&gt;post()) &amp;&amp; $model-&gt;validate()) {
+            $modelCanSave = true;
+        }
+        
+        return $this-&gt;render('create', [
+            'model' =&gt; $model,
+            'modelSaved' =&gt; $modelCanSave
+        ]);
+    }
+}</pre></div><p>At the start of<a id="id158" class="indexterm"></a> the <code class="literal">create()</code> method, we create a new instance of the <code class="literal">Room</code> class assigned to the <code class="literal">$model</code> variable. The <code class="literal">load()</code> method fills the <code class="literal">$model</code> attributes with data taken from the key position named <code class="literal">$model-&gt;formName()</code> of an array passed as parameters. By default, <code class="literal">$model-&gt;formName()</code> returns the class name of the object, as shown in the following code:</p><div class="informalexample"><pre class="programlisting">$model-&gt;load(Yii::$app-&gt;request-&gt;post())</pre></div><p>The preceding code is equivalent to:</p><div class="informalexample"><pre class="programlisting">if (isset($_POST[$model-&gt;formName()])) {
+  $this-&gt;setAttributes($_POST[$model-&gt;formName()]);
+}</pre></div><p>Going back to the <code class="literal">load()&amp;&amp;validate()</code> condition, if <code class="literal">load()</code> returns true, <code class="literal">validate()</code> will also be executed and all rules in the <code class="literal">rules()</code> method of model will be evaluated.</p><p>In this case, <code class="literal">Model</code> is ready to be saved to the data store (in the database in the next chapters). Now, it is important to mark this condition with a simple variable named <code class="literal">$modelCanSave</code>, passed to the <code class="literal">create</code> view.</p><p>Create a<a id="id159" class="indexterm"></a> file for the <code class="literal">create</code> view under <code class="literal">basic/views/rooms/create.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+use yii\helpers\Html;
+use yii\widgets\ActiveForm;
+use yii\helpers\Url;
+use yii\helpers\ArrayHelper;
+?&gt;
+
+&lt;?php if($modelCanSave) { ?&gt;
+&lt;div class="alert alert-success"&gt;
+    Model ready to be saved!
+&lt;/div&gt;
+&lt;?php } ?&gt;
+
+&lt;?php $form = ActiveForm::begin(); ?&gt;
+&lt;div class="row"&gt;
+    &lt;div class="col-lg-12"&gt;
+        &lt;h1&gt;Room form&lt;/h1&gt;
+        &lt;?= $form-&gt;field($model, 'floor')-&gt;textInput() ?&gt;
+        &lt;?= $form-&gt;field($model, 'room_number')-&gt;textInput() ?&gt;
+        &lt;?= $form-&gt;field($model, 'has_conditioner')-&gt;checkbox() ?&gt;
+        &lt;?= $form-&gt;field($model, 'has_tv')-&gt;checkbox() ?&gt;
+        &lt;?= $form-&gt;field($model, 'has_phone')-&gt;checkbox() ?&gt;
+        &lt;?= $form-&gt;field($model, 'available_from')-&gt;textInput() ?&gt;
+        &lt;?= $form-&gt;field($model, 'price_per_day')-&gt;textInput() ?&gt;
+        &lt;?= $form-&gt;field($model, 'description')-&gt;textarea() ?&gt;
+   &lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="form-group"&gt;
+    &lt;?= Html::submitButton('Create' , ['class' =&gt; 'btn btn-success']) ?&gt;
+&lt;/div&gt;
+&lt;?php ActiveForm::end(); ?&gt;</pre></div><p>If the <code class="literal">$modelCanSave</code> variable is true, an <code class="literal">alert</code> div with the green background will be displayed to notify that <code class="literal">$model</code> is loaded and validate (ready to be saved in database).</p><p>For the test code, point to <code class="literal">http://hostname/basic/web/rooms/create</code>. The following screen should appear:</p><div class="mediaobject"><img src="../Images/image00258.jpeg" alt="Example &ndash; creating a new room from the HTML form"/><div class="caption"><p>Create room HTML form</p></div></div><p style="clear:both; height: 1em;"> </p><p>The <a id="id160" class="indexterm"></a>framework automatically takes care of the validation checks on input fields, corresponding to the rules list in the <code class="literal">rules()</code> method of Model. We can check this by typing characters in the <span class="strong"><strong>Floor</strong></span> input. We should see the following screenshot:</p><div class="mediaobject"><img src="../Images/image00259.jpeg" alt="Example &ndash; creating a new room from the HTML form"/><div class="caption"><p>The validation check of the integer field</p></div></div><p style="clear:both; height: 1em;"> </p><p>The validation informs us that <span class="strong"><strong>Floor</strong></span> must be an integer, as required in the rules list. Once all the fields are filled with correct values (date format, yyyy-mm-dd), just click on the <span class="strong"><strong>Create</strong></span> button and we should see a box with green background displaying <span class="strong"><strong>Model ready to be saved</strong></span>.</p></div></div></body></html>

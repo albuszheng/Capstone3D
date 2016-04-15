@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Using AJAX</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Using AJAX"><div class="titlepage" id="aid-1P71O2"><div><div><h1 class="title"><a id="ch07lvl1sec54"></a>Using AJAX</h1></div></div></div><p>Yii2 provides<a id="id342" class="indexterm"></a> appropriate attributes for some widgets to make AJAX calls; sometimes, however, writing a JavaScript code in these attributes will make code hard to read, especially if we are dealing with complex codes.</p><p>Consequently, to make an AJAX call, we will use external JavaScript code executed by <code class="literal">registerJs()</code>.</p><p>This is a template of the AJAX class using the <code class="literal">GET</code> or <code class="literal">POST</code> method:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+$this-&gt;registerJs( &lt;&lt;&lt; EOT_JS
+     
+     // using GET method
+$.get({
+  url: url,
+  data: data,
+  success: success,
+  dataType: dataType
+});
+
+     // using POST method
+$.post({
+  url: url,
+  data: data,
+  success: success,
+  dataType: dataType
+});
+
+EOT_JS
+);
+?&gt;</pre></div><p>An AJAX call is usually the effect of a user interface event (such as a click on a button, a link, and so on). So, most of the time an AJAX call is directly connected to the <code class="literal">.on()</code> event of jQuery on the HTML elements (anchors, buttons, and so on). For this reason, it is important to remember how Yii2 renders the <code class="literal">name</code> and <code class="literal">id</code> attributes of input fields.</p><p>When we call <code class="literal">Html::activeTextInput($model, $attribute)</code> or in the same way use <code class="literal">&lt;?= $form-&gt;field($model, $attribute)-&gt;textInput() ?&gt;</code>.</p><p>The <code class="literal">name</code> and <code class="literal">id</code> attributes of the input text field will be rendered as follows:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">id</code> : The model class name separated with a dash by the attribute name in lowercase; for example, if the model class name is <code class="literal">Room</code> and the attribute is <code class="literal">floor</code>, the <code class="literal">id</code> attribute will be <code class="literal">room-floor</code></li><li class="listitem"><code class="literal">name</code>: The model class name that encloses the attribute name, for example, if the model class name is <code class="literal">Reservation</code> and the attribute is <code class="literal">price_per_day</code>, the name attribute <a id="id343" class="indexterm"></a>will be <code class="literal">Reservation[price_per_day]</code>; so every field owned by the <code class="literal">Reservation</code> model will be enclosed all in a single array</li></ul></div><div class="section" title="Example &ndash; reservation details loaded from the customers' drop-down lists"><div class="titlepage"><div><div><h2 class="title"><a id="ch07lvl2sec35"></a>Example &ndash; reservation details loaded from the customers' drop-down lists</h2></div></div></div><p>In this example, there are two <a id="id344" class="indexterm"></a>drop-down lists and a detail box. The two drop-down lists refer to customers and reservations; when user clicks on a customer list item, the second drop-down list of reservations will be filled out according to their choice.</p><p>Finally, when a user clicks on a reservation list item, a details box will be filled out with data about the selected reservation.</p><p>Create a new action in <code class="literal">basic/controllers/ReservationsController.php</code> named <code class="literal">actionDetailDependentDropdown()</code>:</p><div class="informalexample"><pre class="programlisting">    public function actionDetailDependentDropdown()
+    {
+        $showDetail = false;
+        
+        $model = new Reservation();
+        
+        if(isset($_POST['Reservation']))
+        {
+          $model-&gt;load( Yii::$app-&gt;request-&gt;post() );
+        
+          if(isset($_POST['Reservation']['id'])&amp;&amp;($_POST['Reservation']['id']!=null))
+            {
+               $model = Reservation::findOne($_POST['Reservation']['id']);
+               $showDetail = true;
+            }
+        }
+        
+        
+        return $this-&gt;render('detailDependentDropdown', [ 'model' =&gt; $model, 'showDetail' =&gt; $showDetail ]);
+    }</pre></div><p>In this action, we<a id="id345" class="indexterm"></a> will get the <code class="literal">customer_id</code> and <code class="literal">id</code> parameters from a form based on the <code class="literal">Reservation</code> model data and if it are filled out, the data will be used to search for the correct reservation model to be passed to the view.</p><p>There is a flag called <code class="literal">$showDetail</code> that displays the reservation details content if the <code class="literal">id</code> attribute of the model is received.</p><p>In <code class="literal">ReservationsController</code>, there is also an action that will be called using AJAX when the user changes the customer selection in the drop-down list:</p><div class="informalexample"><pre class="programlisting">    public function actionAjaxDropDownListByCustomerId($customer_id)
+    {
+        $output = '';
+        
+        $items = Reservation::findAll(['customer_id' =&gt; $customer_id]);
+        foreach($items as $item)
+        {
+            $content = sprintf('reservation #%s at %s', $item-&gt;id, date('Y-m-d H:i:s', strtotime($item-&gt;reservation_date)));
+            $output .= \yii\helpers\Html::tag('option', $content, ['value' =&gt; $item-&gt;id]);
+        }
+        
+        return $output;
+    }</pre></div><p>This action will <a id="id346" class="indexterm"></a>return the <code class="literal">&lt;option&gt;</code> HTML tags filled out with reservations data filtered by the customer ID passed as a parameter.</p><p>Now let's look at the view in <code class="literal">basic/views/reservations/detailDependentDropdown.php</code>:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+use yii\helpers\Html;
+use yii\widgets\ActiveForm;
+use yii\helpers\ArrayHelper;
+use yii\helpers\Url;
+use app\models\Customer;
+use app\models\Reservation;
+
+$urlReservationsByCustomer = Url::to(['reservations/ajax-drop-down-list-by-customer-id']);
+$this-&gt;registerJs( &lt;&lt;&lt; EOT_JS
+
+    $(document).on('change', '#reservation-customer_id', function(ev) {
+
+        $('#detail').hide(); 
+                
+        var customerId = $(this).val();    
+        
+        $.get(
+            '{$urlReservationsByCustomer}',
+            { 'customer_id' : customerId },
+            function(data) {
+                data = '&lt;option value=""&gt;--- choose&lt;/option&gt;'+data;
+                $('#reservation-id').html(data);
+            }
+        )
+        ev.preventDefault();
+    });
+
+    $(document).on('change', '#reservation-id', function(ev) {
+        $(this).parents('form').submit();
+        ev.preventDefault();
+    });
+
+EOT_JS
+);
+
+?&gt;
+
+&lt;div class="customer-form"&gt;
+    &lt;?php $form = ActiveForm::begin(['enableAjaxValidation' =&gt; false, 'enableClientValidation' =&gt; false, 'options' =&gt; ['data-pjax' =&gt; '']]); ?&gt;
+
+    &lt;?php $customers = Customer::find()-&gt;all(); ?&gt;
+    &lt;?= $form-&gt;field($model, 'customer_id')-&gt;dropDownList(ArrayHelper::map( $customers, 'id', 'nameAndSurname'), [ 'prompt' =&gt; '--- choose' ]) ?&gt;
+
+    &lt;?php $reservations = Reservation::findAll(['customer_id' =&gt; $model-&gt;customer_id]); ?&gt;
+    &lt;?= $form-&gt;field($model, 'id')-&gt;label('Reservation ID')-&gt;dropDownList(ArrayHelper::map( $reservations, 'id', function($temp, $defaultValue) {
+      $content = sprintf('reservation #%s at %s', $temp-&gt;id, date('Y-m-d H:i:s', strtotime($temp-&gt;reservation_date)));
+        return $content;
+    }), [ 'prompt' =&gt; '--- choose' ]); ?&gt;
+
+    &lt;div id="detail"&gt;
+    &lt;?php if($showDetail) { ?&gt;
+        &lt;hr /&gt;
+        &lt;h2&gt;Reservation Detail:&lt;/h2&gt;
+        &lt;table&gt;
+            &lt;tr&gt;
+                &lt;td&gt;Price per day&lt;/td&gt;
+                &lt;td&gt;&lt;?php echo $model-&gt;price_per_day ?&gt;&lt;/td&gt;
+            &lt;/tr&gt;
+        &lt;/table&gt;
+    &lt;?php } ?&gt;
+    &lt;/div&gt;
+    
+    &lt;?php ActiveForm::end(); ?&gt;
+
+&lt;/div&gt;</pre></div><p>At the top of the view, there are handlers for changes in the customers and reservations drop-down list.</p><p>If the customer<a id="id347" class="indexterm"></a> drop-down list is changed, the <code class="literal">detail</code> div will be hidden, an AJAX call will get all the reservations filtered by <code class="literal">customer_id</code>, and the result will be passed as content to the reservations drop-down list. If the reservations drop-down list is changed, a form will be submitted.</p><p>Next in the form declaration, we can find first of all the customer drop-down list and then the reservations list, which uses a closure to get the value from the <code class="literal">ArrayHelper::map()</code> methods. We could add a new property in the <code class="literal">Reservation</code> model by creating a function starting with the prefix <code class="literal">get</code>, such as <code class="literal">getDescription()</code>, and put in it the content of the closure, or rather:</p><div class="informalexample"><pre class="programlisting">public function getDescription()
+{
+$content = sprintf('reservation #%s at %s', $this&gt;id, date('Y-m-d H:i:s', strtotime($this&gt;reservation_date)));
+            return $content;
+}</pre></div><p>Or we could use a short syntax to get data from <code class="literal">ArrayHelper::map()</code> in this way:</p><div class="informalexample"><pre class="programlisting">    &lt;?= $form-&gt;field($model, 'id')-&gt;dropDownList(ArrayHelper::map( $reservations, 'id', 'description'), [ 'prompt' =&gt; '--- choose' ]); ?&gt;</pre></div><p>Finally, if <code class="literal">$showDetail</code> is flagged, a simple details box with only the price per day of the reservation will be displayed.</p><p>Point your browser to <code class="literal">http://hostname/basic/web/reservations/detail-dependent-dropdown</code>:</p><div class="mediaobject"><img src="../Images/image00278.jpeg" alt="Example &ndash; reservation details loaded from the customers' drop-down lists"/><div class="caption"><p>Dynamic reservation details being loaded from the customer drop-down list</p></div></div><p style="clear:both; height: 1em;"> </p></div></div></body></html>

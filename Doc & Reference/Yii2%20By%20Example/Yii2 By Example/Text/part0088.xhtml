@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Creating a console controller</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Creating a console controller" id="aid-2JTHG1"><div class="titlepage"><div><div><h1 class="title"><a id="ch12lvl1sec82"></a>Creating a console controller</h1></div></div></div><p>A console controller <a id="id529" class="indexterm"></a>is totally similar to the web controllers that we created earlier. It extends the <code class="literal">\yii\console\Controller</code> base class and can return an integer value indicating the status response of the action (0 stands for successful execution of the action), also named <code class="literal">exit code</code>.</p><p>The <code class="literal">public</code> properties of the controller can be made available as an option only if their names are returned by the <code class="literal">options()</code> method that accepts <code class="literal">actionID</code> as the parameter; so the response can be customized according to <code class="literal">actionID</code>.</p><p>The response of the <code class="literal">options()</code> method is an array of text string that represents the public property names of the controller.</p><p>Starting from the advanced template application that we previously installed in the <code class="literal">yiiadv</code> folder, let's create a new console controller named <code class="literal">MyExampleController</code> in <code class="literal">console/controllers/MyExampleController.php</code> with the following content:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace console\controllers;
+
+use \yii\console\Controller;
+
+/**
+ * This is an example controller
+ */
+class MyExampleController extends Controller
+{
+    public $option1;
+    public $option2;
+    
+    public function options($action)
+    {
+        return ['option1'];
+    }
+    
+    /**
+     * Simply return a welcome text
+     */
+    public function actionTest($param1)
+    {
+        echo 'this is my first controller using console application';
+        echo "\n";
+        echo "You have passed param1 with value: ".$param1;
+        echo "\n";
+        echo "Value of option1 is: ".$this-&gt;option1;
+        echo "\n";
+        
+        // equivalent to return 0;
+        return Controller::EXIT_CODE_NORMAL;
+    }
+    
+}
+
+?&gt;</pre></div><p>This controller contains<a id="id530" class="indexterm"></a> two public properties, but only <code class="literal">option1</code> will be usable from the console, since it is returned by the <code class="literal">options()</code> method. We will display the result of the following command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ ./yii help my-example</strong></span>
+</pre></div><p>The preceding command will return the following output:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>DESCRIPTION</strong></span>
+
+<span class="strong"><strong>This is an example controller</strong></span>
+
+<span class="strong"><strong>SUB-COMMANDS</strong></span>
+
+<span class="strong"><strong>- my-example/test  Simply return a welcome text</strong></span>
+
+<span class="strong"><strong>To see the detailed information about individual sub-commands, enter:</strong></span>
+
+<span class="strong"><strong>  yii help &lt;sub-command&gt;</strong></span>
+</pre></div><p>If we need other details about the <code class="literal">test</code> action, we can launch the preceding command specifying the complete route:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ ./yii help my-example/test</strong></span>
+</pre></div><p>Now, try to launch the command with the route <code class="literal">my-example/test</code>, without any parameter:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ ./yii my-example/test</strong></span>
+</pre></div><p>We will receive an error about missing <code class="literal">param1</code>. The following is the correct syntax:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ ./yii my-example/test "this is value for param1"</strong></span>
+</pre></div><p>The preceding command will return the following output without any value for <code class="literal">option1</code>:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>this is my first controller using console application</strong></span>
+<span class="strong"><strong>You have passed param1 with value: this is value for param1</strong></span>
+<span class="strong"><strong>Value of option1 is:.</strong></span>
+</pre></div><p>We can also pass the value <code class="literal">option1</code> by appending <code class="literal">--option1</code> to the command, as follows:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ ./yii my-example/test "this is value for param1" --option1="this is value for option1"</strong></span>
+</pre></div><p>The preceding<a id="id531" class="indexterm"></a> command will return a complete output, as follows:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>this is my first controller using console application</strong></span>
+<span class="strong"><strong>You have passed param1 with value: this is value for param1</strong></span>
+<span class="strong"><strong>Value of option1 is: this is value for option1</strong></span>
+</pre></div><div class="section" title="Example &ndash; setting an alarm flag for expired reservation"><div class="titlepage"><div><div><h2 class="title"><a id="ch12lvl2sec53"></a>Example &ndash; setting an alarm flag for expired reservation </h2></div></div></div><p>Now, let's consider an<a id="id532" class="indexterm"></a> example to illustrate how to use <a id="id533" class="indexterm"></a>console commands to execute maintenance operations.</p><p>In console controllers, we can access all the models, components, and extensions available in the project, as well as what we have done in the web application. Therefore, we will manipulate data in the same way as we should do for a web application.</p><p>Starting from the reservation database table used in the previous chapters, we will add a new Boolean field, named expired, to set which reservations are out of the end date.</p><p>This is the structure of the <code class="literal">reservation</code> table to store data in the MySQL Server:</p><div class="informalexample"><pre class="programlisting">CREATE TABLE `reservation` (
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `room_id` int(11) NOT NULL,
+ `customer_id` int(11) NOT NULL,
+ `price_per_day` decimal(20,2) NOT NULL,
+ `date_from` date NOT NULL,
+ `date_to` date NOT NULL,
+ `reservation_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ `expired` int(1) NOT NULL DEFAULT '0',
+ PRIMARY KEY (`id`)
+ )</pre></div><p>Now, let's insert some records to make a simulation. We will update the <code class="literal">expired</code> field with value <code class="literal">1</code> if today is after <code class="literal">date_to value</code>; otherwise, it will be <code class="literal">0</code>.</p><p>These are the records to insert in the <code class="literal">reservation</code> database table:</p><div class="informalexample"><pre class="programlisting">INSERT INTO `reservation` (`id`, `room_id`, `customer_id`, `price_per_day`, `date_from`, `date_to`, `reservation_date`, `expired`) VALUES
+(1, 2, 1, 90.00, '2015-02-10', '2015-05-23', '2015-05-24 22:45:37', 0),
+(2, 2, 1, 48.00, '2019-08-27', '2019-08-31', '2015-05-24 22:45:37', 0),
+(3, 1, 2, 105.00, '2015-09-24', '2015-10-06', '2015-06-03 00:21:14', 0),
+(4, 1, 2, 150.00, '2015-06-22', '2015-06-28', '2015-06-21 22:24:25', 0),
+(5, 1, 2, 150.00, '2015-07-22', '2015-08-28', '2015-06-21 22:24:34', 0);</pre></div><div class="note" title="Note"><h3 class="title"><a id="note75"></a>Note</h3><p>Make sure that users exist in user database table</p></div><p>Now, create a<a id="id534" class="indexterm"></a> new console <a id="id535" class="indexterm"></a>controller in <code class="literal">console/controllers/ReservationsController.php</code> with the following content:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+namespace console\controllers;
+
+use \yii\console\Controller;
+
+/**
+ * Manage reservations
+ */
+class ReservationsController extends Controller
+{
+    /**
+     * Update 'expired' field of reservations
+     */
+    public function actionUpdateExpired()
+    {
+        $models = \common\models\Reservation::find()-&gt;all();
+        
+        foreach($models as $m)
+        {
+            echo sprintf('Check reservation #%d - date_to = %s - status : %s', $m-&gt;id, $m-&gt;date_to, (strtotime($m-&gt;date_to)&lt;=time())?'OK':'Expired');
+            echo "\n";
+            // Set expired field. I'll for every model because if we could have changed 'date_to' value.
+            $m-&gt;expired = (strtotime($m-&gt;date_to)&lt;=time())?0:1;
+            $m-&gt;save();
+        }
+        // equivalent to return 0;
+        return Controller::EXIT_CODE_NORMAL;
+    }
+}
+?&gt;</pre></div><p>In <code class="literal">actionUpdateExpired</code>, we display for each model some data to the console, such as <code class="literal">id</code>, <code class="literal">date_to</code>, and <code class="literal">status</code>. Then, we will set for each model the value of the <code class="literal">expired</code> field, based on the <code class="literal">date_to</code> value.</p><p>Finally, we <a id="id536" class="indexterm"></a>will launch<a id="id537" class="indexterm"></a> this command:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>$ ./yii reservations/update-expired</strong></span>
+</pre></div><p>This will return the following output:</p><div class="informalexample"><pre class="programlisting">
+<span class="strong"><strong>Check reservation #1 - date_to = 2015-05-23 - status : OK</strong></span>
+<span class="strong"><strong>Check reservation #2 - date_to = 2019-08-31 - status : Expired</strong></span>
+<span class="strong"><strong>Check reservation #3 - date_to = 2015-10-06 - status : Expired</strong></span>
+<span class="strong"><strong>Check reservation #4 - date_to = 2015-06-28 - status : OK</strong></span>
+<span class="strong"><strong>Check reservation #5 - date_to = 2015-08-28 - status : OK</strong></span>
+</pre></div></div></div></body></html>

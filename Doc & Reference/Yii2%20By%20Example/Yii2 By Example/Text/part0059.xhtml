@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Customize JavaScript and CSS</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Customize JavaScript and CSS" id="aid-1O8H61"><div class="titlepage"><div><div><h1 class="title"><a id="ch07lvl1sec53"></a>Customize JavaScript and CSS</h1></div></div></div><p>As mentioned before, in<a id="id328" class="indexterm"></a> this chapter, you will discover how to use frontend <a id="id329" class="indexterm"></a>interaction. Using JavaScript and CSS is fundamental to customize frontend output.</p><p>Differently from Yii1, where calling JavaScript and CSS scripts and files was done using the <code class="literal">Yii::app()</code> singleton, in the new framework version, Yii2, this task is part of the <code class="literal">yii\web\View</code> class.</p><p>There are two ways to call JavaScript or CSS: either directly passing the code to be executed or passing the path file.</p><div class="note" title="Note"><h3 class="title"><a id="note47"></a>Note</h3><p>When passing the code directly to be executed, we will use the Heredoc syntax provided by PHP to avoid handling strings escaping.</p></div><p>The <code class="literal">registerJs()</code> function allows us to execute the JavaScript code with three parameters:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">The first parameter is the JavaScript code block to be registered</li><li class="listitem">The second parameter is the position where the JavaScript tag should be inserted (the header, the beginning of the body section, the end of the body section, enclosed within the jQuery <code class="literal">load()</code> method, or enclosed within the jQuery <code class="literal">document.ready()</code> method, which is the default)</li><li class="listitem">The third and last parameter is a key that identifies the JavaScript code block (if it is not provided, the content of the first parameter will be used as the key)</li></ul></div><p>On the other hand, the <code class="literal">registerJsFile()</code> function allows us to execute a JavaScript file with three parameters:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">The first parameter is the path file of the JavaScript file</li><li class="listitem">The second parameter is the HTML attribute for the script tag, with particular attention given to the depends and position values, which are not treated as tag attributes</li><li class="listitem">The third parameter is a key that identifies the JavaScript code block (if it's not provided, the content of the first parameter will be used as the key)</li></ul></div><p>CSS, similar to<a id="id330" class="indexterm"></a> JavaScript, can be executed using the code or by passing the <a id="id331" class="indexterm"></a>path file.</p><p>The <code class="literal">registerCss()</code> function allows us to execute CSS code with three parameters:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">The first one is the CSS code block to be registered</li><li class="listitem">The second one is the HTML attributes for the <code class="literal">style</code> tag</li><li class="listitem">The third and last parameter is a key that identifies the JavaScript code block (if it is not provided, the content of the first parameter will be used as the key)</li></ul></div><p>The <code class="literal">registerCssFile()</code> function allows us instead to execute a CSS file with three parameters:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">The first one is the path file of the CSS file</li><li class="listitem">The second parameter is the HTML attribute for the link tag, with particular attention given to the depends value, which is not treated as a tag attribute</li><li class="listitem">The third parameter is a key that identifies the JavaScript code block (if it's not provided, the content of the first parameter will be used as the key)</li></ul></div><p>Generally, JavaScript or CSS files are published in the <code class="literal">basic/web</code> folder, which is accessible without restrictions.</p><p>So, when we have to use custom JavaScript or CSS files, it is recommended to put them in a subfolder of the <code class="literal">basic/web</code> folder, which can be named as <code class="literal">css</code> or <code class="literal">js</code>.</p><div class="note" title="Note"><h3 class="title"><a id="note48"></a>Note</h3><p>By default, the folder for CSS files <code class="literal">basic/web/css</code> should already exist. But we still need to create <code class="literal">basic/web/js</code> for JavaScript files.</p></div><p>In some circumstances, we might be required to add a new CSS or JavaScript file for all web application pages. The most appropriate place to put these entries is <code class="literal">AppAsset.php</code>, a file located<a id="id332" class="indexterm"></a> in <code class="literal">basic/assets/AppAsset.php</code>. In it we can add CSS and <a id="id333" class="indexterm"></a>JavaScript entries required in web applications, even using dependencies if we need to.</p><div class="section" title="Example &ndash; using JavaScript and CSS to display advertising columns that disappear if not enough space is available"><div class="titlepage"><div><div><h2 class="title"><a id="ch07lvl2sec34"></a>Example &ndash; using JavaScript and CSS to display advertising columns that disappear if not enough space is available</h2></div></div></div><p>This sample is suitable if<a id="id334" class="indexterm"></a> you need to use JavaScript<a id="id335" class="indexterm"></a> and CSS customizations together.</p><p>Think about the layout built as three vertical columns, typical of a blog system. One column of 200 pixels on the left (usually for advertising), one central column of 1000 pixels (usually for content) and one of 200 pixels on the right (usually again for advertising).</p><p>If the browser size is at least 1,400 pixels wide, we want all three columns to be shown (the content and two columns for advertising).</p><p>If there is not enough space for all the columns and the browser's width size is between 1,200 and 1,400 pixels, only the left and central columns will be shown (only a column for advertising and one for the content. Finally, if the browser's width size is under 1,200 pixels, only the central column with content will be shown).</p><p>Also, our goal is to ensure that these columns are always centered in the browser.</p><p>Create a new controller class in <code class="literal">basic/controllers/ThreeColumnsController.php</code>, to handle the action to render the view file:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+namespace app\controllers;
+
+use Yii;
+use yii\web\Controller;
+
+class ThreeColumnsController extends Controller
+{
+    public function actionIndex()
+    {
+        return $this-&gt;render('index.php');
+    }
+}</pre></div><p>Furthermore, create a new <code class="literal">view</code> folder in <code class="literal">basic/views/three-columns</code> and insert <code class="literal">index.php</code> file in it to store view content.</p><p>Basically, this is the content necessary to build a three column layout:</p><div class="informalexample"><pre class="programlisting">&lt;div id="layout"&gt;
+    &lt;div id="colSx" class="column"&gt;
+            Content of SX Column
+    &lt;/div&gt;
+    &lt;div id="colCenter" class="column"&gt;
+            Content of Central Column
+    &lt;/div&gt;
+    &lt;div id="colDx" class="column"&gt;
+            Content of DX Column
+    &lt;/div&gt;
+&lt;/div&gt;</pre></div><p>The CSS class <a id="id336" class="indexterm"></a>column will only be used to enhance <a id="id337" class="indexterm"></a>cells' visibility with a black border around them.</p><p>At this point, we will center the layout and fix the columns' width using the <code class="literal">registerCss()</code> method at the top of the view file:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+
+$this-&gt;registerCss( &lt;&lt;&lt; EOT_CSS
+
+    .column
+    {
+            border:1px solid black;
+    }
+
+    #layout
+    {
+        position:relative;
+        margin:0pt auto;
+        width:1400px;
+    }
+    
+    #colSx
+    {
+        width:200px;
+        float:left;
+    }
+
+    #colCenter
+    {
+        width:1000px;
+        float:left;
+    }
+
+    #colDx
+    {
+        width:200px;
+        float:left;
+    }
+     
+EOT_CSS
+);
+
+?&gt;</pre></div><p>Point your <a id="id338" class="indexterm"></a>browser to <code class="literal">http://hostname/basic/web/three-columns/index</code> and <a id="id339" class="indexterm"></a>you will get the following content:</p><div class="mediaobject"><img src="../Images/image00277.jpeg" alt="Example &ndash; using JavaScript and CSS to display advertising columns that disappear if not enough space is available"/><div class="caption"><p>Content width split into three columns</p></div></div><p style="clear:both; height: 1em;"> </p><p>We must handle the resize browser event through JavaScript to manage the columns visualization using the dimension rules defined at the start of this chapter.</p><p>We will use the <code class="literal">registerJs()</code> method, passing only the code to be executed:</p><div class="informalexample"><pre class="programlisting">&lt;?php
+$this-&gt;registerJs( &lt;&lt;&lt; EOT_JS
+    
+    function resizeLayout()
+    {
+        var windowWidth = $(window).width();
+        
+        if(windowWidth &gt; 1400)
+        {
+            $('#colSx').css('display', 'block');
+            $('#colCenter').css('display', 'block');
+            $('#colDx').css('display', 'block');
+            $('#layout').css('width', 1400);
+        }
+        else if((windowWidth&gt;1200)&amp;&amp;(windowWidth&lt;=1400))
+        {
+            $('#colSx').css('display', 'block');
+            $('#colCenter').css('display', 'block');
+            $('#colDx').css('display', 'none');
+            $('#layout').css('width', 1200);
+        }
+        else if(windowWidth&lt;1200)
+        {
+            $('#colSx').css('display', 'none');
+            $('#colCenter').css('display', 'block');
+            $('#colDx').css('display', 'none');
+            $('#layout').css('width', 1000);
+        }
+        
+    }
+   
+    $(window).resize(function() {
+            resizeLayout();
+    });
+    
+    $(function() {
+            resizeLayout();
+    });
+   
+EOT_JS
+);
+?&gt;</pre></div><p>Refresh your <a id="id340" class="indexterm"></a>browser to <code class="literal">http://hostname/basic/web/three-columns/index</code> and resize it to the desired width, and the<a id="id341" class="indexterm"></a> columns visualization should change depending on the available space in the specific width.</p></div></div></body></html>

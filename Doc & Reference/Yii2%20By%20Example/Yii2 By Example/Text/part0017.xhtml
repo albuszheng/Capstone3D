@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="font-size:1.200rem;"><head><title>Application properties</title><link rel="stylesheet" href="../Styles/style0001.css" type="text/css"/><meta name="generator" content="DocBook XSL Stylesheets V1.75.2"/></head><body id="page"><div class="section" title="Application properties"><div class="titlepage" id="aid-G6PI2"><div><div><h1 class="title"><a id="ch01lvl1sec11"></a>Application properties</h1></div></div></div><p>A Yii2 application can be <a id="id37" class="indexterm"></a>configured through several properties.</p><p>The properties that need to be configured in any application are listed in the following table:</p><div class="informaltable"><table border="1"><colgroup><col></col><col></col></colgroup><thead><tr><th valign="bottom">
+<p>Properties</p>
+</th><th valign="bottom">
+<p>Description</p>
+</th></tr></thead><tbody><tr><td valign="top">
+<p>
+<code class="literal">id</code>
+</p>
+</td><td valign="top">
+<p>This<a id="id38" class="indexterm"></a> indicates a unique ID to distinguish this application from others. It is mainly used programmatically. An example of this property is <code class="literal">basic</code>.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">basePath</code>
+</p>
+</td><td valign="top">
+<p>This <a id="id39" class="indexterm"></a>specifies the root directory of the application. This path is the starting point for all the other types of application objects, such as models, controllers, and views. An example of this property is <code class="literal">dirname(__DIR__)</code>.</p>
+</td></tr></tbody></table></div><p>The other common properties are listed in the following table:</p><div class="informaltable"><table border="1"><colgroup><col></col><col></col></colgroup><thead><tr><th valign="bottom">
+<p>Properties</p>
+</th><th valign="bottom">
+<p>Description</p>
+</th></tr></thead><tbody><tr><td valign="top">
+<p>
+<code class="literal">aliases</code>
+</p>
+</td><td valign="top">
+<p>This <a id="id40" class="indexterm"></a>indicates an alias name for path definitions. They are defined using a key/value array and they are very useful when we need to set a path as a constant that live in the whole application. We type an alias preceded by an <code class="literal">@</code> character. An example of this property is <code class="literal">'@fileupload' =&gt; 'path/to/files/uploaded'</code>.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">bootstrap</code>
+</p>
+</td><td valign="top">
+<p>This <a id="id41" class="indexterm"></a>property allows you to configure an array of components to be run during the application bootstrap process. A common usage is to load the log or profile component, gii, or any other component. Be careful not to load too many components, otherwise the response performance of your pages may degrade. An example of this property is <code class="literal">'log'</code>, <code class="literal">'gii'</code>.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">catchAll</code>
+</p>
+</td><td valign="top">
+<p>This <a id="id42" class="indexterm"></a>property captures every request and it is used in the maintenance mode of the site.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">components</code>
+</p>
+</td><td valign="top">
+<p>This <a id="id43" class="indexterm"></a>property points out a list of application components that you can use in the whole application.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">language</code>
+</p>
+</td><td valign="top">
+<p>This <a id="id44" class="indexterm"></a>property specifies the language used to display the content. An example of this property is <code class="literal">'language' =&gt; 'en'</code>.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">modules</code>
+</p>
+</td><td valign="top">
+<p>This <a id="id45" class="indexterm"></a>property points out a list of application modules that can be used in the application.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">name</code>
+</p>
+</td><td valign="top">
+<p>This <a id="id46" class="indexterm"></a>property indicates the name of your app. An example of this property is <code class="literal">'name' =&gt; 'My App'</code>.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">params</code>
+</p>
+</td><td valign="top">
+<p>This<a id="id47" class="indexterm"></a> property specifies an array of parameters, through key/value pairs. This is a container for global params, such as the administrator's e-mail address.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">timeZone</code>
+</p>
+</td><td valign="top">
+<p>This <a id="id48" class="indexterm"></a>property indicates the time zone that should be used in the application. An example of this property is <code class="literal">'timeZone' =&gt; 'Europe/Rome'</code>.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">charset</code>
+</p>
+</td><td valign="top">
+<p>This <a id="id49" class="indexterm"></a>property points out the charset used in the application. The default value is <code class="literal">UTF-8</code>.</p>
+</td></tr><tr><td valign="top">
+<p>
+<code class="literal">defaultRoute</code>
+</p>
+</td><td valign="top">
+<p>This <a id="id50" class="indexterm"></a>property contains a route to be used when a request does not a specify one. This property has different default values according to the environment we are using.</p>
+<p>For web applications, this value will be <code class="literal">site</code>, so that <code class="literal">SiteController</code> could be used to handle these requests.</p>
+<p>For console applications, this value will be <code class="literal">help</code>, so that <code class="literal">yii\console\controllers\HelpController</code> can be used invoking its index action that will display help information.</p>
+</td></tr></tbody></table></div><div class="section" title="Common application components"><div class="titlepage"><div><div><h2 class="title"><a id="ch01lvl2sec07"></a>Common application components</h2></div></div></div><p>Here's a list of the most-used application components:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><code class="literal">request</code>: This <a id="id51" class="indexterm"></a>component handles all client requests and <a id="id52" class="indexterm"></a>provides methods to easily get parameters from server global variables, such as <code class="literal">$_SERVER</code>, <code class="literal">$_POST</code>, <code class="literal">$_GET</code>, and <code class="literal">$_COOKIES</code>.<p>The default state has <code class="literal">enableCookieValidation</code> set to true, so you need to set <code class="literal">cookieValidationKey</code> parameter as shown in this example:</p><div class="informalexample"><pre class="programlisting">'request' =&gt; [
+'cookieValidationKey' =&gt; 'hPpnJs7tvs0T4N2OGAY',
+],</pre></div></li><li class="listitem"><code class="literal">cache</code>: This <a id="id53" class="indexterm"></a>component helps you handle cache data. Yii2 <a id="id54" class="indexterm"></a>defaults to the <code class="literal">FileCache</code> instance for the cache, but we can also configure an <code class="literal">ApcCache</code>, <code class="literal">DbCache</code>, <code class="literal">MemCache</code>, and so on.<p>The following is a standard installation of Yii2:</p><div class="informalexample"><pre class="programlisting">'cache' =&gt; [                     
+'class' =&gt; 'yii\caching\FileCache',
+],</pre></div></li><li class="listitem"><code class="literal">user</code>: This<a id="id55" class="indexterm"></a> component deals with user authentication in the app. The <a id="id56" class="indexterm"></a>most important parameter is the <code class="literal">identityClass</code> parameter, which defines the class that contains the user's model data, in order to have a specific method to log in or log out a user from the app.<p>Consider the following example:</p><div class="informalexample"><pre class="programlisting">'user' =&gt; [
+'identityClass' =&gt; 'app\models\User',
+         'enableAutoLogin' =&gt; true,
+ ],</pre></div></li><li class="listitem"><code class="literal">errorHandler</code>: This<a id="id57" class="indexterm"></a> component provides <a id="id58" class="indexterm"></a>functionalities to handle uncaught errors and exceptions. It can be configured by specifying the action to run.<p>Consider the following example:</p><div class="informalexample"><pre class="programlisting">'errorHandler' =&gt; [
+'errorAction' =&gt; 'site/error',
+],</pre></div></li><li class="listitem"><code class="literal">mailer</code>: This<a id="id59" class="indexterm"></a> component configures mailer connection <a id="id60" class="indexterm"></a>parameters to the system that will send an e-mail. Usually, it is the same machine hosting our website, so the default values are probably correct.<p>Consider the following example:</p><div class="informalexample"><pre class="programlisting">'mailer' =&gt; [
+  'class' =&gt; 'yii\swiftmailer\Mailer',
+  // send all mails to a file by default. You have to set
+  // 'useFileTransport' to false and configure a transport
+     // for the mailer to send real emails.
+     'useFileTransport' =&gt; true,
+],</pre></div></li><li class="listitem"><code class="literal">log</code>: This <a id="id61" class="indexterm"></a>component is mainly used in the debug<a id="id62" class="indexterm"></a> environment to log the app execution. We can set the debug level and destination.<p>Consider the following example:</p><div class="informalexample"><pre class="programlisting">'log' =&gt; [
+           'traceLevel' =&gt; YII_DEBUG ? 3 : 0,
+            'targets' =&gt; [
+                [
+                    'class' =&gt; 'yii\log\FileTarget',
+                    'levels' =&gt; ['error', 'warning'],
+                ],
+            ],
+ ],</pre></div></li><li class="listitem"><code class="literal">db</code>: This component <a id="id63" class="indexterm"></a>handles a database connection. We can<a id="id64" class="indexterm"></a> have several db configuration in our app; in this case, we can define more components with the <code class="literal">Connection</code> class located at <code class="literal">yii\db\</code>.&#8233;<p>Consider the following example:</p><div class="informalexample"><pre class="programlisting">db =&gt; [
+    'class' =&gt; 'yii\db\Connection',
+    'dsn' =&gt; 'mysql:host=localhost;dbname=yii2basic',
+    'username' =&gt; 'dbuser'',
+    'password' =&gt; 'dbpassword',
+    'charset' =&gt; 'utf8',
+],</pre></div></li></ul></div></div><div class="section" title="Handling application events"><div class="titlepage"><div><div><h2 class="title"><a id="ch01lvl2sec08"></a>Handling application events</h2></div></div></div><p>During its lifecycle, an<a id="id65" class="indexterm"></a> application can trigger many events. These events can be declared in application configuration or programmatically. Common triggers are <code class="literal">beforeRequest</code>, <code class="literal">afterRequest</code>, <code class="literal">beforeAction</code>, and <code class="literal">afterAction</code>, but every object can have its own events.</p><p>For example, a common use of events is to set <code class="literal">mysql db timezone</code>.</p><p>To set the time zone to UTC in db component configuration, we must define a handler for the <code class="literal">afterOpen</code> event:</p><div class="informalexample"><pre class="programlisting">'db' =&gt; [
+  'class' =&gt; 'yii\db\Connection',
+  'dsn' =&gt; 'mysql:host=localhost;dbname=mydb',
+  'username' =&gt; 'dbuser',
+  'password' =&gt; 'dbpassword',
+  'charset' =&gt; 'utf8',
+
+  'on afterOpen' =&gt; function($event) {
+    $event-&gt;sender-&gt;createCommand("SET time_zone = '+00:00'")-&gt;execute();
+       }
+  ],</pre></div><p>An anonymous function, attached to <code class="literal">on afterOpen</code> event handlers, has an <code class="literal">$event</code> parameter, which is an instance of the <code class="literal">yii\base\ActionEvent</code> class. This class has a <code class="literal">$sender</code> object that refers to the sender of the event. In this case, <code class="literal">$sender</code> refers to the instance of database <a id="id66" class="indexterm"></a>components (db). This property may also be null when this event is a class-level event.</p></div><div class="section" title="The MVC pattern in Yii2"><div class="titlepage"><div><div><h2 class="title"><a id="ch01lvl2sec09"></a>The MVC pattern in Yii2</h2></div></div></div><p>Yii2 is built according to the <span class="strong"><strong>Model-View-Controller</strong></span> (<span class="strong"><strong>MVC</strong></span>) design pattern.</p><p>Models, representing logic, are <a id="id67" class="indexterm"></a>objects extended <a id="id68" class="indexterm"></a>from <code class="literal">\yii\base\Model</code>, which offer many features such as attribute, attribute labels, massive assignment (to fill object attributes directly for an array), validation rules, and data exporting.</p><p>Normally, in common apps, a Model will be generated from the database, extending <code class="literal">yii\db\ActiveRecord</code> that implements the Active Record design pattern, with many methods to manipulate data. Yii2 provides Gii, a tool used to generate Model classes directly from the database's table structure.</p><p>Controllers, the bridge between view and model, are class instances extending from <code class="literal">yii\base\Controller</code>, used to process requests and generate responses.</p><p>Controllers mainly contain functions whose name starts with the action prefix that allows the framework to recognize those functions as routes, which can be requested.</p><p>Finally, we will look at views that deal with displaying data to end users that are mainly rendered in the page layout from controllers.</p></div></div></body></html>
