@@ -19,12 +19,17 @@ use yii\web\IdentityInterface;
  * @property integer $status
  * @property integer $created_at
  * @property integer $updated_at
+ * @property integer $user_group
  * @property string $password write-only password
  */
 class User extends ActiveRecord implements IdentityInterface
 {
     const STATUS_DELETED = 0;
     const STATUS_ACTIVE = 10;
+    const GROUP_USER = 0; //普通用户
+    const GROUP_ADMIN = 1; //管理员
+    const GROUP_ENGINEER = 2; //工程人员
+    const GROUP_STAFF = 3; //前台人员
 
     /**
      * @inheritdoc
@@ -50,8 +55,15 @@ class User extends ActiveRecord implements IdentityInterface
     public function rules()
     {
         return [
+            [['id', 'username', 'email',], 'required'],
+            [['username', 'email'], 'string', 'max' => 255],
+            ['id', 'unique'],
+            ['id', 'match', 'pattern'=>'/^[0-9a-zA-Z]{1,20}$/i'],
+            ['email', 'email'],
             ['status', 'default', 'value' => self::STATUS_ACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_DELETED]],
+            ['user_group', 'default', 'value' => self::GROUP_USER],
+            ['user_group', 'in', 'range' => [self::GROUP_USER, self::GROUP_ADMIN, self::GROUP_ENGINEER, self::GROUP_STAFF]],
         ];
     }
 
@@ -185,4 +197,9 @@ class User extends ActiveRecord implements IdentityInterface
     {
         $this->password_reset_token = null;
     }
+
+    public function getOrderById($id) {
+        return $this->hasMany(Order::className(), ['user_id' => $id]);
+    }
+
 }
