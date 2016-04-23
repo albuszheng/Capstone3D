@@ -1,8 +1,10 @@
 <?php
 namespace frontend\controllers;
 
+use common\models\Model;
 use Yii;
 use common\models\LoginForm;
+use common\models\Room;
 use frontend\models\PasswordResetRequestForm;
 use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
@@ -12,6 +14,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
+use yii\web\Response;
 
 /**
  * Site controller
@@ -162,6 +165,28 @@ class SiteController extends Controller
         ]);
     }
 
+
+    /**
+     * Display user's room page.
+     *
+     * @return mixed
+     */
+    public function actionViewRoom()
+    {
+        $room = Room::findByUserId(Yii::$app->getUser()->id);
+        $data = "null";
+
+        if ($room && $room->data) {
+            $data = $room->data;
+        } else {
+            Yii::$app->session->setFlash('error', 'no room');
+        }
+
+        return $this->render('viewRoom', [
+            'data' => $data,
+        ]);
+    }
+
     /**
      * Requests password reset.
      *
@@ -209,5 +234,19 @@ class SiteController extends Controller
         return $this->render('resetPassword', [
             'model' => $model,
         ]);
+    }
+
+    /**
+     * 根据id获取模型信息
+     * @return null|static
+     */
+    public function actionModel()
+    {
+        if (Yii::$app->request->isAjax) {
+            $data = Yii::$app->request->post();
+            $model = Model::findById($data['id']);
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['model' => $model];
+        }
     }
 }

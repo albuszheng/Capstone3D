@@ -52,7 +52,7 @@ class Room extends ActiveRecord
      */
     public static function findByUserId($user_id)
     {
-        return static::findAll(['user_id' => $user_id]);
+        return static::findOne(['user_id' => $user_id]);
     }
 
     /**
@@ -62,5 +62,14 @@ class Room extends ActiveRecord
     public function getUser()
     {
         return $this->hasOne(User::className(), ['id' => 'user_id']);
+    }
+
+    /**
+     * Get room data
+     * @return string
+     */
+    public function getData()
+    {
+        return $this->data;
     }
 }

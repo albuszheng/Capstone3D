@@ -28,10 +28,11 @@ class m130524_201442_init extends Migration
 
         $this->createTable('{{%model}}', [
             'id' => $this->primaryKey(),
-            'size' => $this->string()->notNull(),
+            'size' => $this->string(),
             'scale' => $this->string(),
             'url2d' => $this->string()->notNull(),
             'url3d' => $this->string(),
+            'type' => $this->smallInteger()->notNull(),
         ], $tableOptions);
 
         $this->createTable('{{%room}}', [
