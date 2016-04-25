@@ -29,10 +29,10 @@ class SiteController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::className(),
-                'only' => ['logout', 'signup'],
+                'only' => ['login', 'logout', 'signup'],
                 'rules' => [
                     [
-                        'actions' => ['signup'],
+                        'actions' => ['login', 'signup'],
                         'allow' => true,
                         'roles' => ['?'],
                     ],
@@ -188,6 +188,32 @@ class SiteController extends Controller
     }
 
     /**
+     * Edit a room.
+     *
+     * @return mixed
+     */
+    public function actionEditRoom()
+    {
+        $room = Room::findById('1');
+        $data = 'null';
+        $id = 'null';
+
+        if ($room) {
+            $id = $room->id;
+            if ($room->data) {
+                $data = $room->data;
+            }
+        } else {
+            Yii::$app->session->setFlash('error', 'no room');
+        }
+
+        return $this->render('editRoom', [
+            'data' => $data,
+            'room_id' => $id,
+        ]);
+    }
+
+    /**
      * Requests password reset.
      *
      * @return mixed
@@ -247,6 +273,32 @@ class SiteController extends Controller
             $model = Model::findById($data['id']);
             Yii::$app->response->format = Response::FORMAT_JSON;
             return ['model' => $model];
+        }
+    }
+
+    /**
+     * 获取所有模型信息
+     * @return array
+     */
+    public function actionFindAllModels()
+    {
+        if (Yii::$app->request->isAjax) {
+            $sql = 'select * from model';
+            $models = Model::findBySql($sql)->all();
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['models' => $models];
+        }
+    }
+
+    public function actionSaveModel()
+    {
+        if (Yii::$app->request->isAjax) {
+            $data = Yii::$app->request->post();
+            $room_id = $data['id'];
+            $room_data = $data['data'];
+            $result = Room::updateRoom($room_id, $room_data);
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['result' => $result];
         }
     }
 }

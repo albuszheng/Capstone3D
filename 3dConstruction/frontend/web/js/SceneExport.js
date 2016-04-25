@@ -27,27 +27,27 @@ var CONST = {
      * @constant
      * @property {number} DEVIATION
      */
-    DEVIATION: 0.00001
+    DEVIATION: 0.00001,
 
-    ///**
-    // * Constant to identify the Model Type.
-    // *
-    // * @static
-    // * @constant
-    // * @property {object} TYPE
-    // * @property {number} TYPE.FLOOR
-    // * @property {number} TYPE.WALL
-    // * @property {number} TYPE.DOOR
-    // * @property {number} TYPE.WINDOW
-    // * @property {number} TYPE.FURNITURE
-    // */
-    //TYPE: {
-    //    FLOOR:     0,
-    //    WALL:      1,
-    //    DOOR:      2,
-    //    WINDOW:    3,
-    //    FURNITURE: 4
-    //}
+    /**
+     * Constant to identify the Model Type.
+     *
+     * @static
+     * @constant
+     * @property {object} TYPE
+     * @property {number} TYPE.FLOOR
+     * @property {number} TYPE.WALL
+     * @property {number} TYPE.DOOR
+     * @property {number} TYPE.WINDOW
+     * @property {number} TYPE.FURNITURE
+     */
+    TYPE: {
+        FLOOR:     0,
+        WALL:      1,
+        DOOR:      2,
+        WINDOW:    3,
+        FURNITURE: 4
+    }
 };
 
 
@@ -185,7 +185,6 @@ SceneExport.prototype = {
             '}'
         ].join( '\n' );
 
-        console.log(output);
         return JSON.parse(output);
 
     }

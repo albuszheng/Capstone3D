@@ -29,7 +29,6 @@ class Room extends ActiveRecord
             ['id', 'unique'],
             [['id', 'user_id'], 'integer'],
             [['id', 'user_id'], 'required'],
-            ['last_modify_time', 'datetime'],
         ];
     }
 
@@ -71,5 +70,19 @@ class Room extends ActiveRecord
     public function getData()
     {
         return $this->data;
+    }
+
+    /**
+     * Update room data by id
+     * @param $id
+     * @param $data
+     * @return bool
+     */
+    public static function updateRoom($id, $data) {
+        $room = self::findById($id);
+        $room->data = $data;
+        $room->last_modify_id = Yii::$app->getUser()->id;
+        $room->last_modify_time = date('Y-m-d H:i:s');
+        return $room->save();
     }
 }
