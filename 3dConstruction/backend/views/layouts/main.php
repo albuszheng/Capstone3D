@@ -28,22 +28,38 @@ AppAsset::register($this);
 <div class="wrap">
     <?php
     NavBar::begin([
-        'brandLabel' => 'My Company',
+        'brandLabel' => 'House Hotel',
         'brandUrl' => Yii::$app->homeUrl,
         'options' => [
             'class' => 'navbar-inverse navbar-fixed-top',
         ],
     ]);
     $menuItems = [
-        ['label' => 'Home', 'url' => ['/site/index']],
+        ['label' => '主页', 'url' => ['/site/index']],
     ];
     if (Yii::$app->user->isGuest) {
-        $menuItems[] = ['label' => 'Login', 'url' => ['/site/login']];
+        $menuItems[] = ['label' => '登录', 'url' => ['/site/login']];
     } else {
+        $menuItems[] = ['label' => '个人管理', 'url' => ['/site/manage-self']];
+        $menuItems[] = ['label' => '楼层场景', 'url' => ['/site/view-floor']];
+        $menuItems[] = ['label' => '房间场景', 'url' => ['/site/view-room']];
+
+        if (Yii::$app->user->can('user')) {
+            // redirect to frontend
+        } else if (Yii::$app->user->can('admin')) {
+            $menuItems[] = ['label' => '用户管理', 'url' => ['/site/manage-user']];
+            $menuItems[] = ['label' => '权限管理', 'url' => ['/site/manage-authority']];
+        } else if (Yii::$app->user->can('engineer')) {
+            // redirect to frontend
+        } else if (Yii::$app->user->can('staff')) {
+            $menuItems[] = ['label' => '住户登记', 'url' => ['/site/register-user']];
+            $menuItems[] = ['label' => '商品管理', 'url' => ['/site/manage-goods']];
+        }
+
         $menuItems[] = '<li>'
             . Html::beginForm(['/site/logout'], 'post')
             . Html::submitButton(
-                'Logout (' . Yii::$app->user->identity->username . ')',
+                '注销 (' . Yii::$app->user->identity->username . ')',
                 ['class' => 'btn btn-link']
             )
             . Html::endForm()

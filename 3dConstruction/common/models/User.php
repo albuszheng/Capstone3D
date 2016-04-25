@@ -26,10 +26,10 @@ class User extends ActiveRecord implements IdentityInterface
 {
     const STATUS_DELETED = 0;
     const STATUS_ACTIVE = 10;
-    const GROUP_USER = 0; //普通用户
-    const GROUP_ADMIN = 1; //管理员
-    const GROUP_ENGINEER = 2; //工程人员
-    const GROUP_STAFF = 3; //前台人员
+    const GROUP_USER = 1; //普通用户
+    const GROUP_ADMIN = 2; //管理员
+    const GROUP_ENGINEER = 3; //工程人员
+    const GROUP_STAFF = 4; //前台人员
 
     /**
      * @inheritdoc
@@ -132,7 +132,8 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public function getId()
     {
-        return $this->getPrimaryKey();
+        return $this->user_group;
+//        return $this->getPrimaryKey();
     }
 
     /**
@@ -196,8 +197,8 @@ class User extends ActiveRecord implements IdentityInterface
         $this->password_reset_token = null;
     }
 
-    public function getOrderById($id) {
-        return $this->hasMany(Order::className(), ['user_id' => $id]);
+    public function getOrder() {
+        return $this->hasMany(Order::className(), ['user_id' => $this->id]);
     }
 
 }

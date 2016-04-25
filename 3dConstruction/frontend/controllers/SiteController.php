@@ -29,17 +29,26 @@ class SiteController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::className(),
-                'only' => ['login', 'logout', 'signup'],
                 'rules' => [
                     [
-                        'actions' => ['login', 'signup'],
+                        'actions' => ['index', 'login', 'signup', 'error'],
                         'allow' => true,
                         'roles' => ['?'],
                     ],
                     [
-                        'actions' => ['logout'],
+                        'actions' => ['index', 'manage-self', 'view-room', 'view-floor', 'logout', 'error'],
                         'allow' => true,
                         'roles' => ['@'],
+                    ],
+                    [
+                        'actions' => ['room-service', 'view-order'],
+                        'allow' => true,
+                        'roles' => ['user'],
+                    ],
+                    [
+                        'actions' => ['edit-room', 'manage-model'],
+                        'allow' => true,
+                        'roles' => ['engineer'],
                     ],
                 ],
             ],
@@ -165,6 +174,25 @@ class SiteController extends Controller
         ]);
     }
 
+    /**
+     * Manage self.
+     *
+     * @return mixed
+     */
+    public function actionManageSelf()
+    {
+        return $this->render('selfManagement');
+    }
+
+    /**
+     * Display floor page.
+     *
+     * @return mixed
+     */
+    public function actionViewFloor()
+    {
+        return $this->render('viewFloor');
+    }
 
     /**
      * Display user's room page.
@@ -185,6 +213,26 @@ class SiteController extends Controller
         return $this->render('viewRoom', [
             'data' => $data,
         ]);
+    }
+
+    /**
+     * Display order list.
+     *
+     * @return mixed
+     */
+    public function actionViewOrder()
+    {
+        return $this->render('viewOrder');
+    }
+
+    /**
+     * Display goods list.
+     *
+     * @return mixed
+     */
+    public function actionRoomService()
+    {
+        return $this->render('roomService');
     }
 
     /**
@@ -211,6 +259,16 @@ class SiteController extends Controller
             'data' => $data,
             'room_id' => $id,
         ]);
+    }
+
+    /**
+     * Manage model.
+     *
+     * @return mixed
+     */
+    public function actionManageModel()
+    {
+        return $this->render('modelManagement');
     }
 
     /**

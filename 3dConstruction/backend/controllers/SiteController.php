@@ -6,6 +6,7 @@ use yii\filters\AccessControl;
 use yii\web\Controller;
 use common\models\LoginForm;
 use yii\filters\VerbFilter;
+use common\models\Room;
 
 /**
  * Site controller
@@ -20,15 +21,27 @@ class SiteController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::className(),
+                'only' => ['login', 'logout', 'error', 'index'],
                 'rules' => [
                     [
-                        'actions' => ['login', 'error'],
+                        'actions' => ['index', 'login', 'error'],
                         'allow' => true,
+                        'roles' => ['?'],
                     ],
                     [
-                        'actions' => ['logout', 'index'],
+                        'actions' => ['index', 'manage-self', 'view-room', 'view-floor', 'logout', 'error'],
                         'allow' => true,
                         'roles' => ['@'],
+                    ],
+                    [
+                        'actions' => ['manage-user', 'manage-authority'],
+                        'allow' => true,
+                        'roles' => ['admin'],
+                    ],
+                    [
+                        'actions' => ['register-user', 'manage-goods'],
+                        'allow' => true,
+                        'roles' => ['staff'],
                     ],
                 ],
             ],
@@ -72,6 +85,88 @@ class SiteController extends Controller
                 'model' => $model,
             ]);
         }
+    }
+
+
+    /**
+     * Manage self.
+     *
+     * @return mixed
+     */
+    public function actionManageSelf()
+    {
+        return $this->render('selfManagement');
+    }
+
+    /**
+     * Display floor page.
+     *
+     * @return mixed
+     */
+    public function actionViewFloor()
+    {
+        return $this->render('viewFloor');
+    }
+
+    /**
+     * Display user's room page.
+     *
+     * @return mixed
+     */
+    public function actionViewRoom()
+    {
+        $room = Room::findById('1');
+        $data = "null";
+
+        if ($room && $room->data) {
+            $data = $room->data;
+        } else {
+            Yii::$app->session->setFlash('error', 'no room');
+        }
+
+        return $this->render('viewRoom', [
+            'data' => $data,
+        ]);
+    }
+
+    /**
+     * Manage User.
+     *
+     * @return mixed
+     */
+    public function actionManageUser()
+    {
+        return $this->render('userManagement');
+    }
+
+    /**
+     * Manage Authority.
+     *
+     * @return mixed
+     */
+    public function actionManageAuthority()
+    {
+        return $this->render('authManagement');
+    }
+
+    /**
+     * Register a user.
+     *
+     * @return mixed
+     */
+    public function actionRegisterUser()
+    {
+        return $this->render('registerUser');
+    }
+
+    /**
+     * Manage goods.
+     *
+     * @return mixed
+     */
+    public function actionManageGoods()
+    {
+        return $this->render('goodsManagement');
     }
 
     public function actionLogout()

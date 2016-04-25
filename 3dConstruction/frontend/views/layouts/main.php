@@ -35,20 +35,35 @@ AppAsset::register($this);
         ],
     ]);
     $menuItems = [
-        ['label' => 'Home', 'url' => ['/site/index']],
+        ['label' => '主页', 'url' => ['/site/index']],
 //        ['label' => 'About', 'url' => ['/site/about']],
 //        ['label' => 'Contact', 'url' => ['/site/contact']],
     ];
     if (Yii::$app->user->isGuest) {
-        $menuItems[] = ['label' => 'Signup', 'url' => ['/site/signup']];
-        $menuItems[] = ['label' => 'Login', 'url' => ['/site/login']];
+        $menuItems[] = ['label' => '注册', 'url' => ['/site/signup']];
+        $menuItems[] = ['label' => '登录', 'url' => ['/site/login']];
     } else {
-        $menuItems[] = ['label' => 'View', 'url' => ['/site/view-room']];
-        $menuItems[] = ['label' => 'Edit', 'url' => ['/site/edit-room']];
+        $menuItems[] = ['label' => '个人管理', 'url' => ['/site/manage-self']];
+        $menuItems[] = ['label' => '楼层场景', 'url' => ['/site/view-floor']];
+        $menuItems[] = ['label' => '房间场景', 'url' => ['/site/view-room']];
+
+        if (Yii::$app->user->can('user')) {
+            $menuItems[] = ['label' => '订单列表', 'url' => ['/site/view-order']];
+            $menuItems[] = ['label' => '客房服务', 'url' => ['/site/room-service']];
+        } else if (Yii::$app->user->can('admin')) {
+            // redirect to backend
+        } else if (Yii::$app->user->can('engineer')) {
+            $menuItems[] = ['label' => '编辑场景', 'url' => ['/site/edit-room']];
+            $menuItems[] = ['label' => '模型管理', 'url' => ['/site/manage-model']];
+        } else if (Yii::$app->user->can('staff')) {
+            // redirect to backend
+        }
+
+
         $menuItems[] = '<li>'
             . Html::beginForm(['/site/logout'], 'post')
             . Html::submitButton(
-                'Logout (' . Yii::$app->user->identity->username . ')',
+                '注销 (' . Yii::$app->user->identity->username . ')',
                 ['class' => 'btn btn-link']
             )
             . Html::endForm()

@@ -32,18 +32,18 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
 
         <div>
-            <button id="0" onclick="addFloor(this.id)">floor0</button>
-            <button id="1" onclick="addFloor(this.id)">floor1</button>
-            <button id="2" onclick="addFloor(this.id)">floor2</button>
-            <button id="3" onclick="addWall(this.id)">wall</button>
-            <button id="4" onclick="addDoorWindow(this.id, CONST.TYPE.DOOR)">door</button>
-            <button id="5" onclick="addDoorWindow(this.id, CONST.TYPE.WINDOW)">window</button>
-            <button id="6" onclick="addFurniture(this.id)">bed</button>
-            <button id="7" onclick="addFurniture(this.id)">cabinet</button>
-            <button id="8" onclick="addFurniture(this.id)">drawer</button>
-            <button id="11" onclick="addFurniture(this.id)">sofa</button>
-            <button id="10" onclick="addFurniture(this.id)">table</button>
-            <button id="9" onclick="addFurniture(this.id)">TV</button>
+            <button id="1" onclick="addFloor(this.id)">floor0</button>
+            <button id="2" onclick="addFloor(this.id)">floor1</button>
+            <button id="3" onclick="addFloor(this.id)">floor2</button>
+            <button id="4" onclick="addWall(this.id)">wall</button>
+            <button id="5" onclick="addDoorWindow(this.id, CONST.TYPE.DOOR)">door</button>
+            <button id="6" onclick="addDoorWindow(this.id, CONST.TYPE.WINDOW)">window</button>
+            <button id="7" onclick="addFurniture(this.id)">bed</button>
+            <button id="8" onclick="addFurniture(this.id)">cabinet</button>
+            <button id="9" onclick="addFurniture(this.id)">drawer</button>
+            <button id="12" onclick="addFurniture(this.id)">sofa</button>
+            <button id="11" onclick="addFurniture(this.id)">table</button>
+            <button id="10" onclick="addFurniture(this.id)">TV</button>
         </div>
         <div>
             <button onclick="rotateModel()">rotate</button>
@@ -669,7 +669,7 @@ $this->params['breadcrumbs'][] = $this->title;
         }
 
         floor.texture = PIXI.Texture.EMPTY;
-        floor.id = 0;
+        floor.id = 1;
         walls.removeChildren(0, walls.children.length);
         group.removeChildren(0, group.children.length);
         updateInfo();
