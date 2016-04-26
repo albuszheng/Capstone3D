@@ -7,7 +7,7 @@ return [
         ],
         'authManager' => [
             'class' => 'yii\rbac\DBManager',
-            'defaultRoles' => ['guest'],
+            'defaultRoles' => ['user', 'admin', 'engineer', 'staff'],
         ],
     ],
 ];

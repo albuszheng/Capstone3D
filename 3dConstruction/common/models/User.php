@@ -132,8 +132,7 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public function getId()
     {
-        return $this->user_group;
-//        return $this->getPrimaryKey();
+        return $this->getPrimaryKey();
     }
 
     /**
