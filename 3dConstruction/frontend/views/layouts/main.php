@@ -9,6 +9,7 @@ use yii\bootstrap\NavBar;
 use yii\widgets\Breadcrumbs;
 use frontend\assets\AppAsset;
 use common\widgets\Alert;
+use yii\helpers\Url;
 
 AppAsset::register($this);
 ?>
@@ -42,7 +43,13 @@ AppAsset::register($this);
     if (Yii::$app->user->isGuest) {
         $menuItems[] = ['label' => '注册', 'url' => ['/site/signup']];
         $menuItems[] = ['label' => '登录', 'url' => ['/site/login']];
-    } else {
+    } elseif (Yii::$app->user->can('admin')) {
+//        Yii::$app->session->setFlash('success', Url::base(true));
+        Yii::$app->getResponse()->redirect('http://localhost/Capstone3D/3dConstruction/backend/web/index.php', 301);
+    } elseif (Yii::$app->user->can('staff')) {
+        Yii::$app->getResponse()->redirect('http://localhost/Capstone3D/3dConstruction/backend/web/index.php', 301);
+    }
+    else {
         $menuItems[] = ['label' => '个人管理', 'url' => ['/site/manage-self']];
         $menuItems[] = ['label' => '楼层场景', 'url' => ['/site/view-floor']];
         $menuItems[] = ['label' => '房间场景', 'url' => ['/site/view-room']];
@@ -50,13 +57,9 @@ AppAsset::register($this);
         if (Yii::$app->user->can('user')) {
             $menuItems[] = ['label' => '订单列表', 'url' => ['/site/view-order']];
             $menuItems[] = ['label' => '客房服务', 'url' => ['/site/room-service']];
-        } else if (Yii::$app->user->can('admin')) {
-            // redirect to backend
         } else if (Yii::$app->user->can('engineer')) {
             $menuItems[] = ['label' => '编辑场景', 'url' => ['/site/edit-room']];
             $menuItems[] = ['label' => '模型管理', 'url' => ['/site/manage-model']];
-        } else if (Yii::$app->user->can('staff')) {
-            // redirect to backend
         }
 
 

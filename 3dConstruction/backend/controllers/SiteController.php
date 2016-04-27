@@ -4,9 +4,11 @@ namespace backend\controllers;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
+use yii\web\Response;
 use common\models\LoginForm;
 use yii\filters\VerbFilter;
 use common\models\Room;
+use common\models\Model;
 
 /**
  * Site controller
@@ -21,28 +23,18 @@ class SiteController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::className(),
-                'only' => ['login', 'logout', 'error', 'index'],
+                'only' => ['login', 'logout'],
                 'rules' => [
                     [
-                        'actions' => ['index', 'login', 'error'],
+                        'actions' => ['login'],
                         'allow' => true,
                         'roles' => ['?'],
                     ],
                     [
-                        'actions' => ['index', 'manage-self', 'view-room', 'view-floor', 'logout', 'error'],
+                        'actions' => ['logout'],
                         'allow' => true,
                         'roles' => ['@'],
-                    ],
-                    [
-                        'actions' => ['manage-user', 'manage-authority'],
-                        'allow' => true,
-                        'roles' => ['admin'],
-                    ],
-                    [
-                        'actions' => ['register-user', 'manage-goods'],
-                        'allow' => true,
-                        'roles' => ['staff'],
-                    ],
+                    ]
                 ],
             ],
             'verbs' => [
@@ -95,7 +87,9 @@ class SiteController extends Controller
      */
     public function actionManageSelf()
     {
-        return $this->render('selfManagement');
+        if (Yii::$app->user->can('selfManagement')) {
+            return $this->render('selfManagement');
+        }
     }
 
     /**
@@ -105,7 +99,9 @@ class SiteController extends Controller
      */
     public function actionViewFloor()
     {
-        return $this->render('viewFloor');
+        if (Yii::$app->user->can('viewFloor')) {
+            return $this->render('viewFloor');
+        }
     }
 
     /**
@@ -115,18 +111,22 @@ class SiteController extends Controller
      */
     public function actionViewRoom()
     {
-        $room = Room::findById('1');
-        $data = "null";
+        if (Yii::$app->user->can('viewRoom')) {
+            $room = Room::findById('1');
+            $data = "null";
 
-        if ($room && $room->data) {
-            $data = $room->data;
-        } else {
-            Yii::$app->session->setFlash('error', 'no room');
+            if ($room) {
+                if ($room->data) {
+                    $data = $room->data;
+                }
+            } else {
+                Yii::$app->session->setFlash('error', 'no room');
+            }
+
+            return $this->render('viewRoom', [
+                'data' => $data,
+            ]);
         }
-
-        return $this->render('viewRoom', [
-            'data' => $data,
-        ]);
     }
 
     /**
@@ -136,7 +136,9 @@ class SiteController extends Controller
      */
     public function actionManageUser()
     {
-        return $this->render('userManagement');
+        if (Yii::$app->user->can('userManagement')) {
+            return $this->render('userManagement');
+        }
     }
 
     /**
@@ -146,7 +148,9 @@ class SiteController extends Controller
      */
     public function actionManageAuthority()
     {
-        return $this->render('authManagement');
+        if (Yii::$app->user->can('authManagement')) {
+            return $this->render('authManagement');
+        }
     }
 
     /**
@@ -156,7 +160,9 @@ class SiteController extends Controller
      */
     public function actionRegisterUser()
     {
-        return $this->render('registerUser');
+        if (Yii::$app->user->can('registerUser')) {
+            return $this->render('registerUser');
+        }
     }
 
     /**
@@ -166,7 +172,9 @@ class SiteController extends Controller
      */
     public function actionManageGoods()
     {
-        return $this->render('goodsManagement');
+        if (Yii::$app->user->can('goodsManagement')) {
+            return $this->render('goodsManagement');
+        }
     }
 
     public function actionLogout()
@@ -174,5 +182,19 @@ class SiteController extends Controller
         Yii::$app->user->logout();
 
         return $this->goHome();
+    }
+
+    /**
+     * 获取所有模型信息
+     * @return array
+     */
+    public function actionFindAllModels()
+    {
+        if (Yii::$app->request->isAjax) {
+            $sql = 'select * from model';
+            $models = Model::findBySql($sql)->all();
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['models' => $models];
+        }
     }
 }

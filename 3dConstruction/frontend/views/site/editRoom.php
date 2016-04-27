@@ -95,27 +95,31 @@ $this->params['breadcrumbs'][] = $this->title;
                 data = <?php echo $data ?>;
             }
 
+            // 获取所有模型信息
+            $.ajax({
+                type:'post',
+                data:{},
+                url:'<?php echo Yii::$app->getUrlManager()->createUrl('/site/find-all-models') ?>',
+                async : false,
+                success:function(data) {
+                    models = data.models;
+                },
+
+                error:function(xhr) {
+                    console.log(xhr.responseText);
+                }
+
+            });
             if (data !== null) {
                 if (data.type === "scene") {
-                    // 获取所有模型信息
-                    $.ajax({
-                        type:'post',
-                        data:{},
-                        url:'<?php echo Yii::$app->getUrlManager()->createUrl('/site/find-all-models') ?>',
-                        async : false,
-                        success:function(data) {
-                            models = data.models;
-                        },
-
-                        error:function(xhr) {
-                            console.log(xhr.responseText);
-                        }
-
-                    });
-
                     load(data);
                     console.log('load');
                 }
+            } else {
+                $.getJSON('scene/init.json', function(result) {
+                    data = result;
+                    load(data);
+                });
             }
 
         } else {

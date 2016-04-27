@@ -39,18 +39,19 @@ AppAsset::register($this);
     ];
     if (Yii::$app->user->isGuest) {
         $menuItems[] = ['label' => '登录', 'url' => ['/site/login']];
-    } else {
+    } elseif (Yii::$app->user->can('user')) {
+        Yii::$app->getResponse()->redirect('http://localhost/Capstone3D/3dConstruction/frontend/web/index.php', 301);
+    } elseif (Yii::$app->user->can('engineer')) {
+        Yii::$app->getResponse()->redirect('http://localhost/Capstone3D/3dConstruction/frontend/web/index.php', 301);
+    }
+    else {
         $menuItems[] = ['label' => '个人管理', 'url' => ['/site/manage-self']];
         $menuItems[] = ['label' => '楼层场景', 'url' => ['/site/view-floor']];
         $menuItems[] = ['label' => '房间场景', 'url' => ['/site/view-room']];
 
-        if (Yii::$app->user->can('user')) {
-            // redirect to frontend
-        } else if (Yii::$app->user->can('admin')) {
+        if (Yii::$app->user->can('admin')) {
             $menuItems[] = ['label' => '用户管理', 'url' => ['/site/manage-user']];
             $menuItems[] = ['label' => '权限管理', 'url' => ['/site/manage-authority']];
-        } else if (Yii::$app->user->can('engineer')) {
-            // redirect to frontend
         } else if (Yii::$app->user->can('staff')) {
             $menuItems[] = ['label' => '住户登记', 'url' => ['/site/register-user']];
             $menuItems[] = ['label' => '商品管理', 'url' => ['/site/manage-goods']];

@@ -24,7 +24,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
 </div>
 
-
+<script type="text/javascript" src="js/pixi.js"></script>
 <script type="text/javascript" src="js/three.js"></script>
 <script type="text/javascript" src="js/ThreeBSP.js"></script>
 <script type="text/javascript" src="js/FirstPersonControls.js"></script>

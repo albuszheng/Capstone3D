@@ -36,12 +36,17 @@ SceneLoad.prototype = {
 
         canvas.innerHTML="";
         canvas.appendChild(renderer.domElement);
-        if (data.type === "scene") {
-            loadFloor(data.floor);
-            loadWall(data.wall);
-            loadObject(data.objects);
-        }
+
+        load(data);
         render();
+
+        function load(data) {
+            if (data.type === "scene") {
+                loadFloor(data.floor);
+                loadWall(data.wall);
+                loadObject(data.objects);
+            }
+        }
 
         function render() {
             controls.update(clock.getDelta());
@@ -60,7 +65,7 @@ SceneLoad.prototype = {
             if (floor !== null) {
                 var url = floor.url2d;
                 if (url !== 'null') {
-                    var texture = new THREE.TextureLoader().load('model/images/' + url);
+                    var texture = new THREE.TextureLoader().load('model/images/floor/' + url);
                     material.map = texture;
                 }
 
@@ -78,7 +83,7 @@ SceneLoad.prototype = {
                 var wall = findModelById(object.id);
                 if (wall !== null ){
                     var group = new THREE.Object3D();
-                    var url = 'model/images/' + wall.url2d;
+                    var url = 'model/images/wall/' + wall.url2d;
                     var wallTexture = new THREE.TextureLoader().load(url);
                     var wallMaterial = new THREE.MeshBasicMaterial({map: wallTexture});
                     wallMaterial.side = THREE.DoubleSide;
@@ -259,7 +264,7 @@ SceneLoad.prototype = {
         floor.width = width;
         floor.height = height;
         floor.interactive = false;
-        floor.id = 0;
+        floor.id = 1;
         stage.addChildAt(floor, 0);
 
         var walls = new PIXI.Container();
@@ -295,7 +300,7 @@ SceneLoad.prototype = {
             if (model !== null) {
                 var url = model.url2d;
                 if (url !== "null") {
-                    floor.texture = PIXI.Texture.fromImage('model/images/' + url);
+                    floor.texture = PIXI.Texture.fromImage('model/images/floor/' + url);
                 }
                 floor.id = model.id;
             }
@@ -327,7 +332,7 @@ SceneLoad.prototype = {
             var wall = null;
 
             if (model !== null) {
-                var texture = PIXI.Texture.fromImage('model/images/' + model.url2d);
+                var texture = PIXI.Texture.fromImage('model/images/wall/' + model.url2d);
                 wall = new PIXI.Sprite(texture);
                 wall.anchor.set(0.5, 0.5);
                 wall.position.set(position[0], position[1]);

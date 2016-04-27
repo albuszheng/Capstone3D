@@ -29,27 +29,18 @@ class SiteController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::className(),
+                'only' => ['login', 'signup', 'logout'],
                 'rules' => [
                     [
-                        'actions' => ['index', 'login', 'signup', 'error'],
+                        'actions' => ['login', 'signup'],
                         'allow' => true,
                         'roles' => ['?'],
                     ],
                     [
-                        'actions' => ['index', 'manage-self', 'view-room', 'view-floor', 'logout', 'error'],
+                        'actions' => ['logout'],
                         'allow' => true,
                         'roles' => ['@'],
-                    ],
-                    [
-                        'actions' => ['room-service', 'view-order'],
-                        'allow' => true,
-                        'roles' => ['user'],
-                    ],
-                    [
-                        'actions' => ['edit-room', 'manage-model'],
-                        'allow' => true,
-                        'roles' => ['engineer'],
-                    ],
+                    ]
                 ],
             ],
             'verbs' => [
@@ -181,7 +172,9 @@ class SiteController extends Controller
      */
     public function actionManageSelf()
     {
-        return $this->render('selfManagement');
+        if (Yii::$app->user->can('selfManagement')) {
+            return $this->render('selfManagement');
+        }
     }
 
     /**
@@ -191,7 +184,9 @@ class SiteController extends Controller
      */
     public function actionViewFloor()
     {
-        return $this->render('viewFloor');
+        if (Yii::$app->user->can('viewFloor')) {
+            return $this->render('viewFloor');
+        }
     }
 
     /**
@@ -201,18 +196,23 @@ class SiteController extends Controller
      */
     public function actionViewRoom()
     {
-        $room = Room::findByUserId(Yii::$app->getUser()->id);
-        $data = "null";
+        if (Yii::$app->user->can('viewRoom')) {
+            $room = Room::findByUserId(Yii::$app->getUser()->id);
+            $data = "null";
 
-        if ($room && $room->data) {
-            $data = $room->data;
-        } else {
-            Yii::$app->session->setFlash('error', 'no room');
+            if ($room) {
+                if ($room->data) {
+                    $data = $room->data;
+                }
+            } else {
+                Yii::$app->session->setFlash('error', 'no room');
+            }
+
+            return $this->render('viewRoom', [
+                'data' => $data,
+            ]);
         }
 
-        return $this->render('viewRoom', [
-            'data' => $data,
-        ]);
     }
 
     /**
@@ -222,7 +222,9 @@ class SiteController extends Controller
      */
     public function actionViewOrder()
     {
-        return $this->render('viewOrder');
+        if (Yii::$app->user->can('viewOrder')) {
+            return $this->render('viewOrder');
+        }
     }
 
     /**
@@ -232,7 +234,9 @@ class SiteController extends Controller
      */
     public function actionRoomService()
     {
-        return $this->render('roomService');
+        if (Yii::$app->user->can('roomService')) {
+            return $this->render('roomService');
+        }
     }
 
     /**
@@ -242,23 +246,26 @@ class SiteController extends Controller
      */
     public function actionEditRoom()
     {
-        $room = Room::findById('1');
-        $data = 'null';
-        $id = 'null';
+        if (Yii::$app->user->can('editRoom')) {
+            $room = Room::findById('1');
+            $data = 'null';
+            $id = 'null';
 
-        if ($room) {
-            $id = $room->id;
-            if ($room->data) {
-                $data = $room->data;
+            if ($room) {
+                $id = $room->id;
+                if ($room->data) {
+                    $data = $room->data;
+                }
+            } else {
+                Yii::$app->session->setFlash('error', 'no room');
             }
-        } else {
-            Yii::$app->session->setFlash('error', 'no room');
+
+            return $this->render('editRoom', [
+                'data' => $data,
+                'room_id' => $id,
+            ]); $this->render('roomService');
         }
 
-        return $this->render('editRoom', [
-            'data' => $data,
-            'room_id' => $id,
-        ]);
     }
 
     /**
@@ -268,7 +275,9 @@ class SiteController extends Controller
      */
     public function actionManageModel()
     {
-        return $this->render('modelManagement');
+        if (Yii::$app->user->can('modelManagement')) {
+            return $this->render('modelManagement');
+        }
     }
 
     /**

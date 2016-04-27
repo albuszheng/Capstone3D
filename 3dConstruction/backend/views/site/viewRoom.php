@@ -4,7 +4,7 @@
 /* @var $data string */
 
 use yii\helpers\Html;
-use frontend\assets\ThreeAsset;
+use backend\assets\ThreeAsset;
 
 ThreeAsset::register($this);
 
@@ -24,7 +24,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
 </div>
 
-
+<script type="text/javascript" src="js/pixi.js"></script>
 <script type="text/javascript" src="js/three.js"></script>
 <script type="text/javascript" src="js/ThreeBSP.js"></script>
 <script type="text/javascript" src="js/FirstPersonControls.js"></script>
