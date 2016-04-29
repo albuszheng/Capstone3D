@@ -9,6 +9,7 @@ use common\models\LoginForm;
 use yii\filters\VerbFilter;
 use common\models\Room;
 use common\models\Model;
+use common\models\Floor;;
 
 /**
  * Site controller
@@ -97,10 +98,35 @@ class SiteController extends Controller
      *
      * @return mixed
      */
+    public function actionOverview()
+    {
+        if (Yii::$app->user->can('viewFloor')) {
+            return $this->render('overview');
+        }
+    }
+
+    /**
+     * Display floor page.
+     *
+     * @return mixed
+     */
     public function actionViewFloor()
     {
         if (Yii::$app->user->can('viewFloor')) {
-            return $this->render('viewFloor');
+            $floor_id = isset(Yii::$app->request->get()['floor_id']) ? Yii::$app->request->get()['floor_id'] : 1;
+            $floor = Floor::findById($floor_id);
+            $data = 'null';
+
+            if ($floor && $floor->data) {
+                $data = $floor->data;
+            } else {
+                Yii::$app->session->setFlash('error', 'no floor data');
+            }
+
+            return $this->render('viewFloor', [
+                'floor_id' => $floor_id,
+                'data' => $data,
+            ]);
         }
     }
 

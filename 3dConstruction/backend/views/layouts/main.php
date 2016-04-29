@@ -46,7 +46,7 @@ AppAsset::register($this);
     }
     else {
         $menuItems[] = ['label' => '个人管理', 'url' => ['/site/manage-self']];
-        $menuItems[] = ['label' => '楼层场景', 'url' => ['/site/view-floor']];
+        $menuItems[] = ['label' => '楼层场景', 'url' => ['/site/overview']];
         $menuItems[] = ['label' => '房间场景', 'url' => ['/site/view-room']];
 
         if (Yii::$app->user->can('admin')) {
