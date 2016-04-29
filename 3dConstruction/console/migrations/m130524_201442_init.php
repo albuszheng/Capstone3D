@@ -13,6 +13,7 @@ class m130524_201442_init extends Migration
             $tableOptions = 'CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE=InnoDB';
         }
 
+        // table user
         $this->createTable('{{%user}}', [
             'id' => $this->primaryKey(),
             'username' => $this->string()->notNull()->unique(),
@@ -59,6 +60,7 @@ class m130524_201442_init extends Migration
         $staff->generateAuthKey();
         $staff->save();
 
+        // table model
         $this->createTable('{{%model}}', [
             'id' => $this->primaryKey(),
             'size' => $this->string(),
@@ -85,14 +87,46 @@ class m130524_201442_init extends Migration
             ['12', '4,1.5', '0.04,0.04,0.04', 'sofa.png', 'sofa.dae', '4']
         ]);
 
+        // table room
         $this->createTable('{{%room}}', [
             'id' => $this->primaryKey(),
-            'user_id' => $this->integer()->notNull(),
+            'user_id' => $this->integer(),
             'data' => $this->text(),
             'last_modify_id' => $this->integer(),
             'last_modify_time' => $this->string(),
         ], $tableOptions);
 
+        $this->createIndex(
+            'idx-room-user_id',
+            'room',
+            'user_id'
+        );
+
+        $this->addForeignKey(
+          'fk-room-user_id',
+            'room',
+            'user_id',
+            'user',
+            'id',
+            'SET NULL'
+        );
+
+        $this->createIndex(
+            'idx-room-last_modify_id',
+            'room',
+            'last_modify_id'
+        );
+
+        $this->addForeignKey(
+            'fk-room-last_modify_id',
+            'room',
+            'last_modify_id',
+            'user',
+            'id',
+            'SET NULL'
+        );
+
+        // table floor
         $this->createTable('{{%floor}}', [
             'id' => $this->primaryKey(),
             'data' => $this->text(),
@@ -100,6 +134,22 @@ class m130524_201442_init extends Migration
             'last_modify_time' => $this->string(),
         ], $tableOptions);
 
+        $this->createIndex(
+            'idx-floor-last_modify_id',
+            'floor',
+            'last_modify_id'
+        );
+
+        $this->addForeignKey(
+            'fk-floor-last_modify_id',
+            'floor',
+            'last_modify_id',
+            'user',
+            'id',
+            'SET NULL'
+        );
+
+        // table goods
         $this->createTable('{{%goods}}', [
             'id' => $this->primaryKey(),
             'price' => $this->double(2),
@@ -114,22 +164,82 @@ class m130524_201442_init extends Migration
             ['3', '3.00', 'water'],
         ]);
 
+        // table order
         $this->createTable('{{%order}}', [
             'id' => $this->primaryKey(),
-            'user_id' => $this->integer()->notNull(),
-            'staff_id' => $this->integer()->notNull(),
-            'goods' => $this->string()->notNull(),
-            'amount' => $this->double(2),
+            'user_id' => $this->integer(),
+            'staff_id' => $this->integer(),
+            'price' => $this->double(2)->notNull(),
             'time' => $this->string(),
         ], $tableOptions);
 
-        $this->createTable('{{%auth_log}}', [
+        $this->createIndex(
+            'idx-order-user_id',
+            'order',
+            'user_id'
+        );
+
+        $this->addForeignKey(
+            'fk-order-user_id',
+            'order',
+            'user_id',
+            'user',
+            'id',
+            'SET NULL'
+        );
+
+        $this->createIndex(
+            'idx-order-staff_id',
+            'order',
+            'staff_id'
+        );
+
+        $this->addForeignKey(
+            'fk-order-staff_id',
+            'order',
+            'staff_id',
+            'user',
+            'id',
+            'SET NULL'
+        );
+
+        // table order_detail
+        $this->createTable('{{%order_detail}}', [
             'id' => $this->primaryKey(),
-            'operator_id' => $this->integer()->notNull(),
-            'user_id' => $this->integer()->notNull(),
-            'operation_id' => $this->integer()->notNull(),
-            'time' => $this->string(),
+            'order_id' => $this->integer(),
+            'goods_id' => $this->integer(),
+            'number' => $this->integer()->notNull(),
         ], $tableOptions);
+
+        $this->createIndex(
+            'idx-order_detail-order_id',
+            'order_detail',
+            'order_id'
+        );
+
+        $this->addForeignKey(
+            'fk-order_detail-order_id',
+            'order_detail',
+            'order_id',
+            'order',
+            'id',
+            'SET NULL'
+        );
+
+        $this->createIndex(
+            'idx-order_detail-goods_id',
+            'order_detail',
+            'goods_id'
+        );
+
+        $this->addForeignKey(
+            'fk-order_detail-goods_id',
+            'order_detail',
+            'goods_id',
+            'goods',
+            'id',
+            'SET NULL'
+        );
 
         $this->createTable('{{%operation}}', [
             'id' => $this->primaryKey(),
@@ -144,6 +254,60 @@ class m130524_201442_init extends Migration
             ['3', 'to staff'],
         ]);
 
+        // table auth_log
+        $this->createTable('{{%auth_log}}', [
+            'id' => $this->primaryKey(),
+            'operator_id' => $this->integer(),
+            'user_id' => $this->integer(),
+            'operation_id' => $this->integer(),
+            'time' => $this->string(),
+        ], $tableOptions);
+
+        $this->createIndex(
+            'idx-auth_log-operator_id',
+            'auth_log',
+            'operator_id'
+        );
+
+        $this->addForeignKey(
+            'fk-auth_log-operator_id',
+            'auth_log',
+            'operator_id',
+            'user',
+            'id',
+            'SET NULL'
+        );
+
+        $this->createIndex(
+            'idx-auth_log-user_id',
+            'auth_log',
+            'user_id'
+        );
+
+        $this->addForeignKey(
+            'fk-auth_log-user_id',
+            'auth_log',
+            'user_id',
+            'user',
+            'id',
+            'SET NULL'
+        );
+
+        $this->createIndex(
+            'idx-auth_log-operation_id',
+            'auth_log',
+            'operation_id'
+        );
+
+        $this->addForeignKey(
+            'fk-auth_log-operation_id',
+            'auth_log',
+            'operation_id',
+            'operation',
+            'id',
+            'SET NULL'
+        );
+
     }
 
     public function down()
@@ -154,18 +318,40 @@ class m130524_201442_init extends Migration
         $this->truncateTable('{{%model}}');
         $this->dropTable('{{%model}}');
 
+        $this->dropForeignKey('fk-room-user_id', 'room');
+        $this->dropIndex('idx-room-user_id', 'room');
+        $this->dropForeignKey('fk-room-last_modify_id', 'room');
+        $this->dropIndex('idx-room-last_modify_id', 'room');
         $this->dropTable('{{%room}}');
 
+        $this->dropForeignKey('fk-floor-last_modify_id', 'floor');
+        $this->dropIndex('idx-floor-last_modify_id', 'floor');
         $this->dropTable('{{%floor}}');
 
         $this->truncateTable('{{%goods}}');
         $this->dropTable('{{%goods}}');
 
+        $this->dropForeignKey('fk-order-user_id', 'order');
+        $this->dropIndex('idx-order-user_id', 'order');
+        $this->dropForeignKey('fk-order-staff_id', 'order');
+        $this->dropIndex('idx-order-staff_id', 'order');
         $this->dropTable('{{%order}}');
 
-        $this->dropTable('{{%auth_log}}');
+        $this->dropForeignKey('fk-order_detail-order_id', 'order_detail');
+        $this->dropIndex('idx-order_detail-order_id', 'order_detail');
+        $this->dropForeignKey('fk-order_detail-goods_id', 'order_detail');
+        $this->dropIndex('idx-order_detail-goods_id', 'order_detail');
+        $this->dropTable('{{%order_detail}}');
 
         $this->truncateTable('{{%operation}}');
         $this->dropTable('{{%operation}}');
+
+        $this->dropForeignKey('fk-auth_log-operator_id', 'auth_log');
+        $this->dropIndex('idx-auth_log-operator_id', 'auth_log');
+        $this->dropForeignKey('fk-auth_log-user_id', 'auth_log');
+        $this->dropIndex('idx-auth_log-user_id', 'auth_log');
+        $this->dropForeignKey('fk-auth_log-operation_id', 'auth_log');
+        $this->dropIndex('idx-auth_log-operation_id', 'auth_log');
+        $this->dropTable('{{%auth_log}}');
     }
 }

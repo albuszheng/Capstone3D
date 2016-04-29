@@ -28,8 +28,6 @@ class AuthorityLog extends ActiveRecord
         return [
             ['id', 'unique'],
             [['id', 'operator_id', 'user_id', 'operation_id'], 'integer'],
-            [['id', 'operator_id', 'user_id', 'operation_id'], 'required'],
-            ['time', 'datetime'],
         ];
     }
 

@@ -10,8 +10,7 @@ use yii\db\ActiveRecord;
  * @property integer $id
  * @property integer $user_id
  * @property integer $staff_id
- * @property string $goods
- * @property double $amount
+ * @property double $price
  * @property string $time
  */
 class Order extends ActiveRecord
@@ -29,9 +28,8 @@ class Order extends ActiveRecord
         return [
             ['id', 'unique'],
             [['id', 'user_id', 'staff_id'], 'integer'],
-            [['id', 'user_id', 'staff_id', 'goods'], 'required'],
-            ['amount', 'double', 'min' => 0.0],
-            ['time', 'datetime'],
+            [['id', 'price'], 'required'],
+            ['price', 'double', 'min' => 0.0],
         ];
     }
 

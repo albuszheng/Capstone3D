@@ -28,7 +28,6 @@ class Room extends ActiveRecord
         return [
             ['id', 'unique'],
             [['id', 'user_id'], 'integer'],
-            [['id', 'user_id'], 'required'],
         ];
     }
 

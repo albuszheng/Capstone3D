@@ -3,9 +3,11 @@ namespace frontend\controllers;
 
 use Yii;
 use common\models\LoginForm;
+use common\models\User;
 use common\models\Model;
 use common\models\Room;
 use common\models\Floor;
+use common\models\ManageSelfForm;
 use frontend\models\PasswordResetRequestForm;
 use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
@@ -174,7 +176,10 @@ class SiteController extends Controller
     public function actionManageSelf()
     {
         if (Yii::$app->user->can('selfManagement')) {
-            return $this->render('selfManagement');
+            $user = User::findIdentity(Yii::$app->getUser()->id);
+            return $this->render('selfManagement', [
+                'user' => $user,
+            ]);
         }
     }
 
