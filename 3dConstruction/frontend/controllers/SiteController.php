@@ -1,6 +1,10 @@
 <?php
 namespace frontend\controllers;
 
+use common\models\Goods;
+use common\models\Order;
+use common\models\OrderDetail;
+use common\models\OrderForm;
 use Yii;
 use common\models\LoginForm;
 use common\models\User;
@@ -13,6 +17,7 @@ use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
 use frontend\models\ContactForm;
 use yii\base\InvalidParamException;
+use yii\data\ActiveDataProvider;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
@@ -254,7 +259,11 @@ class SiteController extends Controller
     public function actionViewOrder()
     {
         if (Yii::$app->user->can('viewOrder')) {
-            return $this->render('viewOrder');
+            $orders = Order::findByUserId(Yii::$app->getUser()->id);
+
+            return $this->render('viewOrder', [
+                'orders' => $orders,
+            ]);
         }
     }
 
@@ -266,7 +275,15 @@ class SiteController extends Controller
     public function actionRoomService()
     {
         if (Yii::$app->user->can('roomService')) {
-            return $this->render('roomService');
+            $dataProvider = new ActiveDataProvider([
+                'query' => Goods::find(),
+                'pagination' => [
+                    'pageSize' => 20,
+                ],
+            ]);
+            return $this->render('roomService', [
+               'dataProvider' => $dataProvider
+            ]);
         }
     }
 
@@ -299,6 +316,18 @@ class SiteController extends Controller
 
     }
 
+    public function actionUpdateRoom()
+    {
+        if (Yii::$app->request->isAjax) {
+            $data = Yii::$app->request->post();
+            $room_id = $data['id'];
+            $room_data = $data['data'];
+            $result = Room::updateRoom($room_id, $room_data);
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['result' => $result];
+        }
+    }
+
     /**
      * Manage model.
      *
@@ -307,8 +336,75 @@ class SiteController extends Controller
     public function actionManageModel()
     {
         if (Yii::$app->user->can('modelManagement')) {
-            return $this->render('modelManagement');
+            $dataProvider = new ActiveDataProvider([
+                'query' => Model::find(),
+                'pagination' => [
+                    'pageSize' => 5,
+                ],
+            ]);
+            return $this->render('modelManagement', [
+                'dataProvider' => $dataProvider,
+            ]);
         }
+    }
+
+    /**
+     * 获取所有模型信息
+     * @return array
+     */
+    public function actionFindAllModels()
+    {
+        if (Yii::$app->request->isAjax) {
+            $models = Model::findAllModels();
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['models' => $models];
+        }
+    }
+
+    public function actionDeleteModel()
+    {
+        if (Yii::$app->user->can('modelManagement')) {
+            if (Yii::$app->request->isAjax) {
+                $data = Yii::$app->request->post();
+                $id = $data['id'];
+                $result = Model::deleteById($id);
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ['result' => $result];
+            }
+        }
+
+    }
+
+    public function actionAddModel()
+    {
+        if (Yii::$app->user->can('modelManagement')) {
+            if (Yii::$app->request->isAjax) {
+                $data = Yii::$app->request->post();
+                $model = new Model();
+                $model->size = $data['size'];
+                $model->scale = $data['scale'];
+                $model->url2d = $data['url2d'];
+                $model->url3d = $data['url3d'];
+                $model->type = $data['type'];
+                $result = $model->save() ? $model : null;
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ['result' => $result];
+            }
+        }
+
+    }
+
+    public function actionUpdateModel()
+    {
+        if (Yii::$app->user->can('modelManagement')) {
+            if (Yii::$app->request->isAjax) {
+                $data = Yii::$app->request->post();
+                $result = Model::updateModel($data);
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ['result' => $result];
+            }
+        }
+
     }
 
     /**
@@ -358,45 +454,5 @@ class SiteController extends Controller
         return $this->render('resetPassword', [
             'model' => $model,
         ]);
-    }
-
-    /**
-     * 根据id获取模型信息
-     * @return null|static
-     */
-    public function actionModel()
-    {
-        if (Yii::$app->request->isAjax) {
-            $data = Yii::$app->request->post();
-            $model = Model::findById($data['id']);
-            Yii::$app->response->format = Response::FORMAT_JSON;
-            return ['model' => $model];
-        }
-    }
-
-    /**
-     * 获取所有模型信息
-     * @return array
-     */
-    public function actionFindAllModels()
-    {
-        if (Yii::$app->request->isAjax) {
-            $sql = 'select * from model';
-            $models = Model::findBySql($sql)->all();
-            Yii::$app->response->format = Response::FORMAT_JSON;
-            return ['models' => $models];
-        }
-    }
-
-    public function actionSaveModel()
-    {
-        if (Yii::$app->request->isAjax) {
-            $data = Yii::$app->request->post();
-            $room_id = $data['id'];
-            $room_data = $data['data'];
-            $result = Room::updateRoom($room_id, $room_data);
-            Yii::$app->response->format = Response::FORMAT_JSON;
-            return ['result' => $result];
-        }
     }
 }

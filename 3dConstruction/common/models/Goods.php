@@ -42,4 +42,54 @@ class Goods extends ActiveRecord
         return static::findOne(['id' => $id]);
     }
 
+    /**
+     * Finds all goods
+     *
+     * @return array|\yii\db\ActiveRecord[]
+     */
+    public static function findAllGoods()
+    {
+        $sql = 'select * from goods';
+        $goods = parent::findBySql($sql)->all();
+        return $goods;
+    }
+
+    /**
+     * Finds name by id
+     *
+     * @param $id
+     * @return string
+     */
+    public static function findNameById($id) {
+        $goods = self::findById($id);
+        return $goods->name;
+    }
+
+    /**
+     * Update price by id
+     *
+     * @param $id
+     * @param $name
+     * @param $price
+     * @return bool
+     */
+    public static function updateGoods($id, $name, $price) {
+        $goods = self::findById($id);
+        $goods->name = $name;
+        $goods->price = $price;
+        return $goods->save();
+    }
+
+    /**
+     * Delete goods by id
+     *
+     * @param $id
+     * @return false|int
+     * @throws \Exception
+     */
+    public static function deleteGoods($id) {
+        $goods = self::findById($id);
+        return $goods->delete();
+    }
+
 }

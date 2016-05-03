@@ -2,14 +2,18 @@
 namespace backend\controllers;
 
 use Yii;
+use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
 use common\models\LoginForm;
 use yii\filters\VerbFilter;
+use common\models\AuthorityLog;
+use common\models\User;
 use common\models\Room;
 use common\models\Model;
 use common\models\Floor;;
+use common\models\Goods;
 
 /**
  * Site controller
@@ -89,7 +93,10 @@ class SiteController extends Controller
     public function actionManageSelf()
     {
         if (Yii::$app->user->can('selfManagement')) {
-            return $this->render('selfManagement');
+            $user = User::findIdentity(Yii::$app->getUser()->id);
+            return $this->render('selfManagement', [
+                'user' => $user,
+            ]);
         }
     }
 
@@ -163,7 +170,27 @@ class SiteController extends Controller
     public function actionManageUser()
     {
         if (Yii::$app->user->can('userManagement')) {
-            return $this->render('userManagement');
+            $dataProvider = new ActiveDataProvider([
+                'query' => User::find(),
+                'pagination' => [
+                    'pageSize' => 20,
+                ],
+            ]);
+            return $this->render('userManagement', [
+                'dataProvider' => $dataProvider
+            ]);
+        }
+    }
+
+    public function actionDeleteUser() {
+        if (Yii::$app->user->can('userManagement')) {
+            if (Yii::$app->request->isAjax) {
+                $data = Yii::$app->request->post();
+                $id = $data['id'];
+                $result = Model::deleteById($id);
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ['result' => $result];
+            }
         }
     }
 
@@ -179,6 +206,23 @@ class SiteController extends Controller
         }
     }
 
+    public function actionUpdateAuthority()
+    {
+        if (Yii::$app->user->can('authManagement')) {
+            if (Yii::$app->request->isAjax) {
+                $data = Yii::$app->request->post();
+                $log = new AuthorityLog();
+                $log->operator_id = Yii::$app->getUser()->id;
+                $log->user_id = $data['user_id'];
+                $log->operation_id = $data['operation_id'];
+                $log->time = date('Y-m-d H:i:s');
+                $result = ($log->save()) && (User::updateUserGroup(Yii::$app->getUser()->id, $data['user_group']));
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ['result' => $result];
+            }
+        }
+    }
+
     /**
      * Register a user.
      *
@@ -187,7 +231,46 @@ class SiteController extends Controller
     public function actionRegisterUser()
     {
         if (Yii::$app->user->can('registerUser')) {
-            return $this->render('registerUser');
+            $dataProvider = new ActiveDataProvider([
+                'query' => Room::find(),
+                'pagination' => [
+                    'pageSize' => 20,
+                ],
+            ]);
+            return $this->render('registerUser', [
+                'dataProvider' => $dataProvider
+            ]);
+        }
+    }
+
+    public function actionRegisterRoom()
+    {
+        if (Yii::$app->user->can('registerUser')) {
+            if (Yii::$app->request->isAjax) {
+                $data = Yii::$app->request->post();
+                $room_id = $data['id'];
+                $result = false;
+                if (Room::isRegisteredRoom($room_id)) {
+                    $message = 'This room has been registered!';
+                } else {
+                    $result = Room::registerRoom($room_id, $data['user_id']);
+                    $message = 'Register success!';
+                }
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ['result' => $result, 'message' => $message];
+            }
+        }
+    }
+
+    public function actionUnregisterRoom()
+    {
+        if (Yii::$app->user->can('registerUser')) {
+            if (Yii::$app->request->isAjax) {
+                $data = Yii::$app->request->post();
+                $result = Room::unregisterRoom($data['id']);
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ['result' => $result];
+            }
         }
     }
 
@@ -199,7 +282,51 @@ class SiteController extends Controller
     public function actionManageGoods()
     {
         if (Yii::$app->user->can('goodsManagement')) {
-            return $this->render('goodsManagement');
+            $dataProvider = new ActiveDataProvider([
+                'query' => Goods::find(),
+                'pagination' => [
+                    'pageSize' => 20,
+                ],
+            ]);
+            return $this->render('goodsManagement', [
+                'dataProvider' => $dataProvider
+            ]);
+        }
+    }
+
+    public function actionAddGoods() {
+        if (Yii::$app->user->can('goodsManagement')) {
+            if (Yii::$app->request->isAjax) {
+                $data = Yii::$app->request->post();
+                $goods = new Goods();
+                $goods->name = $data['name'];
+                $goods->price = $data['price'];
+                $result = $goods->save() ? $goods : null;
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ['result' => $result];
+            }
+        }
+    }
+
+    public function actionUpdateGoods() {
+        if (Yii::$app->user->can('goodsManagement')) {
+            if (Yii::$app->request->isAjax) {
+                $data = Yii::$app->request->post();
+                $result = Goods::updateGoods($data['id'], $data['name'], $data['price']);
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ['result' => $result];
+            }
+        }
+    }
+
+    public function actionDeleteGoods() {
+        if (Yii::$app->user->can('goodsManagement')) {
+            if (Yii::$app->request->isAjax) {
+                $data = Yii::$app->request->post();
+                $result = Goods::deleteGoods($data['id']);
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ['result' => $result];
+            }
         }
     }
 

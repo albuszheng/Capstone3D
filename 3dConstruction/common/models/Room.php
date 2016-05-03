@@ -84,4 +84,34 @@ class Room extends ActiveRecord
         $room->last_modify_time = date('Y-m-d H:i:s');
         return $room->save();
     }
+
+    /**
+     * Assgin a room to a user
+     *
+     * @param $id
+     * @param $user_id
+     * @return bool
+     */
+    public static function registerRoom($id, $user_id) {
+        $room = self::findById($id);
+        $room->user_id = $user_id;
+        return $room->save();
+    }
+
+    public static function unregisterRoom($id) {
+        $room = self::findById($id);
+        $room->user_id = null;
+        return $room->save();
+    }
+
+    /**
+     * Whether room is registered
+     *
+     * @param $id
+     * @return bool
+     */
+    public static function isRegisteredRoom($id) {
+        $room = self::findById($id);
+        return isset($room->user_id);
+    }
 }

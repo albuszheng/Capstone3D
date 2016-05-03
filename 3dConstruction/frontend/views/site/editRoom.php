@@ -162,7 +162,7 @@ $this->params['breadcrumbs'][] = $this->title;
         $.ajax({
             type:'post',
             data:{id:<?php echo $room_id ?>, data:JSON.stringify(sceneJSON)},
-            url:'<?php echo Yii::$app->getUrlManager()->createUrl('/site/save-model') ?>',
+            url:'<?php echo Yii::$app->getUrlManager()->createUrl('/site/update-room') ?>',
             async : false,
             success:function(data) {
                 if (data.result === true) {

@@ -3,6 +3,7 @@ namespace common\models;
 
 use Yii;
 use yii\db\ActiveRecord;
+use yii\db\Query;
 
 /**
  * Model order
@@ -42,6 +43,34 @@ class Order extends ActiveRecord
     public static function findById($id)
     {
         return static::findOne(['id' => $id]);
+    }
+
+    /**
+     * Finds orders by user_id
+     *
+     * @param $user_id
+     * @return array
+     */
+    public static function findByUserId($user_id)
+    {
+//        $sql = 'select * from order o,order_detail od where o.user_id='+$user_id+' and o.id=od.order_id';
+        $query = (new Query())
+            ->select([
+                'o.time as time',
+                'o.price as price',
+                'o.staff_id as staff_id',
+                'goods.name as name',
+                'goods.price as unit_price',
+                'od.number as number'
+            ])
+            ->from(['order o', 'order_detail od', 'goods'])
+            ->where([
+                'o.user_id' => $user_id,
+                'o.id' => 'od.oder_id',
+                'goods.id' => 'od.goods_id',
+            ])
+            ->createCommand();
+        return $query->queryAll();
     }
 
 }

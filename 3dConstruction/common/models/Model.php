@@ -49,4 +49,31 @@ class Model extends ActiveRecord
         return static::findOne(['id' => $id]);
     }
 
+    /**
+     * Finds all models
+     *
+     * @return array|\yii\db\ActiveRecord[]
+     */
+    public static function findAllModels()
+    {
+        $sql = 'select * from model';
+        $models = parent::findBySql($sql)->all();
+        return $models;
+    }
+
+    public static function deleteById($id) {
+        $model = self::findById($id);
+        return $model->delete();
+    }
+
+    public static function updateModel($data) {
+        $model = self::findById($data['id']);
+        $model->size = $data['size'];
+        $model->scale = $data['scale'];
+        $model->url2d = $data['url2d'];
+        $model->url3d = $data['url3d'];
+        $model->type = $data['type'];
+        return $model->save();
+    }
+
 }

@@ -200,4 +200,17 @@ class User extends ActiveRecord implements IdentityInterface
         return $this->hasMany(Order::className(), ['user_id' => $this->id]);
     }
 
+    /**
+     * Update user authority by id
+     *
+     * @param $id
+     * @param $user_group
+     * @return bool
+     */
+    public static function updateUserGroup($id, $user_group) {
+        $user = self::findIdentity($id);
+        $user->user_group = $user_group;
+        return $user->save();
+    }
+
 }
