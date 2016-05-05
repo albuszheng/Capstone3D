@@ -28,6 +28,7 @@ class AppAsset extends AssetBundle
         'js/FirstPersonControls.js',
         'js/SceneExport.js',
         'js/pixi.js',
+        'js/SceneLoad.js',
     ];
     public $depends = [
         'yii\web\YiiAsset',

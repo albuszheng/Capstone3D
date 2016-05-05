@@ -9,7 +9,7 @@ use frontend\assets\ThreeAsset;
 
 ThreeAsset::register($this);
 
-$this->title = 'Edit Room';
+$this->title = 'Edit Room'.$room_id;
 $this->params['breadcrumbs'][] = $this->title;
 
 ?>
@@ -304,7 +304,7 @@ $this->params['breadcrumbs'][] = $this->title;
         if (model !== null) {
             var url = model.url2d;
             if (url !== "null") {
-                floor.texture = PIXI.Texture.fromImage('model/images/' + url);
+                floor.texture = PIXI.Texture.fromImage('model/images/floor/' + url);
             }
             floor.id = id;
         }
@@ -508,7 +508,7 @@ $this->params['breadcrumbs'][] = $this->title;
         var wall = null;
 
         if (model !== null) {
-            var texture = PIXI.Texture.fromImage('model/images/' + model.url2d);
+            var texture = PIXI.Texture.fromImage('model/images/wall/' + model.url2d);
             wall = new PIXI.Sprite(texture);
             wall.interactive = true;
             wall.buttonMode = true;

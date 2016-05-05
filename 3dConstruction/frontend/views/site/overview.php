@@ -60,10 +60,10 @@ $this->params['breadcrumbs'][] = $this->title;
 
         var raycaster = new THREE.Raycaster();
 
-        var texture = new THREE.TextureLoader().load( "model/images/wall/square-outline-textured.png" );
+        var texture = new THREE.TextureLoader().load( "model/images/wall/2.jpg" );
 
-        for (var i = 1; i <= 10; i++) {
-            addMesh(i, new THREE.Vector3(0,i/2-0.5,0));
+        for (var i = 1; i < 10; i++) {
+            addMesh(i, new THREE.Vector3(0,i*0.8-0.8,0));
         }
 
         canvas.innerHTML="";
@@ -111,10 +111,13 @@ $this->params['breadcrumbs'][] = $this->title;
 
         function addMesh(id, position) {
             var position = position || new THREE.Vector3();
-            var geometry = new THREE.BoxGeometry(5,0.5,5);
+            var geometry = new THREE.BoxGeometry(5,0.8,5);
             var material = new THREE.MeshLambertMaterial( { color: 0xfeb74c, map: texture } );
             var mesh = new THREE.Mesh(geometry, material);
             mesh.floorid = id;
+            mesh.material.map.wrapS = THREE.RepeatWrapping;
+            mesh.material.map.wrapT = THREE.RepeatWrapping;
+            mesh.material.map.repeat.set(5, 1);
             mesh.position.copy(position);
             scene.add(mesh);
 

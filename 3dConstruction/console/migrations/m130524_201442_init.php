@@ -126,28 +126,14 @@ class m130524_201442_init extends Migration
             'SET NULL'
         );
 
-        // table floor
-        $this->createTable('{{%floor}}', [
-            'id' => $this->primaryKey(),
-            'data' => $this->text(),
-            'last_modify_id' => $this->integer(),
-            'last_modify_time' => $this->string(),
-        ], $tableOptions);
-
-        $this->createIndex(
-            'idx-floor-last_modify_id',
-            'floor',
-            'last_modify_id'
-        );
-
-        $this->addForeignKey(
-            'fk-floor-last_modify_id',
-            'floor',
-            'last_modify_id',
-            'user',
-            'id',
-            'SET NULL'
-        );
+        // 9 floors, 14 rooms for each floor
+        for ($i = 1; $i < 10; $i++) {
+            for ($j = 1; $j < 15; $j++) {
+                $this->insert('{{%room}}', [
+                    'id' => $i*100+$j,
+                ]);
+            }
+        }
 
         // table goods
         $this->createTable('{{%goods}}', [
@@ -241,6 +227,7 @@ class m130524_201442_init extends Migration
             'SET NULL'
         );
 
+        // table operation
         $this->createTable('{{%operation}}', [
             'id' => $this->primaryKey(),
             'operation' => $this->string()->notNull(),
@@ -312,40 +299,6 @@ class m130524_201442_init extends Migration
 
     public function down()
     {
-        $this->truncateTable('{{%user}}');
-        $this->dropTable('{{%user}}');
-
-        $this->truncateTable('{{%model}}');
-        $this->dropTable('{{%model}}');
-
-        $this->dropForeignKey('fk-room-user_id', 'room');
-        $this->dropIndex('idx-room-user_id', 'room');
-        $this->dropForeignKey('fk-room-last_modify_id', 'room');
-        $this->dropIndex('idx-room-last_modify_id', 'room');
-        $this->dropTable('{{%room}}');
-
-        $this->dropForeignKey('fk-floor-last_modify_id', 'floor');
-        $this->dropIndex('idx-floor-last_modify_id', 'floor');
-        $this->dropTable('{{%floor}}');
-
-        $this->truncateTable('{{%goods}}');
-        $this->dropTable('{{%goods}}');
-
-        $this->dropForeignKey('fk-order-user_id', 'order');
-        $this->dropIndex('idx-order-user_id', 'order');
-        $this->dropForeignKey('fk-order-staff_id', 'order');
-        $this->dropIndex('idx-order-staff_id', 'order');
-        $this->dropTable('{{%order}}');
-
-        $this->dropForeignKey('fk-order_detail-order_id', 'order_detail');
-        $this->dropIndex('idx-order_detail-order_id', 'order_detail');
-        $this->dropForeignKey('fk-order_detail-goods_id', 'order_detail');
-        $this->dropIndex('idx-order_detail-goods_id', 'order_detail');
-        $this->dropTable('{{%order_detail}}');
-
-        $this->truncateTable('{{%operation}}');
-        $this->dropTable('{{%operation}}');
-
         $this->dropForeignKey('fk-auth_log-operator_id', 'auth_log');
         $this->dropIndex('idx-auth_log-operator_id', 'auth_log');
         $this->dropForeignKey('fk-auth_log-user_id', 'auth_log');
@@ -353,5 +306,35 @@ class m130524_201442_init extends Migration
         $this->dropForeignKey('fk-auth_log-operation_id', 'auth_log');
         $this->dropIndex('idx-auth_log-operation_id', 'auth_log');
         $this->dropTable('{{%auth_log}}');
+
+        $this->truncateTable('{{%operation}}');
+        $this->dropTable('{{%operation}}');
+
+        $this->dropForeignKey('fk-order_detail-order_id', 'order_detail');
+        $this->dropIndex('idx-order_detail-order_id', 'order_detail');
+        $this->dropForeignKey('fk-order_detail-goods_id', 'order_detail');
+        $this->dropIndex('idx-order_detail-goods_id', 'order_detail');
+        $this->dropTable('{{%order_detail}}');
+
+        $this->dropForeignKey('fk-order-user_id', 'order');
+        $this->dropIndex('idx-order-user_id', 'order');
+        $this->dropForeignKey('fk-order-staff_id', 'order');
+        $this->dropIndex('idx-order-staff_id', 'order');
+        $this->dropTable('{{%order}}');
+
+        $this->truncateTable('{{%goods}}');
+        $this->dropTable('{{%goods}}');
+
+        $this->dropForeignKey('fk-room-user_id', 'room');
+        $this->dropIndex('idx-room-user_id', 'room');
+        $this->dropForeignKey('fk-room-last_modify_id', 'room');
+        $this->dropIndex('idx-room-last_modify_id', 'room');
+        $this->dropTable('{{%room}}');
+
+        $this->truncateTable('{{%model}}');
+        $this->dropTable('{{%model}}');
+
+        $this->truncateTable('{{%user}}');
+        $this->dropTable('{{%user}}');
     }
 }

@@ -533,4 +533,85 @@ SceneLoad.prototype = {
 
         return stage;
     },
+
+    loadfloor: function (floor_id, data, width, height, canvas) {
+        var step = Math.min(width/data.width, height/data.height);
+
+        var renderer = PIXI.autoDetectRenderer(step * data.width, step * data.height, {'transparent': true});
+        canvas.innerHTML="";
+        canvas.appendChild(renderer.view);
+        canvas.style.border = "none";
+        renderer.view.style.border = "1px solid gray";
+
+        var stage = new PIXI.Container();
+
+        var graphics = new PIXI.Graphics();
+        stage.addChild(graphics);
+
+        var group = new PIXI.Container();
+        stage.addChild(group);
+
+        animate();
+        load(data);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(stage);
+        }
+
+        // 加载楼层场景
+        function load(data) {
+            group.removeChildren(0, group.children.length);
+
+            $.each(data.room, function (index, object) {
+                var size = [object.size[0] * step, object.size[1] * step];
+                var position = [object.position[0] * step, object.position[1] * step];
+                createRoom(floor_id+object.id, position, size);
+
+            });
+        }
+
+        // 创建房间
+        function createRoom(id, position, size) {
+            var room = new PIXI.Text(id, {});
+            room.position.set(position[0], position[1]);
+            room._width = size[0];
+            room._height = size[1];
+            room.id = id;
+            room.interactive = true;
+            room.buttonMode = true;
+
+            room
+                .on('mouseover', onMouseOver)
+                .on('mouseout', onMouseOut)
+                .on('click', onMouseClick);
+
+            group.addChild(room);
+
+            graphics.lineStyle(2, 0x0000FF, 1);
+            graphics.beginFill(0xFFFF0B, 0.5);
+            graphics.drawRect(position[0], position[1], size[0], size[1]);
+            graphics.endFill();
+
+        }
+
+        function onMouseOver() {
+            var new_style = {
+                font : 'bold italic 35px Arial',
+                fill : '#4cae4c'
+            };
+            this.style = new_style;
+
+        }
+
+        function onMouseOut() {
+            this.style = {};
+        }
+
+        function onMouseClick() {
+            window.location.href = 'index.php?r=site/view-room&room_id='+this.id;
+        }
+
+        return stage;
+    }
 }

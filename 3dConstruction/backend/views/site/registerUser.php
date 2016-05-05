@@ -18,7 +18,7 @@ $this->params['breadcrumbs'][] = $this->title;
         'dataProvider' => $dataProvider,
         'columns' => [
             [
-                'attribute' => 'room_id',
+                'attribute' => 'id',
             ],
             [
                 'attribute' => 'user_id',

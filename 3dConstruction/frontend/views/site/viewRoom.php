@@ -1,6 +1,8 @@
 <?php
 
 /* @var $this yii\web\View */
+/* @var $floor_id integer */
+/* @var $room_id integer */
 /* @var $data string */
 
 use yii\helpers\Html;
@@ -8,7 +10,9 @@ use frontend\assets\ThreeAsset;
 
 ThreeAsset::register($this);
 
-$this->title = 'View Room';
+$this->title = 'View Room'.$room_id;
+$this->params['breadcrumbs'][] = ['label' => 'Overview', 'url' => ['overview']];
+$this->params['breadcrumbs'][] = ['label' => 'View Floor'.$floor_id, 'url' => ['view-floor', 'floor_id'=>$floor_id]];
 $this->params['breadcrumbs'][] = $this->title;
 
 ?>
@@ -75,25 +79,29 @@ $this->params['breadcrumbs'][] = $this->title;
 
     // 查看2d场景
     function view2d() {
-        if (viewMode === 0) {
-            return;
+        if (data !== null) {
+            if (viewMode === 0) {
+                return;
+            }
+
+            var loader = new SceneLoad();
+            loader.load2d(data, width, height, canvas, models);
+
+            viewMode = 0;
         }
-
-        var loader = new SceneLoad();
-        loader.load2d(data, width, height, canvas, models);
-
-        viewMode = 0;
     }
 
     // 查看3d场景
     function view3d() {
-        if (viewMode === 1) {
-            return;
-        }
+        if (data !== null) {
+            if (viewMode === 1) {
+                return;
+            }
 
-        var loader = new SceneLoad();
-        loader.load3d(data, width, height, canvas, models);
-        viewMode = 1;
+            var loader = new SceneLoad();
+            loader.load3d(data, width, height, canvas, models);
+            viewMode = 1;
+        }
     }
 
 
