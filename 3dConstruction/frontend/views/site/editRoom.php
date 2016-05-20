@@ -57,8 +57,9 @@ $this->params['breadcrumbs'][] = $this->title;
             </ul>
         </div>
 
-        <div id="canvas">
+        <div id="canvas2d">
         </div>
+        <div id="canvas3d"></div>
     </div>
 </div>
 
@@ -77,11 +78,13 @@ $this->params['breadcrumbs'][] = $this->title;
      * 1.collision detection
      */
 
-    var width = $('#canvas').width();
-    var height = $('#canvas').height();
+    var width2d = $('#canvas2d').width();
+    var width3d = $('#canvas3d').width();
+    var height2d = $('#canvas2d').height();
+    var height3d = $('#canvas3d').height();
     var pos = document.getElementById("pos");
     var rot = document.getElementById("rot");
-    var step = Math.min(width, height);
+    var step = Math.min(width2d, height2d);
     var models = [];
     var data = null;
 
@@ -131,12 +134,12 @@ $this->params['breadcrumbs'][] = $this->title;
     function createLine() {
         graph = new PIXI.Graphics();
         graph.lineStyle(1, 0x000, 1);
-        for (var i = step; i < width; i+=step) {
+        for (var i = step; i < width2d; i+=step) {
             graph.moveTo(i, 0);
-            graph.lineTo(i, width);
+            graph.lineTo(i, width2d);
 
             graph.moveTo(0, i);
-            graph.lineTo(width, i);
+            graph.lineTo(width2d, i);
         }
         graph.visible = false;
         stage.addChild(graph);
@@ -198,12 +201,12 @@ $this->params['breadcrumbs'][] = $this->title;
         }
 
         var loader = new SceneLoad();
-        stage = loader.load2d(scene, width, height, document.getElementById('canvas'), models);
+        stage = loader.load2d(scene, width2d, height2d, document.getElementById('canvas2d'), models);
         floor = stage.getChildAt(0);
         walls = stage.getChildAt(1);
         group = stage.getChildAt(2);
 
-        step = Math.min(width/scene.floor.width, height/scene.floor.height);
+        step = Math.min(width2d/scene.floor.width, height2d/scene.floor.height);
         createLine();
         updateInfo();
     }
@@ -263,12 +266,14 @@ $this->params['breadcrumbs'][] = $this->title;
 
         $('#2dbutton').css('visibility', 'hidden');
         $('#3dbutton').css('visibility', 'visible');
+        $('#canvas2d').css('display', 'none');
+        $('#canvas3d').css('display', 'block');
         document.getElementById('to2dbutton').onclick = function() {
           to2d(sceneJSON);
         };
 
         var loader = new SceneLoad();
-        loader.load3d(sceneJSON, width, height, document.getElementById('canvas'), models);
+        loader.load3d(sceneJSON, width3d, height3d, document.getElementById('canvas3d'), models);
     }
 
     /**
@@ -277,14 +282,16 @@ $this->params['breadcrumbs'][] = $this->title;
     function to2d(data) {
         $('#2dbutton').css('visibility', 'visible');
         $('#3dbutton').css('visibility', 'hidden');
+        $('#canvas3d').css('display', 'none');
+        $('#canvas2d').css('display', 'block');
 
         var loader = new SceneLoad();
-        stage = loader.load2d(data, width, height, document.getElementById('canvas'), models);
+        stage = loader.load2d(data, width2d, height2d, document.getElementById('canvas2d'), models);
         floor = stage.getChildAt(0);
         walls = stage.getChildAt(1);
         group = stage.getChildAt(2);
 
-        step = Math.min(width/data.floor.width, height/data.floor.height);
+        step = Math.min(width2d/data.floor.width, height2d/data.floor.height);
         createLine();
     }
 
