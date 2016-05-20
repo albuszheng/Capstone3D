@@ -60,7 +60,6 @@ AppAsset::register($this);
             $menuItems[] = ['label' => '订单列表', 'url' => ['/site/view-order']];
             $menuItems[] = ['label' => '客房服务', 'url' => ['/site/room-service']];
         } else if (Yii::$app->user->can('engineer')) {
-            $menuItems[] = ['label' => '编辑场景', 'url' => ['/site/edit-room']];
             $menuItems[] = ['label' => '模型管理', 'url' => ['/site/manage-model']];
         }
 

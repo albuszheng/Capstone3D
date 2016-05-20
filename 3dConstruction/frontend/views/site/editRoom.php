@@ -2,6 +2,7 @@
 
 /* @var $this yii\web\View */
 /* @var $data string */
+/* @var $floor_id integer */
 /* @var $room_id integer */
 
 use yii\helpers\Html;
@@ -10,6 +11,8 @@ use frontend\assets\ThreeAsset;
 ThreeAsset::register($this);
 
 $this->title = 'Edit Room'.$room_id;
+$this->params['breadcrumbs'][] = ['label' => 'Overview', 'url' => ['overview']];
+$this->params['breadcrumbs'][] = ['label' => 'View Floor'.$floor_id, 'url' => ['view-floor', 'floor_id'=>$floor_id]];
 $this->params['breadcrumbs'][] = $this->title;
 
 ?>

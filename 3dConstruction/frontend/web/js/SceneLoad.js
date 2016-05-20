@@ -568,7 +568,7 @@ SceneLoad.prototype = {
         return stage;
     },
 
-    loadfloor: function (floor_id, data, width, height, canvas) {
+    loadfloor: function (floor_id, data, width, height, canvas, canEdit) {
         var step = Math.min(width/data.width, height/data.height);
 
         var renderer = PIXI.autoDetectRenderer(step * data.width, step * data.height, {'transparent': true});
@@ -643,7 +643,11 @@ SceneLoad.prototype = {
         }
 
         function onMouseClick() {
-            window.location.href = 'index.php?r=site/view-room&room_id='+this.id;
+            if (canEdit) {
+                window.location.href = 'index.php?r=site/edit-room&room_id='+this.id;
+            } else {
+                window.location.href = 'index.php?r=site/view-room&room_id='+this.id;
+            }
         }
 
         return stage;
