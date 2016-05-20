@@ -1,6 +1,7 @@
 <?php
 namespace backend\controllers;
 
+use common\models\Config;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
@@ -108,7 +109,10 @@ class SiteController extends Controller
     public function actionOverview()
     {
         if (Yii::$app->user->can('viewFloor')) {
-            return $this->render('overview');
+            $floor = Config::getFloor()->floor;
+            return $this->render('overview', [
+                'floor' => $floor,
+            ]);
         }
     }
 
@@ -181,6 +185,16 @@ class SiteController extends Controller
             return $this->render('userManagement', [
                 'dataProvider' => $dataProvider
             ]);
+        }
+    }
+
+    public function actionConfigFloor() {
+        if (Yii::$app->request->isPost) {
+            $data = Yii::$app->request->post();
+            $floor = $data['floor'];
+            $result = Config::updateFloor($floor);
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['result' => $result];
         }
     }
 

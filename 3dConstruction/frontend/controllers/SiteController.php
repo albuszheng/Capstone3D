@@ -1,6 +1,7 @@
 <?php
 namespace frontend\controllers;
 
+use common\models\Config;
 use common\models\Goods;
 use common\models\Order;
 use common\models\OrderDetail;
@@ -196,7 +197,13 @@ class SiteController extends Controller
     public function actionOverview()
     {
         if (Yii::$app->user->can('viewFloor')) {
-            return $this->render('overview');
+            $floor = Config::getFloor()->floor;
+            $canEdit = Yii::$app->user->can('editRoom');
+
+            return $this->render('overview', [
+                'floor' => $floor,
+                'canEdit' => $canEdit,
+            ]);
         }
     }
 
@@ -209,6 +216,7 @@ class SiteController extends Controller
     {
         if (Yii::$app->user->can('viewFloor')) {
             $floor_id = isset(Yii::$app->request->get()['floor_id']) ? Yii::$app->request->get()['floor_id'] : 1;
+            $canEdit = Yii::$app->user->can('editRoom');
 //            $floor = Floor::findById($floor_id);
 //            $data = 'null';
 //
@@ -217,9 +225,9 @@ class SiteController extends Controller
 //            } else {
 //                Yii::$app->session->setFlash('error', 'no floor data');
 //            }
-
             return $this->render('viewFloor', [
                 'floor_id' => $floor_id,
+                'canEdit' => $canEdit,
 //                'data' => $data,
             ]);
         }
@@ -314,6 +322,7 @@ class SiteController extends Controller
 
                 return $this->render('editRoom', [
                     'data' => $data,
+                    'floor_id' => (int)($room->id/100),
                     'room_id' => $room_id,
                 ]);
             } else {

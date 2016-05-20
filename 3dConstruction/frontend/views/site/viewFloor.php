@@ -2,6 +2,7 @@
 
 /* @var $this yii\web\View */
 /* @var $floor_id integer */
+/* @var $canEdit integer */
 
 use yii\helpers\Html;
 use frontend\assets\ThreeAsset;
@@ -35,7 +36,7 @@ $this->params['breadcrumbs'][] = $this->title;
     function load() {
         $.getJSON('scene/floor.json', function(result) {
             var loader = new SceneLoad();
-            loader.loadfloor(<?= $floor_id?>, result, width, height, canvas);
+            loader.loadfloor(<?= $floor_id?>, result, width, height, canvas, <?= $canEdit?>);
         });
     }
 

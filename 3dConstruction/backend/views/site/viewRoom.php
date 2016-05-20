@@ -23,7 +23,9 @@ $this->params['breadcrumbs'][] = $this->title;
     <button onclick="view2d()">2d</button>
     <button onclick="view3d()">3d</button>
 
-    <div id="canvas">
+    <div id="canvas2d">
+    </div>
+    <div id="canvas3d">
     </div>
 
 </div>
@@ -32,6 +34,7 @@ $this->params['breadcrumbs'][] = $this->title;
 <script type="text/javascript" src="js/three.js"></script>
 <script type="text/javascript" src="js/ThreeBSP.js"></script>
 <script type="text/javascript" src="js/FirstPersonControls.js"></script>
+<script type="text/javascript" src="js/TrackballControls.js"></script>
 <script type="text/javascript" src="js/ColladaLoader.js"></script>
 <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
 <script type="text/javascript" src="js/SceneExport.js"></script>
@@ -42,9 +45,12 @@ $this->params['breadcrumbs'][] = $this->title;
     var viewMode = 1; //0:2d  1:3d
     var data = null;
 
-    var width = $('#canvas').width();
-    var height = $('#canvas').height();
-    var canvas = document.getElementById('canvas');
+    var width2d = $('#canvas2d').width();
+    var width3d = $('#canvas3d').width();
+    var height2d = $('#canvas2d').height();
+    var height3d = $('#canvas3d').height();
+    var canvas2d = document.getElementById('canvas2d');
+    var canvas3d = document.getElementById('canvas3d');
 
     // 加载场景
     function load() {
@@ -85,9 +91,11 @@ $this->params['breadcrumbs'][] = $this->title;
             }
 
             var loader = new SceneLoad();
-            loader.load2d(data, width, height, canvas, models);
+            loader.load2d(data, width2d, height2d, canvas2d, models);
 
             viewMode = 0;
+            $('#canvas3d').css('display', 'none');
+            $('#canvas2d').css('display', 'block');
         }
     }
 
@@ -99,8 +107,10 @@ $this->params['breadcrumbs'][] = $this->title;
             }
 
             var loader = new SceneLoad();
-            loader.load3d(data, width, height, canvas, models);
+            loader.load3d(data, width3d, height3d, canvas3d, models);
             viewMode = 1;
+            $('#canvas2d').css('display', 'none');
+            $('#canvas3d').css('display', 'block');
         }
     }
 

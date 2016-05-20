@@ -34,6 +34,7 @@ $this->params['breadcrumbs'][] = $this->title;
 <script type="text/javascript" src="js/three.js"></script>
 <script type="text/javascript" src="js/ThreeBSP.js"></script>
 <script type="text/javascript" src="js/FirstPersonControls.js"></script>
+<script type="text/javascript" src="js/TrackballControls.js"></script>
 <script type="text/javascript" src="js/ColladaLoader.js"></script>
 <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
 <script type="text/javascript" src="js/SceneExport.js"></script>
