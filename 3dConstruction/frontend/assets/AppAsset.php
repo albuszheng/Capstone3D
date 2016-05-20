@@ -19,6 +19,7 @@ class AppAsset extends AssetBundle
     public $baseUrl = '@web';
     public $css = [
         'css/site.css',
+        'css/screen.css',
     ];
     public $js = [
         'assets/da80f562/jquery.js',
@@ -26,6 +27,7 @@ class AppAsset extends AssetBundle
         'js/ThreeBSP.js',
         'js/ColladaLoader.js',
         'js/FirstPersonControls.js',
+        'js/TrackballControls.js',
         'js/SceneExport.js',
         'js/pixi.js',
         'js/SceneLoad.js',

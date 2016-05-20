@@ -9,7 +9,7 @@ SceneLoad.prototype = {
         var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
 
         var renderer = new THREE.WebGLRenderer();
-        renderer.setClearColor(new THREE.Color(0x000, 1.0));
+        renderer.setClearColor(new THREE.Color(0xD1D1D1, 1.0));
         renderer.setSize(width, height);
 
         camera.position.x = 1;
@@ -35,6 +35,40 @@ SceneLoad.prototype = {
         scene.add( directionalLight );
 
         canvas.innerHTML="";
+        var firstPersonButton = document.createElement('button');
+        firstPersonButton.addEventListener('click', function(){
+            camera.position.x = 1;
+            camera.position.y = 0.5;
+            camera.position.z = 2;
+            controls = new THREE.FirstPersonControls(camera);
+            controls.lookSpeed = 0.1;
+            controls.movementSpeed = 5;
+            controls.noFly = true;
+            controls.lookVertical = true;
+            controls.constrainVertical = true;
+            controls.verticalMin = 1.0;
+            controls.verticalMax = 2.0;
+            controls.lon = -180;
+            controls.lat = 0;
+        });
+        var firstPesonText = document.createTextNode('第一人称视角');
+        firstPersonButton.appendChild(firstPesonText);
+        canvas.appendChild(firstPersonButton);
+
+        var overButton = document.createElement('button');
+        overButton.addEventListener('click', function(){
+            camera.position.x = 0;
+            camera.position.y = 16;
+            camera.position.z = 20;
+            controls = new THREE.TrackballControls(camera);
+            controls.rotateSpeed = 1.0;
+            controls.zoomSpeed = 1.0;
+            controls.panSpeed = 1.0;
+        });
+        var overText = document.createTextNode('总览视角');
+        overButton.appendChild(overText);
+        canvas.appendChild(overButton);
+
         canvas.appendChild(renderer.domElement);
 
         load(data);

@@ -1,6 +1,7 @@
 <?php
 
 /* @var $this yii\web\View */
+/* @var $floor integer */
 
 use yii\helpers\Html;
 use frontend\assets\ThreeAsset;
@@ -62,7 +63,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
         var texture = new THREE.TextureLoader().load( "model/images/wall/2.jpg" );
 
-        for (var i = 1; i < 10; i++) {
+        for (var i = 1; i <= <?= $floor?>; i++) {
             addMesh(i, new THREE.Vector3(0,i*0.8-0.8,0));
         }
 

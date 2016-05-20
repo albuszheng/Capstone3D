@@ -1,6 +1,7 @@
 <?php
 namespace frontend\controllers;
 
+use common\models\Config;
 use common\models\Goods;
 use common\models\Order;
 use common\models\OrderDetail;
@@ -196,7 +197,10 @@ class SiteController extends Controller
     public function actionOverview()
     {
         if (Yii::$app->user->can('viewFloor')) {
-            return $this->render('overview');
+            $floor = Config::getFloor()->floor;
+            return $this->render('overview', [
+                'floor' => $floor,
+            ]);
         }
     }
 

@@ -235,7 +235,7 @@ $this->params['breadcrumbs'][] = $this->title;
     function see() {
         isEdit = false;
         graph.visible = false;
-        $("#canvas").unbind('mousedown', dragStart);
+        $("#canvas2d").unbind('mousedown', dragStart);
 
         if (selected !== undefined) {
             selected.alpha = 1;
@@ -304,7 +304,7 @@ $this->params['breadcrumbs'][] = $this->title;
             return;
         }
 
-        $("#canvas").unbind('mousedown', dragStart);
+        $("#canvas2d").unbind('mousedown', dragStart);
         floor.texture = PIXI.Texture.EMPTY;
 
         var model = findModelById(id);
@@ -323,14 +323,14 @@ $this->params['breadcrumbs'][] = $this->title;
     var mouseX, mouseY;
     var wallid;
     function addWall(id) {
-        $("#canvas").unbind('mousedown', dragStart);
+        $("#canvas2d").unbind('mousedown', dragStart);
 
         if (!isEdit) {
             console.log("当前非编辑模式");
             return;
         }
 
-        $("#canvas").bind('mousedown', dragStart);
+        $("#canvas2d").bind('mousedown', dragStart);
         wallid = id;
     }
 
@@ -339,7 +339,7 @@ $this->params['breadcrumbs'][] = $this->title;
         mouseX = e.pageX - e.currentTarget.offsetLeft;
         mouseY = e.pageY - e.currentTarget.offsetTop;
 
-        $("#canvas")
+        $("#canvas2d")
             .bind('mousemove', drag)
             .bind('mouseup', dragEnd);
     };
@@ -372,7 +372,7 @@ $this->params['breadcrumbs'][] = $this->title;
         selectMode(wall, CONST.TYPE.WALL);
         updateInfo(selected);
 
-        $("#canvas")
+        $("#canvas2d")
             .unbind('mousedown', dragStart)
             .unbind('mousemove', drag)
             .unbind('mouseup', dragEnd);
@@ -395,7 +395,7 @@ $this->params['breadcrumbs'][] = $this->title;
             return;
         }
 
-        $("#canvas").unbind('mousedown', dragStart);
+        $("#canvas2d").unbind('mousedown', dragStart);
         var parent = selected;
         var position = [parent.position.x, parent.position.y];
         var model = createDoorWindow(id, position, parent.rotation);
@@ -418,8 +418,8 @@ $this->params['breadcrumbs'][] = $this->title;
             return;
         }
 
-        $("#canvas").unbind('mousedown', dragStart);
-        var model = createFurniture(id, [width/2, height/2], 0);
+        $("#canvas2d").unbind('mousedown', dragStart);
+        var model = createFurniture(id, [width2d/2, height2d/2], 0);
         if (model !== null) {
             selectMode(model, CONST.TYPE.FURNITURE);
             updateInfo(selected);
@@ -440,7 +440,7 @@ $this->params['breadcrumbs'][] = $this->title;
         this.dragging = false;
         this.data = null;
 
-        var bounds = new PIXI.Rectangle(0, 0, width, height);
+        var bounds = new PIXI.Rectangle(0, 0, width2d, height2d);
         switch (selected.type) {
             case CONST.TYPE.DOOR:
             case CONST.TYPE.WINDOW:
@@ -460,15 +460,15 @@ $this->params['breadcrumbs'][] = $this->title;
                 if (isOut(selected.getBounds(), bounds)) {
                     $.each(selected.children, function (index, object) {
                         var offset = object.position.x - selected.position.x + object.position.y - selected.position.y;
-                        object.position.x = Math.abs(Math.cos(object.rotation)) * offset + width / 2;
-                        object.position.y = Math.abs(Math.sin(object.rotation)) * offset + height / 2;
+                        object.position.x = Math.abs(Math.cos(object.rotation)) * offset + width2d / 2;
+                        object.position.y = Math.abs(Math.sin(object.rotation)) * offset + height2d / 2;
                     });
-                    selected.position.set(width / 2, height / 2);
+                    selected.position.set(width2d / 2, height2d / 2);
                 }
                 break;
             case CONST.TYPE.FURNITURE:
                 if (isOut(selected.getBounds(), bounds)) {
-                    selected.position.set(width / 2, height / 2);
+                    selected.position.set(width2d / 2, height2d / 2);
                 }
                 break;
             default:

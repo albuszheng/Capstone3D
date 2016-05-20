@@ -1,0 +1,342 @@
+body {
+    background-color: #DFF0D8;
+    font-family: "Microsoft YaHei";
+}
+
+header {
+    text-align: center;
+    padding-top: 6px;
+}
+
+.form-title {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    margin-left: 20%;
+    margin-right: 10%;
+}
+
+.form-title > #title {
+    font-size: 30px;
+    border-left: 3px solid #5cb85c;
+    text-align: left;
+}
+
+.form-divider {
+    width: 64%;
+    margin-left: 18%;
+    padding-top: 30px;
+    border-bottom: 2px solid #c1e2b3;
+}
+
+.jumbotron {
+    margin: 20px 20% 8px 20%;
+    padding-top: 10px;
+    padding-bottom: 20px;
+    background-color: #FFFFFF;
+}
+
+#login-form,
+#register-form {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    padding-top: 20px;
+    padding-bottom: 24px;
+}
+
+.form-group > label {
+    text-align: right;
+    font-size: 18px;
+    line-height: 40px;
+}
+
+.form-group > div > input {
+    height: 40px;
+}
+
+.form-group > label > span {
+    color: #c9302c;
+}
+
+#login-btn,
+#register-btn {
+    width: 100%;
+    font-size: 20px;
+}
+
+.form-footer {
+    text-align: center;
+}
+
+.form-footer > p {
+    margin-bottom: 1px;
+}
+
+.form-footer > a {
+    font-size: 22px;
+}
+
+/*.dropdown-menu {*/
+    /*line-height: 45px;*/
+    /*min-width: 120px;*/
+    /*margin-top: -18px;*/
+/*}*/
+
+/*.dropdown-menu > li {*/
+    /*padding-left: 12px;*/
+/*}*/
+
+/*.dropdown-menu > .divider {*/
+    /*border-bottom: 1px solid #c1e2b3;*/
+/*}*/
+
+body div.landing {
+  height: 800px;
+  /*width:1170px;*/
+    position: relative;
+    top:-50px;
+    left: 0;
+    margin-left: -338px;
+margin-right: -338px;
+    overflow: hidden;
+  background-image:url(../img/photo-1456930266018-fda42f7404a7.jpg);
+  background-position: center;
+  background-size: cover;
+}
+
+footer.landing {
+  position: relative;
+  text-align: center;
+  top: 650px;
+}
+
+footer.landing p {
+  margin: auto 0;
+  color: white;
+  padding: 5 auto;
+}
+
+.nav-title {
+  margin: 50px;
+}
+
+section.nav-title div {
+  display: inline-block;
+}
+.button-groups p {
+  display: inline-block;
+  margin: auto 30px;
+  font-size: 1.7em;
+}
+.button-groups p a {
+  text-decoration: none;
+  font-weight: 200;
+  color: #333;
+}
+
+
+footer .social-media p {
+  margin: 20px auto;
+}
+
+footer .social-media p span {
+  margin: auto 20px;
+}
+
+.navbar-fixed-top {
+  border: 0;
+}
+
+body.user {
+  padding-top: 64px;
+}
+
+.user-info h3.greating {
+  font-size: 1.3em;
+}
+
+.user-info p.time {
+  font-size: .9em;
+  color: #aaa
+}
+
+.sidebar {
+  margin-right: 0;
+  margin-left: -15px;
+  padding-right: 0;
+  border-right: 1px solid #888;
+  position: fixed;
+  display: block;
+  bottom: 0;
+  top: 61px;
+  left: 0;
+  z-index: 1000;
+}
+
+.sidebar div {
+/*  padding: 20px auto 30px auto;*/
+  margin-top: 20px;
+  padding-left: 15px;
+  border-bottom: 1px solid #cdc;
+}
+
+.sidebar div p {
+  margin-left: 0;
+  padding-left: 0;
+  padding-bottom: 10px;
+}
+.top-nav {
+  border-bottom: 1px solid #888;
+}
+.top-nav .profile {
+  margin-top: 18px;
+  font-size: 1.5em;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background-color: darkgray;
+  color: #eee;
+}
+
+.top-nav .profile, .top-nav .logo {
+  display: inline-block
+}
+
+.inhouse-date .form-group > label {
+  display: inline-block;
+}
+
+.inhouse-date .form-group > input {
+  display: inline-block;
+  width: 75%;
+  margin-left: 4.8em;
+}
+
+.card {
+  border: 1px solid #bbb;
+  padding: 30px;
+  border-radius: 10px;
+  margin: 20px auto;
+  background-color: #fefefe;
+}
+
+.whole.card {
+  border: 1px solid transparent;
+  background-color: transparent;
+  padding: auto 0;
+}
+
+.whole.card h3 {
+  margin-left: -30px;
+}
+
+.checkin-status p {
+  display: inline-block;
+  margin: auto 20px;
+  font-size: 1.2em;
+}
+.checkin-status p span {
+  font-weight: bold;
+}
+.checkin-status h4 {
+  display: inline-block;
+  font-size: 1.4em;
+  margin-right: 20px;
+}
+.service-list h4 {
+  font-size: 1.4em;
+}
+.service-list td .checkbox {
+  margin: 0 auto;
+}
+
+body.customer, body.engineer {
+  background-color: #f8f8f8;
+}
+.customer > nav, .engineer > nav {
+  padding: 5px 100px 10px 100px;
+  border: 1px solid transparent;
+}
+
+.customer > section.main-content, .engineer > section.main-content {
+  padding: 5px 100px 0 100px;
+}
+.hotel-management .sub-title h3.title {
+  font-size: 3.5em;
+  font-weight: 100;
+}
+.customer .main-content .sec-nav h3 {
+  font-size: 3.5em;
+  font-weight: 100;
+}
+.customer .main-content .sec-nav h3 > span {
+  font-size: 0.6em;
+  color: #4a6aff;
+}
+
+.sec-nav .room-num, .sec-nav button.service-list {
+  display: inline-block;
+}
+
+.sec-nav button.service-list{
+  margin-top: 25px;
+  padding: 10px 30px;
+}
+
+.sec-nav, .sub-title {
+  padding-bottom: 50px;
+}
+
+.sec-nav div.money-spent {
+  font-size: 1.3em;
+}
+
+.btn-green {
+  background-color: #30a53a;
+  color: white;
+}
+
+.btn-green:hover {
+  background-color: #0D6A15;
+  color: white;
+}
+
+.room-insight {
+  background-color: lightgray;
+  height: 800px;
+}
+
+.top-nav ul.nav-menu {
+  list-style: none;
+  display: inline-block;
+}
+
+ul.nav-menu li {
+  display: inline-block;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 1.2em;
+}
+
+ul.nav-menu li a {
+  color: grey;
+}
+
+ul.nav-menu li a.active {
+  color: #2180d7;
+}
+
+.hotel-list thead th {
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+.hotel-list tbody tr > th {
+  font-weight: 100;
+  font-size: 1.1em;
+  padding: 16px 8px;
+}
+
+.hotel-list a {
+  color: #2180d7;
+}

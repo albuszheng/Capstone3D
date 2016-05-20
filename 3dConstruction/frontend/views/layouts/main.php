@@ -23,7 +23,7 @@ AppAsset::register($this);
     <title><?= Html::encode($this->title) ?></title>
 
     <?php $this->head() ?>
-    <link href="/frontend/web/css/screen.css" rel="stylesheet" type="text/css">
+<!--    <link href="/frontend/web/css/screen.css" rel="stylesheet" type="text/css">-->
 </head>
 <body class="user">
 <?php $this->beginBody() ?>
@@ -47,9 +47,9 @@ AppAsset::register($this);
         $menuItems[] = ['label' => '登录', 'url' => ['/site/login']];
     } elseif (Yii::$app->user->can('admin')) {
 //        Yii::$app->session->setFlash('success', Url::base(true));
-        Yii::$app->getResponse()->redirect('http://localhost/backend/web/index.php', 301);
+        Yii::$app->getResponse()->redirect('http://localhost/Capstone3D/3dConstruction/backend/web/index.php', 301);
     } elseif (Yii::$app->user->can('staff')) {
-        Yii::$app->getResponse()->redirect('http://localhost/backend/web/index.php', 301);
+        Yii::$app->getResponse()->redirect('http://localhost/Capstone3D/3dConstruction/backend/web/index.php', 301);
     }
     else {
         $menuItems[] = ['label' => '个人管理', 'url' => ['/site/manage-self']];

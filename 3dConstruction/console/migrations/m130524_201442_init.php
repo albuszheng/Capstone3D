@@ -295,10 +295,21 @@ class m130524_201442_init extends Migration
             'SET NULL'
         );
 
+        $this->createTable('{{%config}}', [
+            'floor' => $this->integer(),
+        ], $tableOptions);
+
+        $this->insert('{{%config}}', [
+            'floor' => '9',
+        ]);
+
     }
 
     public function down()
     {
+        $this->truncateTable('{{%config}}');
+        $this->dropTable('{{%config}}');
+
         $this->dropForeignKey('fk-auth_log-operator_id', 'auth_log');
         $this->dropIndex('idx-auth_log-operator_id', 'auth_log');
         $this->dropForeignKey('fk-auth_log-user_id', 'auth_log');
