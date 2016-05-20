@@ -21,12 +21,14 @@ AppAsset::register($this);
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <?= Html::csrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
+
     <?php $this->head() ?>
+    <link href="/frontend/web/css/screen.css" rel="stylesheet" type="text/css">
 </head>
-<body>
+<body class="user">
 <?php $this->beginBody() ?>
 
-<div class="wrap">
+<!--<div class="wrap">-->
     <?php
     NavBar::begin([
         'brandLabel' => 'House Hotel',
@@ -45,9 +47,9 @@ AppAsset::register($this);
         $menuItems[] = ['label' => '登录', 'url' => ['/site/login']];
     } elseif (Yii::$app->user->can('admin')) {
 //        Yii::$app->session->setFlash('success', Url::base(true));
-        Yii::$app->getResponse()->redirect('http://localhost/Capstone3D/3dConstruction/backend/web/index.php', 301);
+        Yii::$app->getResponse()->redirect('http://localhost/backend/web/index.php', 301);
     } elseif (Yii::$app->user->can('staff')) {
-        Yii::$app->getResponse()->redirect('http://localhost/Capstone3D/3dConstruction/backend/web/index.php', 301);
+        Yii::$app->getResponse()->redirect('http://localhost/backend/web/index.php', 301);
     }
     else {
         $menuItems[] = ['label' => '个人管理', 'url' => ['/site/manage-self']];
@@ -86,15 +88,16 @@ AppAsset::register($this);
         <?= Alert::widget() ?>
         <?= $content ?>
     </div>
-</div>
+<!--</div>-->
 
-<footer class="footer">
-    <div class="container">
-        <p class="pull-left">&copy; House Hotel <?= date('Y') ?></p>
+<!--<footer class="footer">-->
+<!--    <div class="container">-->
+<!--        <p class="pull-left">&copy; House Hotel --><?//=date('Y')?><!-- </p>-->
+<!---->
+<!--        <p class="pull-right"> --><?//=Yii::powered()?><!--</p>-->
+<!--    </div>-->
+<!--</footer>-->
 
-        <p class="pull-right"><?= Yii::powered() ?></p>
-    </div>
-</footer>
 
 <?php $this->endBody() ?>
 </body>

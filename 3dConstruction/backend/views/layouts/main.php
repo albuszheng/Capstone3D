@@ -21,6 +21,7 @@ AppAsset::register($this);
     <?= Html::csrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
     <?php $this->head() ?>
+    <link href="/frontend/web/css/screen.css" rel="stylesheet" type="text/css">
 </head>
 <body>
 <?php $this->beginBody() ?>
@@ -40,9 +41,9 @@ AppAsset::register($this);
     if (Yii::$app->user->isGuest) {
         $menuItems[] = ['label' => '登录', 'url' => ['/site/login']];
     } elseif (Yii::$app->user->can('user')) {
-        Yii::$app->getResponse()->redirect('http://localhost/Capstone3D/3dConstruction/frontend/web/index.php', 301);
+        Yii::$app->getResponse()->redirect('http://localhost/frontend/web/index.php', 301);
     } elseif (Yii::$app->user->can('engineer')) {
-        Yii::$app->getResponse()->redirect('http://localhost/Capstone3D/3dConstruction/frontend/web/index.php', 301);
+        Yii::$app->getResponse()->redirect('http://localhost/frontend/web/index.php', 301);
     }
     else {
         $menuItems[] = ['label' => '个人管理', 'url' => ['/site/manage-self']];
@@ -81,13 +82,13 @@ AppAsset::register($this);
     </div>
 </div>
 
-<footer class="footer">
-    <div class="container">
-        <p class="pull-left">&copy; My Company <?= date('Y') ?></p>
-
-        <p class="pull-right"><?= Yii::powered() ?></p>
-    </div>
-</footer>
+<!--<footer class="footer">-->
+<!--    <div class="container">-->
+<!--        <p class="pull-left">&copy; My Company --><?//= date('Y') ?><!--</p>-->
+<!---->
+<!--        <p class="pull-right">--><?//= Yii::powered() ?><!--</p>-->
+<!--    </div>-->
+<!--</footer>-->
 
 <?php $this->endBody() ?>
 </body>
