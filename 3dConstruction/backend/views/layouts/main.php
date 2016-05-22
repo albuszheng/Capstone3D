@@ -41,9 +41,9 @@ AppAsset::register($this);
     if (Yii::$app->user->isGuest) {
         $menuItems[] = ['label' => '登录', 'url' => ['/site/login']];
     } elseif (Yii::$app->user->can('user')) {
-        Yii::$app->getResponse()->redirect('http://localhost/Capstone3D/3dConstruction/frontend/web/index.php', 301);
+        Yii::$app->getResponse()->redirect('http://localhost/frontend/web/index.php', 301);
     } elseif (Yii::$app->user->can('engineer')) {
-        Yii::$app->getResponse()->redirect('http://localhost/Capstone3D/3dConstruction/frontend/web/index.php', 301);
+        Yii::$app->getResponse()->redirect('http://localhost/frontend/web/index.php', 301);
     }
     else {
         $menuItems[] = ['label' => '个人管理', 'url' => ['/site/manage-self']];
