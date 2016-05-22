@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>用户首页</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css"/>
+  <link rel="stylesheet" href="css/screen.css" type="text/css"/>
+  <link rel="stylesheet" href="css/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/template.css">
+  <script type="text/javascript" src="js/jquery-2.2.4.min.js"></script>
+  <script type="text/javascript" src="js/bootstrap.js"></script>
+</head>
+<body>
+  
+  <div class="modal fade template-canvas" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content canvas">
+        //put your canvas in here
+      </div>
+    </div>
+  </div>
+  
+  <div class="container">
+    <h2 class="title">模版管理</h2>
+    <div class="template-list">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <td>#</td>
+            <td>模版名称</td>
+            <td>尺寸</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>01</td>
+            <td><button class="btn btn-link template-name" id="01" data-toggle="modal" data-target=".template-canvas">两室一厅</button></td>
+            <td>20 X 20</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  
+</body>
+</html>
