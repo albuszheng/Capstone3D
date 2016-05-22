@@ -1,7 +1,6 @@
 <?php
 
 /* @var $this yii\web\View */
-/* @var $floor integer */
 
 use yii\helpers\Html;
 use frontend\assets\ThreeAsset;
@@ -16,112 +15,156 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <p>总览场景</p>
 
-    <div id="canvas">
+
+    <div id="canvas3d" style="display: block">
     </div>
 
 </div>
 
 <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
 <script type="text/javascript" src="js/three.js"></script>
-<script type="text/javascript" src="js/SceneLoad.js"></script>
-<!--<script type="text/javascript" src="js/TrackballControls.js"></script>-->
 
 <script type="text/javascript">
-    var width = $('#canvas').width();
-    var height = $('#canvas').height();
-    var canvas = document.getElementById('canvas');
+    var width = $('#canvas3d').width();
+    var height = $('#canvas3d').height();
+    var canvas = document.getElementById('canvas3d');
 
     // 加载场景
     function load() {
-        var mouse = new THREE.Vector2(), INTERSECTED;
+        var isShiftDown = false;
+        var objects = [];
+        var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
+        camera.position.set(300, 700, 1400);
+        camera.lookAt(new THREE.Vector3());
 
         var scene = new THREE.Scene();
-        var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-        camera.position.set( 5, 6, 15 );
-        camera.lookAt( new THREE.Vector3(0, 3, 0) );
 
-        var renderer = new THREE.WebGLRenderer();
-        renderer.setClearColor(new THREE.Color(0xffffff, 1.0));
-        renderer.setSize(width, height);
+        // roll-over helpers
+        var rollOverGeo = new THREE.BoxGeometry(50, 50, 50);
+        var rollOverMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, opacity: 0.5, transparent: true});
+        var rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
+        scene.add(rollOverMesh);
 
-//        var controls = new THREE.TrackballControls(camera);
-//        controls.rotateSpeed = 1.0;
-//        controls.zoomSpeed = 1.2;
-//        controls.panSpeed = 0.8;
-//        controls.noZoom = false;
-//        controls.noPan = false;
-//        controls.staticMoving = true;
-//        controls.dynamicDampingFactor = 0.3;
+        // cubes
+        var cubeGeo = new THREE.BoxGeometry(50, 50, 50);
+        var cubeMaterial = new THREE.MeshLambertMaterial({
+            color: 0xfeb74c,
+            map: new THREE.TextureLoader().load("model/images/wall/square-outline-textured.png")
+        });
 
-        var ambientLight = new THREE.AmbientLight( 0xffffff );
-        scene.add( ambientLight );
-        var directionalLight = new THREE.DirectionalLight( 0xffffff );
-        directionalLight.position.set( 0, 0, 0 ).normalize();
-        scene.add( directionalLight );
+        // grid
+        var size = 500, step = 100;
+        var geometry = new THREE.Geometry();
+        for (var i = -size; i <= size; i += step) {
 
-        var raycaster = new THREE.Raycaster();
+            geometry.vertices.push(new THREE.Vector3(-size, 0, i));
+            geometry.vertices.push(new THREE.Vector3(size, 0, i));
 
-        var texture = new THREE.TextureLoader().load( "model/images/wall/2.jpg" );
+            geometry.vertices.push(new THREE.Vector3(i, 0, -size));
+            geometry.vertices.push(new THREE.Vector3(i, 0, size));
 
-        for (var i = 1; i <= <?= $floor?>; i++) {
-            addMesh(i, new THREE.Vector3(0,i*0.8-0.8,0));
         }
 
-        canvas.innerHTML="";
+        var material = new THREE.LineBasicMaterial({color: 0x000000, opacity: 0.2, transparent: true});
+        var line = new THREE.LineSegments(geometry, material);
+        scene.add(line);
+
+        var raycaster = new THREE.Raycaster();
+        var mouse = new THREE.Vector2();
+
+        var geometry = new THREE.PlaneBufferGeometry(1000, 1000);
+        geometry.rotateX(-Math.PI / 2);
+
+        var plane = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({visible: false}));
+        scene.add(plane);
+        objects.push(plane);
+
+        // Lights
+        var ambientLight = new THREE.AmbientLight(0x606060);
+        scene.add(ambientLight);
+
+        var directionalLight = new THREE.DirectionalLight(0xffffff);
+        directionalLight.position.set(1, 0.75, 0.5).normalize();
+        scene.add(directionalLight);
+
+        var renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setClearColor(0xf0f0f0);
+        renderer.setSize(width, height);
         canvas.appendChild(renderer.domElement);
-        renderer.domElement.addEventListener( 'mousemove', onMouseMove, false );
-        renderer.domElement.addEventListener( 'mousedown', onMouseDown, false );
+
+        document.addEventListener('mousemove', onDocumentMouseMove, false);
+        document.addEventListener('mousedown', onDocumentMouseDown, false);
+        document.addEventListener('keydown', onDocumentKeyDown, false);
+        document.addEventListener('keyup', onDocumentKeyUp, false);
 
         render();
 
-        function render() {
-//            controls.update();
-            requestAnimationFrame(render);
-
-            renderer.render(scene, camera);
-        }
-
-        function onMouseMove( event ) {
+        function onDocumentMouseMove(event) {
             event.preventDefault();
-            mouse.x = ( (event.pageX - event.currentTarget.offsetLeft) / width ) * 2 - 1;
-            mouse.y = - ( (event.pageY - event.currentTarget.offsetTop) / height ) * 2 + 1;
+            mouse.x = ( (event.pageX - event.target.offsetLeft) / width ) * 2 - 1;
+            mouse.y = - ( (event.pageY - event.target.offsetTop) / height ) * 2 + 1;
 
-            raycaster.setFromCamera( mouse, camera );
-            var intersects = raycaster.intersectObjects( scene.children );
-            if ( intersects.length > 0 ) {
-                if ( INTERSECTED !== intersects[ 0 ].object ) {
-                    if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
-                    INTERSECTED = intersects[ 0 ].object;
-                    INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
-                    INTERSECTED.material.emissive.setHex( 0x00ff00 );
-                }
-            } else {
-                if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
-                INTERSECTED = null;
+            raycaster.setFromCamera(mouse, camera);
+            var intersects = raycaster.intersectObjects(objects);
+
+            if (intersects.length > 0) {
+                var intersect = intersects[0];
+                rollOverMesh.position.copy(intersect.point).add(intersect.face.normal);
+                rollOverMesh.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
             }
 
             render();
         }
 
-        function onMouseDown(event) {
+        function onDocumentMouseDown(event) {
             event.preventDefault();
-            if (INTERSECTED !== null) {
-                window.location.href = 'index.php?r=site/view-floor&floor_id='+INTERSECTED.floorid;
+            mouse.x = ( (event.pageX - event.target.offsetLeft) / width ) * 2 - 1;
+            mouse.y = - ( (event.pageY - event.target.offsetTop) / height ) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            var intersects = raycaster.intersectObjects(objects);
+
+            if (intersects.length > 0) {
+                var intersect = intersects[0];
+
+                // delete cube
+                if (isShiftDown) {
+                    if (intersect.object != plane) {
+                        scene.remove(intersect.object);
+                        objects.splice(objects.indexOf(intersect.object), 1);
+                    }
+
+                // create cube
+                } else {
+                    var voxel = new THREE.Mesh(cubeGeo, cubeMaterial);
+                    voxel.position.copy(intersect.point).add(intersect.face.normal);
+                    voxel.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+                    scene.add(voxel);
+                    objects.push(voxel);
+                }
+                render();
+
             }
         }
 
-        function addMesh(id, position) {
-            var position = position || new THREE.Vector3();
-            var geometry = new THREE.BoxGeometry(5,0.8,5);
-            var material = new THREE.MeshLambertMaterial( { color: 0xfeb74c, map: texture } );
-            var mesh = new THREE.Mesh(geometry, material);
-            mesh.floorid = id;
-            mesh.material.map.wrapS = THREE.RepeatWrapping;
-            mesh.material.map.wrapT = THREE.RepeatWrapping;
-            mesh.material.map.repeat.set(5, 1);
-            mesh.position.copy(position);
-            scene.add(mesh);
+        function onDocumentKeyDown(event) {
+            switch (event.keyCode) {
+                case 16:
+                    isShiftDown = true;
+                    break;
+            }
+        }
 
+        function onDocumentKeyUp(event) {
+            switch (event.keyCode) {
+                case 16:
+                    isShiftDown = false;
+                    break;
+            }
+        }
+
+        function render() {
+            renderer.render(scene, camera);
         }
     }
 

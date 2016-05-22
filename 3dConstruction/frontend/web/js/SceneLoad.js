@@ -568,65 +568,193 @@ SceneLoad.prototype = {
         return stage;
     },
 
-    loadfloor: function (floor_id, data, width, height, canvas, canEdit) {
-        var step = Math.min(width/data.width, height/data.height);
+    loadfloor: function (data, step, width, height, canvas, canEdit) {
+        var rooms = data.rooms;
+        var modules = data.modules;
+        var isEdit = false;
+        var selected = undefined;
 
-        var renderer = PIXI.autoDetectRenderer(step * data.width, step * data.height, {'transparent': true});
         canvas.innerHTML="";
+        var renderer = PIXI.autoDetectRenderer(step * width, step * height, {'transparent': true});
+        var stage = new PIXI.Container();
+
+        var linegraph = new PIXI.Graphics();
+        stage.addChildAt(linegraph, 0);
+        createLine();
+
+        var group = new PIXI.Container();
+        stage.addChildAt(group, 1);
+
+        if (canEdit) {
+            // 保存
+            var save = document.createElement('button');
+            save.addEventListener('click', function(){
+                viewMode();
+                saveFloor();
+            });
+            var saveText = document.createTextNode('保存');
+            save.appendChild(saveText);
+            canvas.appendChild(save);
+
+            // 编辑
+            var edit = document.createElement('button');
+            edit.addEventListener('click', function(){
+                editMode();
+            });
+            var editText = document.createTextNode('编辑');
+            edit.appendChild(editText);
+            canvas.appendChild(edit);
+
+            // 删除
+            var deleteButton = document.createElement('button');
+            deleteButton.addEventListener('click', function(){
+                if (isEdit) {
+                    if (selected !== undefined) {
+                        group.removeChild(selected);
+                    }
+                } else {
+                    alert('当前非编辑模式');
+                }
+            });
+            var deleteText = document.createTextNode('删除');
+            deleteButton.appendChild(deleteText);
+            canvas.appendChild(deleteButton);
+
+            // 更改房间号
+            var change = document.createElement('button');
+            change.addEventListener('click', function(){
+                if (isEdit) {
+                    if (selected !== undefined) {
+                        var roomText = selected.getChildAt(1);
+                        var room_no = prompt("请输入房间号:", roomText.text);
+                        if (room_no != null){
+                            roomText.text = room_no;
+                        }
+                    }
+                } else {
+                    alert('当前非编辑模式');
+                }
+            });
+            var changeText = document.createTextNode('更改房间号');
+            change.appendChild(changeText);
+            canvas.appendChild(change);
+
+            $.each(modules, function (index, object) {
+                var module = document.createElement('button');
+                module.addEventListener('click', function(){
+                    if (isEdit) {
+                        var room_no = prompt("请输入房间号:","101");
+                        if (room_no != null){
+                            var size = object.size.split(',');
+                            var room = createRoom(size, [width/2,height/2], room_no);
+                            room
+                                .on('mousedown', onDragStart)
+                                .on('mouseup', onDragEnd)
+                                .on('mouseupoutside', onDragEnd)
+                                .on('mousemove', onDragMove);
+                            selectMode(room);
+                        }
+                    } else {
+                        alert('当前非编辑模式');
+                    }
+
+                });
+                var moduleText = document.createTextNode(object.name);
+                module.appendChild(moduleText);
+                canvas.appendChild(module);
+
+            });
+        }
+
         canvas.appendChild(renderer.view);
         canvas.style.border = "none";
         renderer.view.style.border = "1px solid gray";
 
-        var stage = new PIXI.Container();
-
-        var graphics = new PIXI.Graphics();
-        stage.addChild(graphics);
-
-        var group = new PIXI.Container();
-        stage.addChild(group);
-
         animate();
-        load(data);
+        load(rooms);
 
         function animate() {
             requestAnimationFrame(animate);
             renderer.render(stage);
         }
 
+        // 网格线
+        function createLine() {
+            var step_10 = step * 10;
+            linegraph.lineStyle(1, 0x000, 1);
+            for (var i = step_10; i < width*step; i+=step_10) {
+                linegraph.moveTo(i, 0);
+                linegraph.lineTo(i, height*step);
+            }
+
+            for (var i = step_10; i < height*step; i+=step_10) {
+                linegraph.moveTo(0, i);
+                linegraph.lineTo(width*step, i);
+            }
+            linegraph.visible = false;
+        }
+
         // 加载楼层场景
-        function load(data) {
+        function load(rooms) {
             group.removeChildren(0, group.children.length);
 
-            $.each(data.room, function (index, object) {
-                var size = [object.size[0] * step, object.size[1] * step];
-                var position = [object.position[0] * step, object.position[1] * step];
-                createRoom(floor_id+object.id, position, size);
+            $.each(rooms, function (index, object) {
+                var size = object.size.split(',');
+                var position = object.position.split(',');
+                var room = createRoom(size, position, object.room_no);
+                room.id = object.id;
+                room
+                    .on('mouseover', onMouseOver)
+                    .on('mouseout', onMouseOut)
+                    .on('click', onMouseClick);
 
             });
         }
 
-        // 创建房间
-        function createRoom(id, position, size) {
-            var room = new PIXI.Text(id, {});
-            room.position.set(position[0], position[1]);
-            room._width = size[0];
-            room._height = size[1];
-            room.id = id;
+        // TODO
+        // 保存楼层场景
+        function saveFloor() {
+            console.log(group.children);
+            var exporter = new SceneExport();
+            //var sceneJSON = exporter.parse(floor, walls, group, step);
+
+            $.ajax({
+                type: 'post',
+                data: {data: 'aaa'},
+                url: 'index.php?r=/site/update-floor',
+                async: false,
+                success: function (data) {
+                    console.log(data.result);
+
+                },
+
+                error: function (xhr) {
+                    console.log(xhr.responseText);
+                }
+
+            });
+        }
+
+        function createRoom(size, position, room_no) {
+            var room = new PIXI.Container();
+            room.position.set(position[0]*step, position[1]*step);
+            room._width = size[0]*step;
+            room._height = size[1]*step;
             room.interactive = true;
             room.buttonMode = true;
 
-            room
-                .on('mouseover', onMouseOver)
-                .on('mouseout', onMouseOut)
-                .on('click', onMouseClick);
+            var graphics = new PIXI.Graphics();
+            //graphics.lineStyle(2, 0x0000FF, 1);
+            graphics.beginFill(0xFFFF0B, 0.5);
+            graphics.drawRect(0, 0, size[0]*step, size[1]*step);
+            graphics.endFill();
+            room.addChildAt(graphics, 0);
+
+            var roomText = new PIXI.Text(room_no, {});
+            room.addChildAt(roomText, 1);
 
             group.addChild(room);
-
-            graphics.lineStyle(2, 0x0000FF, 1);
-            graphics.beginFill(0xFFFF0B, 0.5);
-            graphics.drawRect(position[0], position[1], size[0], size[1]);
-            graphics.endFill();
-
+            return room;
         }
 
         function onMouseOver() {
@@ -634,12 +762,12 @@ SceneLoad.prototype = {
                 font : 'bold italic 35px Arial',
                 fill : '#4cae4c'
             };
-            this.style = new_style;
+            this.getChildAt(1).style = new_style;
 
         }
 
         function onMouseOut() {
-            this.style = {};
+            this.getChildAt(1).style = {};
         }
 
         function onMouseClick() {
@@ -648,6 +776,84 @@ SceneLoad.prototype = {
             } else {
                 window.location.href = 'index.php?r=site/view-room&room_id='+this.id;
             }
+        }
+
+        // 开始模型拖动事件
+        function onDragStart(event) {
+            selectMode(this, event.target.type);
+            this.data = event.data;
+            this.dragging = true;
+        }
+
+        // 结束模型拖动事件
+        function onDragEnd() {
+            this.dragging = false;
+            this.data = null;
+
+            var bounds = new PIXI.Rectangle(0, 0, width*step, height*step);
+            if (isOut(selected.getBounds(), bounds)) {
+                selected.position.set(width * step / 2, height * step / 2);
+            }
+        }
+
+        // 模型拖动事件
+        function onDragMove() {
+            if (this.dragging) {
+                var newPosition = this.data.getLocalPosition(this.parent);
+                this.position.x = newPosition.x;
+                this.position.y = newPosition.y;
+            }
+        }
+
+        // 判断模型是否超出边界
+        function isOut(model, bounds) {
+            if (model.x < bounds.x || model.x + model.width > bounds.x + bounds.width) {
+                return true;
+            }
+
+            if (model.y < bounds.y || model.y + model.height > bounds.y + bounds.height) {
+                return true;
+            }
+            return false;
+        }
+
+        // 选中模型
+        function selectMode(model) {
+            if (selected !== undefined) {
+                selected.alpha = 1;
+
+            }
+            selected = model;
+            selected.alpha = 0.5;
+        }
+
+        function editMode() {
+            isEdit = true;
+            linegraph.visible = true;
+            $.each(group.children, function (index, object) {
+                object.removeAllListeners();
+                object
+                    .on('mousedown', onDragStart)
+                    .on('mouseup', onDragEnd)
+                    .on('mouseupoutside', onDragEnd)
+                    .on('mousemove', onDragMove);
+            });
+        }
+
+        function viewMode() {
+            isEdit = false;
+            linegraph.visible = false;
+            if (selected !== undefined) {
+                selected.alpha = 1;
+                selected = undefined;
+            }
+            $.each(group.children, function (index, object) {
+                object.removeAllListeners();
+                object
+                    .on('mouseover', onMouseOver)
+                    .on('mouseout', onMouseOut)
+                    .on('click', onMouseClick);
+            });
         }
 
         return stage;

@@ -53,14 +53,15 @@ AppAsset::register($this);
     }
     else {
         $menuItems[] = ['label' => '个人管理', 'url' => ['/site/manage-self']];
-        $menuItems[] = ['label' => '查看场景', 'url' => ['/site/overview']];
+        $menuItems[] = ['label' => 'test', 'url' => ['/site/overview']];
+        $menuItems[] = ['label' => '查看场景', 'url' => ['/site/view-building']];
 
         if (Yii::$app->user->can('user')) {
             $menuItems[] = ['label' => '我的房间', 'url' => ['/site/view-room']];
             $menuItems[] = ['label' => '订单列表', 'url' => ['/site/view-order']];
             $menuItems[] = ['label' => '客房服务', 'url' => ['/site/room-service']];
         } else if (Yii::$app->user->can('engineer')) {
-            $menuItems[] = ['label' => '模型管理', 'url' => ['/site/manage-model']];
+            $menuItems[] = ['label' => '模板管理', 'url' => ['/site/manage-module']];
         }
 
 

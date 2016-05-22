@@ -3,11 +3,17 @@ namespace common\models;
 
 use Yii;
 use yii\db\ActiveRecord;
+use yii\db\Query;
 
 /**
  * Model room
  *
  * @property integer $id
+ * @property integer $room_no
+ * @property integer $floor_no
+ * @property integer $building_id
+ * @property string $size
+ * @property string $position
  * @property integer $user_id
  * @property string $data
  * @property integer $last_modify_id
@@ -27,7 +33,8 @@ class Room extends ActiveRecord
     {
         return [
             ['id', 'unique'],
-            [['id', 'user_id'], 'integer'],
+            [['id', 'room_no', 'floor_no', 'building_id', 'user_id'], 'integer'],
+            [['id', 'room_no'], 'required'],
         ];
     }
 
@@ -113,5 +120,16 @@ class Room extends ActiveRecord
     public static function isRegisteredRoom($id) {
         $room = self::findById($id);
         return isset($room->user_id);
+    }
+
+    /**
+     * Find rooms by floor
+     *
+     * @param $building_id
+     * @param $floor_no
+     * @return static[]
+     */
+    public static function findRoomsByFloor($building_id, $floor_no) {
+        return static::findAll(['building_id' => $building_id, 'floor_no' => $floor_no]);
     }
 }

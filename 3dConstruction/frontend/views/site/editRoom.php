@@ -1,18 +1,17 @@
 <?php
 
 /* @var $this yii\web\View */
-/* @var $data string */
-/* @var $floor_id integer */
-/* @var $room_id integer */
+/* @var $room \common\models\Room */
 
 use yii\helpers\Html;
 use frontend\assets\ThreeAsset;
 
 ThreeAsset::register($this);
 
-$this->title = 'Edit Room'.$room_id;
-$this->params['breadcrumbs'][] = ['label' => 'Overview', 'url' => ['overview']];
-$this->params['breadcrumbs'][] = ['label' => 'View Floor'.$floor_id, 'url' => ['view-floor', 'floor_id'=>$floor_id]];
+$this->title = 'Edit Room'.$room->room_no;
+//$this->params['breadcrumbs'][] = ['label' => 'Overview', 'url' => ['overview']];
+$this->params['breadcrumbs'][] = ['label' => 'View Building', 'url' => ['view-building', 'id'=>$room->building_id]];
+$this->params['breadcrumbs'][] = ['label' => 'View Floor'.$room->floor_no, 'url' => ['view-floor', 'floor'=>$room->floor_no, 'id'=>$room->building_id]];
 $this->params['breadcrumbs'][] = $this->title;
 
 ?>
@@ -96,9 +95,9 @@ $this->params['breadcrumbs'][] = $this->title;
     var isEdit = false;
 
     function start() {
-        if (<?php echo $room_id ?> !== null) {
-            if (<?php echo $data ?> !== null) {
-                data = <?php echo $data ?>;
+        if (<?= $room->id ?> !== null) {
+            if (<?= $room->data ?> !== null) {
+                data = <?php echo $room->data ?>;
             }
 
             // 获取所有模型信息
@@ -167,7 +166,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
         $.ajax({
             type:'post',
-            data:{id:<?php echo $room_id ?>, data:JSON.stringify(sceneJSON)},
+            data:{id:<?= $room->id ?>, data:JSON.stringify(sceneJSON)},
             url:'<?php echo Yii::$app->getUrlManager()->createUrl('/site/update-room') ?>',
             async : false,
             success:function(data) {
@@ -327,6 +326,9 @@ $this->params['breadcrumbs'][] = $this->title;
     var wallid;
     function addWall(id) {
         $("#canvas2d").unbind('mousedown', dragStart);
+        $.each(walls.children, function (index, object) {
+            object.interactive = false;
+        });
 
         if (!isEdit) {
             console.log("当前非编辑模式");
@@ -370,6 +372,10 @@ $this->params['breadcrumbs'][] = $this->title;
             size = [Math.abs(x - mouseX), 0.1 * step];
             position = [(x + mouseX) / 2, y];
         }
+
+        $.each(walls.children, function (index, object) {
+            object.interactive = true;
+        });
 
         var wall = createWall(wallid, position, rotation, size);
         selectMode(wall, CONST.TYPE.WALL);

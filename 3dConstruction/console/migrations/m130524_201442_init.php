@@ -84,17 +84,97 @@ class m130524_201442_init extends Migration
             ['9', '1,0.5', '0.02,0.02,0.02', 'drawer.png', 'drawer.dae', '4'],
             ['10', '4,1', '0.04,0.04,0.04', 'TV.png', 'TV.dae', '4'],
             ['11', '3,3', '0.04,0.04,0.04', 'table.png', 'table.dae', '4'],
-            ['12', '4,1.5', '0.04,0.04,0.04', 'sofa.png', 'sofa.dae', '4']
+            ['12', '4,1.5', '0.04,0.04,0.04', 'sofa.png', 'sofa.dae', '4'],
+            ['13', '0.2,0.3,0.1', '0.05,0.05,0.05', 'sensor.png', 'sensor.dae', '5']
         ]);
+
+        // table module
+        $this->createTable('{{%module}}', [
+            'id' => $this->primaryKey(),
+            'name' => $this->string(),
+            'size' => $this->string(),
+            'data' => $this->text(),
+        ], $tableOptions);
+
+        // table building
+        $this->createTable('{{%building}}', [
+            'id' => $this->primaryKey(),
+            'building_no' => $this->integer(),
+            'floor' => $this->integer(),
+            'x_axis' => $this->integer(),
+            'y_axis' => $this->integer(),
+            'width' => $this->integer(),
+            'height' => $this->integer(),
+        ], $tableOptions);
+
+     /*   // table floor
+        $this->createTable('{{%floor}}', [
+            'id' => $this->primaryKey(),
+            'floor_no' => $this->integer(),
+            'building_id' => $this->integer(),
+            'data' => $this->text(),
+            'last_modify_id' => $this->integer(),
+            'last_modify_time' => $this->string(),
+        ], $tableOptions);
+
+        $this->createIndex(
+            'idx-floor-building_id',
+            'floor',
+            'building_id'
+        );
+
+        $this->addForeignKey(
+            'fk-floor-building_id',
+            'floor',
+            'building_id',
+            'building',
+            'id',
+            'SET NULL'
+        );
+
+        $this->createIndex(
+            'idx-floor-last_modify_id',
+            'floor',
+            'last_modify_id'
+        );
+
+        $this->addForeignKey(
+            'fk-floor-last_modify_id',
+            'floor',
+            'last_modify_id',
+            'user',
+            'id',
+            'SET NULL'
+        );*/
 
         // table room
         $this->createTable('{{%room}}', [
             'id' => $this->primaryKey(),
+            'room_no' => $this->integer(),
+            'floor_no' => $this->integer(),
+            'building_id' => $this->integer(),
+            'size' => $this->string(),
+            'position' => $this->string(),
             'user_id' => $this->integer(),
             'data' => $this->text(),
             'last_modify_id' => $this->integer(),
             'last_modify_time' => $this->string(),
         ], $tableOptions);
+
+        $this->createIndex(
+            'idx-room-building_id',
+            'room',
+            'building_id'
+        );
+
+        $this->addForeignKey(
+            'fk-room-building_id',
+            'room',
+            'building_id',
+            'building',
+            'id',
+            'SET NULL'
+        );
 
         $this->createIndex(
             'idx-room-user_id',
@@ -125,15 +205,6 @@ class m130524_201442_init extends Migration
             'id',
             'SET NULL'
         );
-
-        // 9 floors, 14 rooms for each floor
-        for ($i = 1; $i < 10; $i++) {
-            for ($j = 1; $j < 15; $j++) {
-                $this->insert('{{%room}}', [
-                    'id' => $i*100+$j,
-                ]);
-            }
-        }
 
         // table goods
         $this->createTable('{{%goods}}', [
@@ -295,21 +366,10 @@ class m130524_201442_init extends Migration
             'SET NULL'
         );
 
-        $this->createTable('{{%config}}', [
-            'floor' => $this->integer(),
-        ], $tableOptions);
-
-        $this->insert('{{%config}}', [
-            'floor' => '9',
-        ]);
-
     }
 
     public function down()
     {
-        $this->truncateTable('{{%config}}');
-        $this->dropTable('{{%config}}');
-
         $this->dropForeignKey('fk-auth_log-operator_id', 'auth_log');
         $this->dropIndex('idx-auth_log-operator_id', 'auth_log');
         $this->dropForeignKey('fk-auth_log-user_id', 'auth_log');
@@ -336,11 +396,25 @@ class m130524_201442_init extends Migration
         $this->truncateTable('{{%goods}}');
         $this->dropTable('{{%goods}}');
 
-        $this->dropForeignKey('fk-room-user_id', 'room');
-        $this->dropIndex('idx-room-user_id', 'room');
         $this->dropForeignKey('fk-room-last_modify_id', 'room');
         $this->dropIndex('idx-room-last_modify_id', 'room');
+        $this->dropForeignKey('fk-room-user_id', 'room');
+        $this->dropIndex('idx-room-user_id', 'room');
+        $this->dropForeignKey('fk-room-building_id', 'room');
+        $this->dropIndex('idx-room-building_id', 'room');
         $this->dropTable('{{%room}}');
+
+//        $this->dropForeignKey('fk-floor-building_id', 'floor');
+//        $this->dropIndex('idx-floor-building_id', 'floor');
+//        $this->dropForeignKey('fk-floor-last_modify_id', 'floor');
+//        $this->dropIndex('idx-floor-last_modify_id', 'floor');
+//        $this->dropTable('{{%floor}}');
+
+        $this->truncateTable('{{%building}}');
+        $this->dropTable('{{%building}}');
+
+        $this->truncateTable('{{%module}}');
+        $this->dropTable('{{%module}}');
 
         $this->truncateTable('{{%model}}');
         $this->dropTable('{{%model}}');

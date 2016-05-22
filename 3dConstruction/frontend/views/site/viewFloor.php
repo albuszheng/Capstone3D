@@ -1,16 +1,17 @@
 <?php
 
 /* @var $this yii\web\View */
-/* @var $floor_id integer */
-/* @var $canEdit integer */
+/* @var $building \common\models\Building */
+/* @var $floor_no integer */
+/* @var $canEdit boolean */
 
 use yii\helpers\Html;
 use frontend\assets\ThreeAsset;
 
 ThreeAsset::register($this);
 
-$this->title = 'View Floor'.$floor_id;
-$this->params['breadcrumbs'][] = ['label' => 'Overview', 'url' => ['overview']];
+$this->title = 'View Floor'.$floor_no;
+$this->params['breadcrumbs'][] = ['label' => 'View Building'.$building->building_no, 'url' => ['view-building', 'id'=>$building->id]];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="site-view-floor">
@@ -34,9 +35,25 @@ $this->params['breadcrumbs'][] = $this->title;
 
     // 加载场景
     function load() {
-        $.getJSON('scene/floor.json', function(result) {
-            var loader = new SceneLoad();
-            loader.loadfloor(<?= $floor_id?>, result, width, height, canvas, <?= $canEdit?>);
+        $.ajax({
+            type:'post',
+            data:{floor_no:<?= $floor_no ?>, building_id:<?= $building->id ?>},
+            url:'<?php echo Yii::$app->getUrlManager()->createUrl('/site/get-floor-data') ?>',
+            success:function(data) {
+                var step = Math.min(width/<?= $building->width ?>, height/<?= $building->height ?>);
+                var loader = new SceneLoad();
+                loader.loadfloor(data, step, <?= $building->width ?>, <?= $building->height ?>, canvas, <?php
+                    if($canEdit) {
+                        echo 1;
+                    } else {
+                        echo 0;
+                    } ?>);
+            },
+
+            error:function(xhr) {
+                console.log(xhr.responseText);
+            }
+
         });
     }
 

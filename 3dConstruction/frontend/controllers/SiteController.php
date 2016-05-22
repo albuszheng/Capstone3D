@@ -1,8 +1,10 @@
 <?php
 namespace frontend\controllers;
 
+use common\models\Building;
 use common\models\Config;
 use common\models\Goods;
+use common\models\Module;
 use common\models\Order;
 use common\models\OrderDetail;
 use common\models\OrderForm;
@@ -190,19 +192,33 @@ class SiteController extends Controller
     }
 
     /**
-     * Display floor page.
+     * Display overview page.
      *
      * @return mixed
      */
     public function actionOverview()
     {
-        if (Yii::$app->user->can('viewFloor')) {
-            $floor = Config::getFloor()->floor;
-            $canEdit = Yii::$app->user->can('editRoom');
+//        if (Yii::$app->user->can('viewFloor')) {
+//            $floor = Config::getFloor()->floor;
+//            $canEdit = Yii::$app->user->can('editRoom');
+//
+            return $this->render('overview');
+//        }
+    }
 
-            return $this->render('overview', [
-                'floor' => $floor,
-                'canEdit' => $canEdit,
+    /**
+     * Display building page.
+     *
+     * @return mixed
+     */
+    public function actionViewBuilding()
+    {
+        if (Yii::$app->user->can('viewFloor')) {
+            $building_id = isset(Yii::$app->request->get()['id']) ? Yii::$app->request->get()['id'] : 1;
+            $building = Building::findById($building_id);
+
+            return $this->render('viewBuilding', [
+                'building' => $building,
             ]);
         }
     }
@@ -215,8 +231,10 @@ class SiteController extends Controller
     public function actionViewFloor()
     {
         if (Yii::$app->user->can('viewFloor')) {
-            $floor_id = isset(Yii::$app->request->get()['floor_id']) ? Yii::$app->request->get()['floor_id'] : 1;
+            $floor_no = isset(Yii::$app->request->get()['floor']) ? Yii::$app->request->get()['floor'] : 1;
+            $building = Building::findById(Yii::$app->request->get()['id']);
             $canEdit = Yii::$app->user->can('editRoom');
+
 //            $floor = Floor::findById($floor_id);
 //            $data = 'null';
 //
@@ -226,10 +244,35 @@ class SiteController extends Controller
 //                Yii::$app->session->setFlash('error', 'no floor data');
 //            }
             return $this->render('viewFloor', [
-                'floor_id' => $floor_id,
+                'building' => $building,
+                'floor_no' => $floor_no,
                 'canEdit' => $canEdit,
 //                'data' => $data,
             ]);
+        }
+    }
+
+    public function actionGetFloorData() {
+        if (Yii::$app->user->can('viewFloor')) {
+            if (Yii::$app->request->isAjax) {
+                $data = Yii::$app->request->post();
+                $floor_no = $data['floor_no'];
+                $building_id = $data['building_id'];
+                $rooms = Room::findRoomsByFloor($building_id, $floor_no);
+                $modules = Module::findAllModules();
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ['rooms' => $rooms, 'modules' => $modules];
+            }
+        }
+    }
+
+    public function actionUpdateFloor() {
+        if (Yii::$app->request->isAjax) {
+            $data = Yii::$app->request->post();
+            $rooms = $data['data'];
+            Yii::$app->session->setFlash('error', $rooms);
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['result' => 'true'];
         }
     }
 
@@ -244,28 +287,22 @@ class SiteController extends Controller
             $room_id = Yii::$app->request->get()['room_id'];
         } else {
             $room = Room::findByUserId(Yii::$app->getUser()->id);
-            $room_id = isset($room) ? $room->id : 101;
+            if (isset($room)) {
+                $room_id = $room->id;
+            } else {
+                Yii::$app->session->setFlash('error', 'no room');
+                return $this->goBack();
+            }
         }
 
         if (Yii::$app->user->can('viewRoom') || Yii::$app->user->can('viewOwnRoom', ['room_id' => $room_id])) {
             $room = Room::findById($room_id);
-            if ($room) {
-                $data = isset($room->data) ? $room->data : 'null';
-
-                return $this->render('viewRoom', [
-                    'floor_id' => (int)($room->id/100),
-                    'room_id' => $room->id,
-                    'data' => $data,
-                ]);
-            } else {
-                Yii::$app->session->setFlash('error', 'no room');
-                return $this->render('overview');
-            }
+            return $this->render('viewRoom', [
+               'room' => $room,
+            ]);
         } else {
             Yii::$app->session->setFlash('error', 'no authority');
-            return $this->render('viewFloor', [
-                'floor_id' => (int)($room_id/100),
-            ]);
+            return $this->goBack();
         }
 
     }
@@ -314,20 +351,15 @@ class SiteController extends Controller
     public function actionEditRoom()
     {
         if (Yii::$app->user->can('editRoom')) {
-            $room_id = isset(Yii::$app->request->get()['room_id']) ? Yii::$app->request->get()['room_id'] : 101;
-            $room = Room::findById($room_id);
-
-            if ($room) {
-                $data = isset($room->data) ? $room->data : 'null';
-
+            $room_id = Yii::$app->request->get()['room_id'];
+            if ($room_id) {
+                $room = Room::findById($room_id);
                 return $this->render('editRoom', [
-                    'data' => $data,
-                    'floor_id' => (int)($room->id/100),
-                    'room_id' => $room_id,
+                    'room' => $room,
                 ]);
             } else {
                 Yii::$app->session->setFlash('error', 'no room');
-                return $this->render('overview');
+                return $this->goBack();
             }
         }
 
@@ -342,6 +374,26 @@ class SiteController extends Controller
             $result = Room::updateRoom($room_id, $room_data);
             Yii::$app->response->format = Response::FORMAT_JSON;
             return ['result' => $result];
+        }
+    }
+
+    /**
+     * Manage module.
+     *
+     * @return mixed
+     */
+    public function actionManageModule()
+    {
+        if (Yii::$app->user->can('modelManagement')) {
+            $dataProvider = new ActiveDataProvider([
+                'query' => Module::find(),
+                'pagination' => [
+                    'pageSize' => 5,
+                ],
+            ]);
+            return $this->render('moduleManagement', [
+                'dataProvider' => $dataProvider,
+            ]);
         }
     }
 

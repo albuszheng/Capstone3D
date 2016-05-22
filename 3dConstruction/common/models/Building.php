@@ -5,36 +5,37 @@ use Yii;
 use yii\db\ActiveRecord;
 
 /**
- * Model floor
+ * Model building
  *
  * @property integer $id
- * @property integer $floor_no
- * @property integer $building_id
- * @property string $data
- * @property integer $last_modify_id
- * @property string $last_modify_time
+ * @property integer $building_no
+ * @property integer $floor
+ * @property integer $x_axis
+ * @property integer $y_axis
+ * @property integer $width
+ * @property integer $height
  */
-class Floor extends ActiveRecord
+class Building extends ActiveRecord
 {
     /**
      * @return string the name of the table associated with this ActiveRecord class.
      */
     public static function tableName()
     {
-        return '{{%floor}}';
+        return '{{%building}}';
     }
 
     public function rules()
     {
         return [
             ['id', 'unique'],
-            [['id', 'floor_no', 'building_id'], 'integer'],
-            [['id', 'floor_no'], 'required'],
+            [['id', 'building_no', 'floor', 'x_axis', 'y_axis', 'width', 'height'], 'integer'],
+            [['id', 'building_no', 'floor', 'x_axis', 'y_axis', 'width', 'height'], 'required'],
         ];
     }
 
     /**
-     * Finds floor by id
+     * Finds building by id
      *
      * @param string $id
      * @return static|null
