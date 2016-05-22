@@ -47,7 +47,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         echo 1;
                     } else {
                         echo 0;
-                    } ?>);
+                    } ?>, <?= $building->id ?>, <?= $floor_no ?>);
             },
 
             error:function(xhr) {

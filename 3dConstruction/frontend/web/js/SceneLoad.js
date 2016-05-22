@@ -568,7 +568,7 @@ SceneLoad.prototype = {
         return stage;
     },
 
-    loadfloor: function (data, step, width, height, canvas, canEdit) {
+    loadfloor: function (data, step, width, height, canvas, canEdit, building_id, floor_no) {
         var rooms = data.rooms;
         var modules = data.modules;
         var isEdit = false;
@@ -701,7 +701,7 @@ SceneLoad.prototype = {
             $.each(rooms, function (index, object) {
                 var size = object.size.split(',');
                 var position = object.position.split(',');
-                var room = createRoom(size, position, object.room_no);
+                var room = createRoom(size, position, object.room_no || 0);
                 room.id = object.id;
                 room
                     .on('mouseover', onMouseOver)
@@ -711,17 +711,15 @@ SceneLoad.prototype = {
             });
         }
 
-        // TODO
         // 保存楼层场景
         function saveFloor() {
-            console.log(group.children);
             var exporter = new SceneExport();
-            //var sceneJSON = exporter.parse(floor, walls, group, step);
+            var sceneJSON = exporter.parseFloor(group.children, width, height, step);
 
             $.ajax({
                 type: 'post',
-                data: {data: 'aaa'},
-                url: 'index.php?r=/site/update-floor',
+                data: {data: sceneJSON, id: building_id, floor: floor_no},
+                url: 'index.php?r=site/update-floor',
                 async: false,
                 success: function (data) {
                     console.log(data.result);
@@ -771,8 +769,9 @@ SceneLoad.prototype = {
         }
 
         function onMouseClick() {
+            var room_no = this.getChildAt(1).text;
             if (canEdit) {
-                window.location.href = 'index.php?r=site/edit-room&room_id='+this.id;
+                window.location.href = 'index.php?r=site/edit-room&room='+room_no+'&floor='+floor_no+'&building='+building_id;
             } else {
                 window.location.href = 'index.php?r=site/view-room&room_id='+this.id;
             }

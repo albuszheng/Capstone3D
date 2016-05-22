@@ -40,13 +40,15 @@ var CONST = {
      * @property {number} TYPE.DOOR
      * @property {number} TYPE.WINDOW
      * @property {number} TYPE.FURNITURE
+     * @property {number} TYPE.SENSOR
      */
     TYPE: {
         FLOOR:     0,
         WALL:      1,
         DOOR:      2,
         WINDOW:    3,
-        FURNITURE: 4
+        FURNITURE: 4,
+        SENSOR:    5
     }
 };
 
@@ -187,5 +189,56 @@ SceneExport.prototype = {
 
         return JSON.parse(output);
 
+    },
+
+    parseFloor: function ( group, width, height, scale ) {
+        var rooms = [];
+
+        for (var i = 0; i < group.length; i++) {
+            var room = group[i];
+            if (room instanceof PIXI.Container) {
+                rooms.push("\n" + RoomString(room));
+            }
+        }
+
+        /**
+         * 将房间转换String格式,方便保存为JSON
+         * @param room
+         * @returns {string}
+         * @constructor
+         */
+        function RoomString(room) {
+            var output = [
+                '       {',
+                '           "id": "' + room.id + '",',
+                '           "room_no": "' + room.getChildAt(1).text + '",',
+                '           "size": "' + Vector2String(room.width, room.height, scale) + '",',
+                '           "position": "' + Vector2String(room.position.x, room.position.y, scale) + '"',
+                '       }'
+            ].join( '\n' );
+
+            return output;
+        }
+
+        function Vector2String( x, y, sca ) {
+            var scale = sca || 1;
+            return x / scale + "," + y / scale;
+
+        }
+
+        var output = [
+            '{',
+            '   "version": "' + CONST.VERSION + '",',
+            '   "type": "floor",',
+            '   "width": ' + width + ',',
+            '   "height": ' + height + ',',
+            '   "room": [',
+            rooms,
+            '   ]',
+            '}'
+        ].join( '\n' );
+
+        //return JSON.parse(output);
+        return output;
     }
 }

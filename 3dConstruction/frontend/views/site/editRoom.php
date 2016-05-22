@@ -96,9 +96,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     function start() {
         if (<?= $room->id ?> !== null) {
-            if (<?= $room->data ?> !== null) {
-                data = <?php echo $room->data ?>;
-            }
+            data = <?= isset($room->data) ? $room->data : 'null' ?>;
 
             // 获取所有模型信息
             $.ajax({

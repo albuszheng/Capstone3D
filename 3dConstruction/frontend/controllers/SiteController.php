@@ -21,10 +21,12 @@ use frontend\models\SignupForm;
 use frontend\models\ContactForm;
 use yii\base\InvalidParamException;
 use yii\data\ActiveDataProvider;
+use yii\helpers\Json;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
+use yii\web\Request;
 use yii\web\Response;
 
 /**
@@ -269,10 +271,24 @@ class SiteController extends Controller
     public function actionUpdateFloor() {
         if (Yii::$app->request->isAjax) {
             $data = Yii::$app->request->post();
-            $rooms = $data['data'];
-            Yii::$app->session->setFlash('error', $rooms);
+
+            $rooms = Json::decode($data['data'], true)['room'];
+            for ($i=0; $i<count($rooms); $i++) {
+                $room = $rooms[$i];
+                if ($room['id'] == 'undefined') {
+                    $updateRoom = new Room();
+                    $updateRoom->room_no = $room['room_no'];
+                    $updateRoom->floor_no = $data['floor'];
+                    $updateRoom->building_id = $data['id'];
+                    $updateRoom->size = $room['size'];
+                    $updateRoom->position = $room['position'];
+                    $result = $updateRoom->save();
+                } else {
+                    $result = Room::updateLayout($room['id'], $room['room_no'], $room['position']);
+                }
+            }
             Yii::$app->response->format = Response::FORMAT_JSON;
-            return ['result' => 'true'];
+            return ['result' => $result];
         }
     }
 
@@ -291,7 +307,7 @@ class SiteController extends Controller
                 $room_id = $room->id;
             } else {
                 Yii::$app->session->setFlash('error', 'no room');
-                return $this->goBack();
+                return $this->redirect(Yii::$app->request->getReferrer());
             }
         }
 
@@ -302,7 +318,7 @@ class SiteController extends Controller
             ]);
         } else {
             Yii::$app->session->setFlash('error', 'no authority');
-            return $this->goBack();
+            return $this->redirect(Yii::$app->request->getReferrer());
         }
 
     }
@@ -351,15 +367,17 @@ class SiteController extends Controller
     public function actionEditRoom()
     {
         if (Yii::$app->user->can('editRoom')) {
-            $room_id = Yii::$app->request->get()['room_id'];
-            if ($room_id) {
-                $room = Room::findById($room_id);
+            $room_no = Yii::$app->request->get()['room'];
+            $floor_no = Yii::$app->request->get()['floor'];
+            $building_id = Yii::$app->request->get()['building'];
+            if ($room_no) {
+                $room = Room::findRoomByNo($room_no, $building_id, $floor_no);
                 return $this->render('editRoom', [
                     'room' => $room,
                 ]);
             } else {
                 Yii::$app->session->setFlash('error', 'no room');
-                return $this->goBack();
+                return $this->redirect(Yii::$app->request->getReferrer());
             }
         }
 

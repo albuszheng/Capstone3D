@@ -53,11 +53,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     // 加载场景
     function load() {
-        if (<?php echo $room->data ?> !== null) {
-            data = <?php echo $room->data ?>;
-        }
-        console.log(data);
-
+        data = <?= isset($room->data) ? $room->data : 'null' ?>;
 
         if (data !== null) {
             if (data.type === "scene") {

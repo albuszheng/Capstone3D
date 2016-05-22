@@ -34,7 +34,7 @@ class Room extends ActiveRecord
         return [
             ['id', 'unique'],
             [['id', 'room_no', 'floor_no', 'building_id', 'user_id'], 'integer'],
-            [['id', 'room_no'], 'required'],
+            [['room_no', 'floor_no', 'building_id'], 'required'],
         ];
     }
 
@@ -76,6 +76,23 @@ class Room extends ActiveRecord
     public function getData()
     {
         return $this->data;
+    }
+
+    /**
+     * Update room layout by id
+     *
+     * @param $id
+     * @param $room_no
+     * @param $position
+     * @return bool
+     */
+    public static function updateLayout($id, $room_no, $position) {
+        $room = self::findById($id);
+        $room->room_no = $room_no;
+        $room->position = $position;
+        $room->last_modify_id = Yii::$app->getUser()->id;
+        $room->last_modify_time = date('Y-m-d H:i:s');
+        return $room->save();
     }
 
     /**
@@ -131,5 +148,17 @@ class Room extends ActiveRecord
      */
     public static function findRoomsByFloor($building_id, $floor_no) {
         return static::findAll(['building_id' => $building_id, 'floor_no' => $floor_no]);
+    }
+
+    /**
+     * Find room by room_no
+     *
+     * @param $room_no
+     * @param $building_id
+     * @param $floor_no
+     * @return null|static
+     */
+    public static function findRoomByNo($room_no, $building_id, $floor_no) {
+        return static::findOne(['room_no' => $room_no, 'building_id' => $building_id, 'floor_no' => $floor_no]);
     }
 }
