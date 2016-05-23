@@ -258,6 +258,11 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		var targetPosition = this.target,
 			position = this.object.position;
 
+		if (this.object.position.x < -10) this.object.position.x = -9;
+		if (this.object.position.x > 10) this.object.position.x = 9;
+		if (this.object.position.z < -10) this.object.position.z = -9;
+		if (this.object.position.z > 10) this.object.position.z = 9;
+
 		targetPosition.x = position.x + 100 * Math.sin( this.phi ) * Math.cos( this.theta );
 		targetPosition.y = position.y + 100 * Math.cos( this.phi );
 		targetPosition.z = position.z + 100 * Math.sin( this.phi ) * Math.sin( this.theta );

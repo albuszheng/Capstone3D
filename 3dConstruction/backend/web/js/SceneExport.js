@@ -40,13 +40,15 @@ var CONST = {
      * @property {number} TYPE.DOOR
      * @property {number} TYPE.WINDOW
      * @property {number} TYPE.FURNITURE
+     * @property {number} TYPE.SENSOR
      */
     TYPE: {
         FLOOR:     0,
         WALL:      1,
         DOOR:      2,
         WINDOW:    3,
-        FURNITURE: 4
+        FURNITURE: 4,
+        SENSOR:    5
     }
 };
 
@@ -84,6 +86,7 @@ SceneExport.prototype = {
         function WallString(wall) {
             var doors = [];
             var windows = [];
+            var sensors = [];
 
             for (var i = 0; i < wall.children.length; i++) {
                 var object = wall.getChildAt(i);
@@ -94,6 +97,10 @@ SceneExport.prototype = {
 
                     if (object.type === CONST.TYPE.WINDOW) {
                         windows.push("\n" + DoorWindowString(object, "window"));
+                    }
+
+                    if (object.type === CONST.TYPE.SENSOR) {
+                        sensors.push("\n" + DoorWindowString(object, "sensor"));
                     }
                 }
             }
@@ -110,6 +117,9 @@ SceneExport.prototype = {
                 '           ],',
                 '           "windows": [',
                             windows,
+                '           ],',
+                '           "sensors": [',
+                            sensors,
                 '           ]',
                 '       }'
             ].join( '\n' );
@@ -168,8 +178,8 @@ SceneExport.prototype = {
 
             '   "floor": {',
             '       "type": "floor",',
-            '       "width": 20' + ',',
-            '       "height": 20' + ',',
+            '       "width": ' + floor.width / step + ',',
+            '       "height": ' + floor.height / step + ',',
             '       "id": "' + floor.id + '"',
             '   },',
             '',
@@ -187,5 +197,162 @@ SceneExport.prototype = {
 
         return JSON.parse(output);
 
+    },
+
+    parseInitRoom: function ( width, height ) {
+        var wall = [];
+
+        wall.push("\n" + WallString((width-0.1), width/2, 0.1, 0));
+        wall.push("\n" + WallString((height-0.1), (width-0.1), height/2, 0.5));
+        wall.push("\n" + WallString((width-0.1), width/2, (height-0.1), 1));
+        wall.push("\n" + WallString((height-0.1), 0.1, height/2, 1.5));
+
+        /**
+         * 将墙壁类模型转换String格式,方便保存为JSON
+         * @param wall
+         * @returns {string}
+         * @constructor
+         */
+        function WallString(width, x, y, rotation) {
+            var output = [
+                '       {',
+                '           "type": "wall",',
+                '           "id": "4",',
+                '           "size": ['+ (width-0.1) + ',' + 0.1 + '],',
+                '           "position": [' + x + ',' + y + "],",
+                '           "rotation": ' + rotation + ',',
+                '           "doors": [',
+                '           ],',
+                '           "windows": [',
+                '           ],',
+                '           "sensors": [',
+                '           ]',
+                '       }'
+            ].join( '\n' );
+
+            return output;
+        }
+
+        var output = [
+            '{',
+            '   "version": "' + CONST.VERSION + '",',
+            '   "type": "scene",',
+
+            '   "floor": {',
+            '       "type": "floor",',
+            '       "width": ' + width + ',',
+            '       "height": ' + height + ',',
+            '       "id": "1"',
+            '   },',
+            '',
+
+            '   "wall": [',
+            wall,
+            '   ],',
+            '',
+
+            '   "objects": [',
+            '   ]',
+            '}'
+        ].join( '\n' );
+
+        return JSON.parse(output);
+    },
+
+    parseFloor: function ( group, width, height, scale ) {
+        var rooms = [];
+
+        for (var i = 0; i < group.length; i++) {
+            var room = group[i];
+            if (room instanceof PIXI.Container) {
+                rooms.push("\n" + RoomString(room));
+            }
+        }
+
+        /**
+         * 将房间转换String格式,方便保存为JSON
+         * @param room
+         * @returns {string}
+         * @constructor
+         */
+        function RoomString(room) {
+            var output = [
+                '       {',
+                '           "id": "' + room.id + '",',
+                '           "room_no": "' + room.getChildAt(1).text + '",',
+                '           "size": "' + Vector2String(room.width, room.height, scale) + '",',
+                '           "position": "' + Vector2String(room.position.x, room.position.y, scale) + '"',
+                '       }'
+            ].join( '\n' );
+
+            return output;
+        }
+
+        function Vector2String( x, y, sca ) {
+            var scale = sca || 1;
+            return x / scale + "," + y / scale;
+
+        }
+
+        var output = [
+            '{',
+            '   "version": "' + CONST.VERSION + '",',
+            '   "type": "floor",',
+            '   "width": ' + width + ',',
+            '   "height": ' + height + ',',
+            '   "room": [',
+            rooms,
+            '   ]',
+            '}'
+        ].join( '\n' );
+
+        //return JSON.parse(output);
+        return output;
+    },
+
+    parseBuilding: function ( group ) {
+        var buildings = [];
+
+        for (var i = 0; i < group.length; i++) {
+            var building = group[i];
+            if (building instanceof THREE.Mesh) {
+                buildings.push("\n" + BuildingString(building));
+            }
+        }
+
+        /**
+         * 将建筑转换String格式,方便保存为JSON
+         *
+         * @param building
+         * @returns {string}
+         * @constructor
+         */
+        function BuildingString(building) {
+            var output = [
+                '       {',
+                '           "building_no": "' + building.building_no + '",',
+                '           "floor": "' + building.floor + '",',
+                '           "x_axis": "' + building.x_axis + '",',
+                '           "y_axis": "' + building.y_axis + '",',
+                '           "width": "' + building.floor_width + '",',
+                '           "height": "' + building.floor_height + '"',
+                '       }'
+            ].join( '\n' );
+
+            return output;
+        }
+
+        var output = [
+            '{',
+            '   "version": "' + CONST.VERSION + '",',
+            '   "type": "building",',
+            '   "buildings": [',
+            buildings,
+            '   ]',
+            '}'
+        ].join( '\n' );
+
+        //return JSON.parse(output);
+        return output;
     }
 }

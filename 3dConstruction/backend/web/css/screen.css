@@ -1,5 +1,5 @@
 body {
-    background-color: #DFF0D8;
+    background-color: #f5f5f5;
     font-family: "Microsoft YaHei";
 }
 
@@ -339,4 +339,12 @@ ul.nav-menu li a.active {
 
 .hotel-list a {
   color: #2180d7;
+}
+
+.template-list thead td {
+    font-size: 1.2em;
+}
+.btn.template-name {
+    margin: 0;
+    padding: 0;
 }

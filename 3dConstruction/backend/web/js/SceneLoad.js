@@ -6,14 +6,14 @@ SceneLoad.prototype = {
     load3d: function (data, width, height, canvas, models) {
         var clock = new THREE.Clock();
         var scene = new THREE.Scene();
-        var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+        var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 500);
 
         var renderer = new THREE.WebGLRenderer();
         renderer.setClearColor(new THREE.Color(0xD1D1D1, 1.0));
         renderer.setSize(width, height);
 
         camera.position.x = 1;
-        camera.position.y = 0.5;
+        camera.position.y = 1;
         camera.position.z = 2;
         camera.lookAt(new THREE.Vector3(0, 0, 0));
 
@@ -21,11 +21,11 @@ SceneLoad.prototype = {
         controls.lookSpeed = 0.1;
         controls.movementSpeed = 5;
         controls.noFly = true;
-        controls.lookVertical = true;
-        controls.constrainVertical = true;
-        controls.verticalMin = 1.0;
-        controls.verticalMax = 2.0;
-        controls.lon = -180;
+        controls.lookVertical = false;
+        //controls.constrainVertical = true;
+        //controls.verticalMin = 1.0;
+        //controls.verticalMax = 2.0;
+        controls.lon = -120;
         controls.lat = 0;
 
         var ambientLight = new THREE.AmbientLight( 0xffffff );
@@ -139,6 +139,12 @@ SceneLoad.prototype = {
                         });
                     }
 
+                    if (object.sensors !== undefined) {
+                        $.each(object.sensors, function(index, model) {
+                            wallBSP = loadSensor(model, wallBSP, rotation, group);
+                        });
+                    }
+
                     var wall = wallBSP.toMesh();
                     wall.geometry.computeFaceNormals();
                     wall.geometry.computeVertexNormals();
@@ -205,6 +211,29 @@ SceneLoad.prototype = {
             }
 
             return wallBSP;
+        }
+
+        // 加载传感器
+        function loadSensor(model, wallBSP, wallrotation, group) {
+            var sensor = findModelById(model.id);
+
+            if (sensor !== null) {
+                var rotation = -model.rotation * Math.PI;
+                var position3D = [
+                    model.position[0] - 10 + Math.sin(rotation) * 0.05,
+                    2,
+                    model.position[1] - 10 + Math.cos(rotation) * 0.05];
+                var rotation3D = [-Math.PI/2 , 0, rotation];
+                var size = sensor.size.split(',');
+                //var bspposition = convertBSPPosition(rotation3D[2], position3D, size);
+                loadModel(model.id, position3D, rotation3D, group);
+
+                //var modelBSP = new ThreeBSP(addWall(size, bspposition, wallrotation));
+                //wallBSP = wallBSP.subtract(modelBSP);
+            }
+
+            return wallBSP;
+
         }
 
         // 加载家具模型
@@ -285,8 +314,8 @@ SceneLoad.prototype = {
 
     },
 
-    load2d: function (data, width, height, canvas, models) {
-        var step = Math.min(width, height);
+    load2d: function (data, width, height, canvas, models, step) {
+        var step = step || Math.min(width, height);
 
         var renderer = PIXI.autoDetectRenderer(width, height, {'transparent': true});
         canvas.innerHTML="";
@@ -318,6 +347,7 @@ SceneLoad.prototype = {
         // 加载场景
         function load(data) {
             step = Math.min(width/data.floor.width, height/data.floor.height);
+
             walls.removeChildren(0, walls.children.length);
             group.removeChildren(0, group.children.length);
 
@@ -355,6 +385,10 @@ SceneLoad.prototype = {
 
                     if (object.windows !== undefined) {
                         loadDoorWindow(object.windows, wall, CONST.TYPE.WINDOW);
+                    }
+
+                    if (object.sensors !== undefined) {
+                        loadDoorWindow(object.sensors, wall, CONST.TYPE.SENSOR);
                     }
                 }
             });
@@ -500,6 +534,7 @@ SceneLoad.prototype = {
             switch (selected.type) {
                 case CONST.TYPE.DOOR:
                 case CONST.TYPE.WINDOW:
+                case CONST.TYPE.SENSOR:
                     var wall = selected.wall;
                     var outBounds;
                     if (isZero(Math.sin(selected.rotation))) {
@@ -541,6 +576,7 @@ SceneLoad.prototype = {
                 switch (event.target.type) {
                     case CONST.TYPE.DOOR:
                     case CONST.TYPE.WINDOW:
+                    case CONST.TYPE.SENSOR:
                         if (isZero(Math.abs(Math.sin(selected.rotation)))) {
                             this.position.x = newPosition.x;
                         } else {
@@ -568,84 +604,587 @@ SceneLoad.prototype = {
         return stage;
     },
 
-    loadfloor: function (floor_id, data, width, height, canvas) {
-        var step = Math.min(width/data.width, height/data.height);
+    loadfloor: function (data, step, width, height, canvas, canEdit, building_id, floor_no) {
+        var rooms = data.rooms;
+        var modules = data.modules;
+        var isEdit = false;
+        var selected = undefined;
+        var delIds = [];
 
-        var renderer = PIXI.autoDetectRenderer(step * data.width, step * data.height, {'transparent': true});
         canvas.innerHTML="";
+        var renderer = PIXI.autoDetectRenderer(step * width, step * height, {'transparent': true});
+        var stage = new PIXI.Container();
+
+        var linegraph = new PIXI.Graphics();
+        stage.addChildAt(linegraph, 0);
+        createLine();
+
+        var group = new PIXI.Container();
+        stage.addChildAt(group, 1);
+
+        if (canEdit) {
+            // 保存
+            var save = document.createElement('button');
+            save.addEventListener('click', function(){
+                viewMode();
+                saveFloor();
+            });
+            var saveText = document.createTextNode('保存');
+            save.appendChild(saveText);
+            canvas.appendChild(save);
+
+            // 编辑
+            var edit = document.createElement('button');
+            edit.addEventListener('click', function(){
+                editMode();
+            });
+            var editText = document.createTextNode('编辑');
+            edit.appendChild(editText);
+            canvas.appendChild(edit);
+
+            // 删除
+            var deleteButton = document.createElement('button');
+            deleteButton.addEventListener('click', function(){
+                if (isEdit) {
+                    if (selected !== undefined) {
+                        if (selected.id !== undefined) {
+                            delIds.push(selected.id);
+                        }
+                        group.removeChild(selected);
+                    }
+                } else {
+                    alert('当前非编辑模式');
+                }
+            });
+            var deleteText = document.createTextNode('删除');
+            deleteButton.appendChild(deleteText);
+            canvas.appendChild(deleteButton);
+
+            // 更改房间号
+            var change = document.createElement('button');
+            change.addEventListener('click', function(){
+                if (isEdit) {
+                    if (selected !== undefined) {
+                        var roomText = selected.getChildAt(1);
+                        var room_no = prompt("请输入房间号:", roomText.text);
+                        if (room_no != null){
+                            roomText.text = room_no;
+                        }
+                    }
+                } else {
+                    alert('当前非编辑模式');
+                }
+            });
+            var changeText = document.createTextNode('更改房间号');
+            change.appendChild(changeText);
+            canvas.appendChild(change);
+
+            $.each(modules, function (index, object) {
+                var module = document.createElement('button');
+                module.addEventListener('click', function(){
+                    if (isEdit) {
+                        var room_no = prompt("请输入房间号:","101");
+                        if (room_no != null){
+                            var size = object.size.split(',');
+                            var room = createRoom(size, [width/2,height/2], room_no);
+                            room
+                                .on('mousedown', onDragStart)
+                                .on('mouseup', onDragEnd)
+                                .on('mouseupoutside', onDragEnd)
+                                .on('mousemove', onDragMove);
+                            selectMode(room);
+                        }
+                    } else {
+                        alert('当前非编辑模式');
+                    }
+
+                });
+                var moduleText = document.createTextNode(object.name);
+                module.appendChild(moduleText);
+                canvas.appendChild(module);
+
+            });
+        }
+
         canvas.appendChild(renderer.view);
         canvas.style.border = "none";
         renderer.view.style.border = "1px solid gray";
 
-        var stage = new PIXI.Container();
-
-        var graphics = new PIXI.Graphics();
-        stage.addChild(graphics);
-
-        var group = new PIXI.Container();
-        stage.addChild(group);
-
         animate();
-        load(data);
+        load(rooms);
 
         function animate() {
             requestAnimationFrame(animate);
             renderer.render(stage);
         }
 
+        // 网格线
+        function createLine() {
+            var step_10 = step * 10;
+            linegraph.lineStyle(1, 0x000, 1);
+            for (var i = step_10; i < width*step; i+=step_10) {
+                linegraph.moveTo(i, 0);
+                linegraph.lineTo(i, height*step);
+            }
+
+            for (var i = step_10; i < height*step; i+=step_10) {
+                linegraph.moveTo(0, i);
+                linegraph.lineTo(width*step, i);
+            }
+            linegraph.visible = false;
+        }
+
         // 加载楼层场景
-        function load(data) {
+        function load(rooms) {
             group.removeChildren(0, group.children.length);
 
-            $.each(data.room, function (index, object) {
-                var size = [object.size[0] * step, object.size[1] * step];
-                var position = [object.position[0] * step, object.position[1] * step];
-                createRoom(floor_id+object.id, position, size);
+            $.each(rooms, function (index, object) {
+                var size = object.size.split(',');
+                var position = object.position.split(',');
+                var room = createRoom(size, position, object.room_no || 0);
+                room.id = object.id;
+                room
+                    .on('mouseover', onMouseOver)
+                    .on('mouseout', onMouseOut)
+                    .on('click', onMouseClick);
 
             });
         }
 
-        // 创建房间
-        function createRoom(id, position, size) {
-            var room = new PIXI.Text(id, {});
-            room.position.set(position[0], position[1]);
-            room._width = size[0];
-            room._height = size[1];
-            room.id = id;
+        // 保存楼层场景
+        function saveFloor() {
+            var exporter = new SceneExport();
+            var sceneJSON = exporter.parseFloor(group.children, width, height, step);
+            if (delIds.length == 0) {
+                delIds.push(0);
+            }
+
+            $.ajax({
+                type: 'post',
+                data: {data: sceneJSON, dels: delIds, id: building_id, floor: floor_no},
+                url: 'index.php?r=site/update-floor',
+                async: false,
+                success: function (data) {
+                    if (data.result == true) {
+                        var ids = data.ids;
+                        for (var i = 0; i < group.children.length; i++) {
+                            group.getChildAt(i).id = ids[i];
+                        }
+                    }
+
+                },
+
+                error: function (xhr) {
+                    console.log(xhr.responseText);
+                }
+
+            });
+        }
+
+        function createRoom(size, position, room_no) {
+            var room = new PIXI.Container();
+            room.position.set(position[0]*step, position[1]*step);
+            room._width = size[0]*step;
+            room._height = size[1]*step;
             room.interactive = true;
             room.buttonMode = true;
 
-            room
-                .on('mouseover', onMouseOver)
-                .on('mouseout', onMouseOut)
-                .on('click', onMouseClick);
+            var graphics = new PIXI.Graphics();
+            //graphics.lineStyle(2, 0x0000FF, 1);
+            graphics.beginFill(0xFFFF0B, 0.5);
+            graphics.drawRect(0, 0, size[0]*step, size[1]*step);
+            graphics.endFill();
+            room.addChildAt(graphics, 0);
+
+            var roomText = new PIXI.Text(room_no, {});
+            room.addChildAt(roomText, 1);
 
             group.addChild(room);
-
-            graphics.lineStyle(2, 0x0000FF, 1);
-            graphics.beginFill(0xFFFF0B, 0.5);
-            graphics.drawRect(position[0], position[1], size[0], size[1]);
-            graphics.endFill();
-
+            return room;
         }
 
         function onMouseOver() {
             var new_style = {
-                font : 'bold italic 35px Arial',
+                font : 'bold italic 28px Arial',
                 fill : '#4cae4c'
             };
-            this.style = new_style;
+            this.getChildAt(1).style = new_style;
 
         }
 
         function onMouseOut() {
-            this.style = {};
+            this.getChildAt(1).style = {};
         }
 
         function onMouseClick() {
-            window.location.href = 'index.php?r=site/view-room&room_id='+this.id;
+            if (canEdit) {
+                window.location.href = 'index.php?r=site/edit-room&room_id='+this.id;
+            } else {
+                window.location.href = 'index.php?r=site/view-room&room_id='+this.id;
+            }
+        }
+
+        // 开始模型拖动事件
+        function onDragStart(event) {
+            selectMode(this, event.target.type);
+            this.data = event.data;
+            this.dragging = true;
+        }
+
+        // 结束模型拖动事件
+        function onDragEnd() {
+            this.dragging = false;
+            this.data = null;
+
+            var bounds = new PIXI.Rectangle(0, 0, width*step, height*step);
+            if (isOut(selected.getBounds(), bounds)) {
+                selected.position.set(width * step / 2, height * step / 2);
+            }
+        }
+
+        // 模型拖动事件
+        function onDragMove() {
+            if (this.dragging) {
+                var newPosition = this.data.getLocalPosition(this.parent);
+                this.position.x = newPosition.x;
+                this.position.y = newPosition.y;
+            }
+        }
+
+        // 判断模型是否超出边界
+        function isOut(model, bounds) {
+            if (model.x < bounds.x || model.x + model.width > bounds.x + bounds.width) {
+                return true;
+            }
+
+            if (model.y < bounds.y || model.y + model.height > bounds.y + bounds.height) {
+                return true;
+            }
+            return false;
+        }
+
+        // 选中模型
+        function selectMode(model) {
+            if (selected !== undefined) {
+                selected.alpha = 1;
+
+            }
+            selected = model;
+            selected.alpha = 0.5;
+        }
+
+        function editMode() {
+            isEdit = true;
+            linegraph.visible = true;
+            $.each(group.children, function (index, object) {
+                object.removeAllListeners();
+                object
+                    .on('mousedown', onDragStart)
+                    .on('mouseup', onDragEnd)
+                    .on('mouseupoutside', onDragEnd)
+                    .on('mousemove', onDragMove);
+            });
+        }
+
+        function viewMode() {
+            isEdit = false;
+            linegraph.visible = false;
+            if (selected !== undefined) {
+                selected.alpha = 1;
+                selected = undefined;
+            }
+            $.each(group.children, function (index, object) {
+                object.removeAllListeners();
+                object
+                    .on('mouseover', onMouseOver)
+                    .on('mouseout', onMouseOut)
+                    .on('click', onMouseClick);
+            });
         }
 
         return stage;
+    },
+
+    loadOverview: function(data, width, height, canvas, canEdit) {
+        var isShiftDown = false;
+        var objects = [];
+        var buildings = [];
+        var addBuildings = [];
+        var mouse = new THREE.Vector2(), INTERSECTED;
+
+        var scene = new THREE.Scene();
+
+        var camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+        camera.position.set(300, 700, 1400);
+        camera.lookAt(new THREE.Vector3());
+
+        // roll-over helpers
+        var rollOverGeo = new THREE.BoxGeometry(100, 100, 100);
+        var rollOverMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, opacity: 0.5, transparent: true});
+        var rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
+        rollOverMesh.visible = false;
+        scene.add(rollOverMesh);
+
+        // cubes
+        var cubeGeo = new THREE.BoxGeometry(100, 100, 100);
+        var cubeMaterial = new THREE.MeshLambertMaterial({
+            color: 0xfeb74c,
+            map: new THREE.TextureLoader().load("model/images/wall/square-outline-textured.png")
+        });
+
+        // grid
+        var size = 500, step = 100;
+        var geometry = new THREE.Geometry();
+        for (var i = -size; i <= size; i += step) {
+            geometry.vertices.push(new THREE.Vector3(-size, 0, i));
+            geometry.vertices.push(new THREE.Vector3(size, 0, i));
+            geometry.vertices.push(new THREE.Vector3(i, 0, -size));
+            geometry.vertices.push(new THREE.Vector3(i, 0, size));
+        }
+
+        var material = new THREE.LineBasicMaterial({color: 0x000000, opacity: 0.2, transparent: true});
+        var line = new THREE.LineSegments(geometry, material);
+        line.visible = false;
+        scene.add(line);
+
+        var raycaster = new THREE.Raycaster();
+
+        var geometry = new THREE.PlaneBufferGeometry(1000, 1000);
+        geometry.rotateX(-Math.PI / 2);
+
+        var plane = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: 0x73D764}));
+        scene.add(plane);
+        objects.push(plane);
+
+        // Lights
+        var ambientLight = new THREE.AmbientLight(0x606060);
+        scene.add(ambientLight);
+
+        var directionalLight = new THREE.DirectionalLight(0xffffff);
+        directionalLight.position.set(1, 0.75, 0.5).normalize();
+        scene.add(directionalLight);
+
+        var renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setClearColor(0xf0f0f0);
+        renderer.setSize(width, height);
+
+        canvas.innerHTML="";
+        if (canEdit) {
+            // 保存
+            var save = document.createElement('button');
+            save.addEventListener('click', function () {
+                viewMode();
+                saveBuilding();
+            });
+            var saveText = document.createTextNode('保存');
+            save.appendChild(saveText);
+            canvas.appendChild(save);
+
+            // 编辑
+            var edit = document.createElement('button');
+            edit.addEventListener('click', function () {
+                editMode();
+            });
+            var editText = document.createTextNode('编辑');
+            edit.appendChild(editText);
+            canvas.appendChild(edit);
+
+        }
+
+        canvas.appendChild(renderer.domElement);
+
+        load(data);
+        viewMode();
+
+        function load(data) {
+            $.each(data, function(index, object) {
+                var voxel = new THREE.Mesh(cubeGeo, cubeMaterial);
+                voxel.position.set(object.x_axis*100-550, 50, object.y_axis*100-550);
+                voxel.building_id = object.id;
+                voxel.building_no = object.building_no;
+                voxel.floor = object.floor;
+                voxel.x_axis = object.x_axis;
+                voxel.y_axis = object.y_axis;
+                voxel.floor_width = object.width;
+                voxel.floor_height = object.height;
+
+                scene.add(voxel);
+                objects.push(voxel);
+                buildings.push(voxel);
+            });
+            requestAnimationFrame(render);
+        }
+
+        // 保存建筑场景
+        function saveBuilding() {
+            if (addBuildings.length > 0) {
+                var exporter = new SceneExport();
+                var sceneJSON = exporter.parseBuilding(addBuildings);
+
+                $.ajax({
+                    type: 'post',
+                    data: {data: sceneJSON},
+                    url: 'index.php?r=site/add-buildings',
+                    async: false,
+                    success: function (data) {
+                        if (data.result == true) {
+                            console.log(data.ids);
+                            var ids = data.ids;
+                            for (var i = 0; i < addBuildings.length; i++) {
+                                addBuildings[i].building_id = ids[i];
+                            }
+                        }
+                    },
+
+                    error: function (xhr) {
+                        console.log(xhr.responseText);
+                    }
+
+                });
+            }
+        }
+
+        function onMouseMove(event) {
+            event.preventDefault();
+            mouse.x = ( (event.pageX - event.target.offsetLeft) / width ) * 2 - 1;
+            mouse.y = - ( (event.pageY - event.target.offsetTop) / height ) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            var intersects = raycaster.intersectObjects(objects);
+
+            if (intersects.length > 0) {
+                var intersect = intersects[0];
+                rollOverMesh.position.copy(intersect.point).add(intersect.face.normal);
+                rollOverMesh.position.divideScalar(100).floor().multiplyScalar(100).addScalar(50);
+            }
+
+            render();
+        }
+
+        function onMouseDown(event) {
+            event.preventDefault();
+
+            mouse.x = ( (event.pageX - event.target.offsetLeft) / width ) * 2 - 1;
+            mouse.y = -( (event.pageY - event.target.offsetTop) / height ) * 2 + 1;
+
+            raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, camera);
+            var intersects = raycaster.intersectObjects(objects);
+
+            if (intersects.length > 0) {
+                var intersect = intersects[0];
+
+                // delete cube
+                if (isShiftDown) {
+                    //if (intersect.object != plane) {
+                    //    scene.remove(intersect.object);
+                    //    objects.splice(objects.indexOf(intersect.object), 1);
+                    //    buildings.splice(objects.indexOf(intersect.object), 1);
+                    //}
+
+                // create cube
+                } else {
+                    var building_no = prompt("请输入建筑标号:", "1");
+                    var floor = prompt("请输入楼层数:", "1");
+                    var floor_width = prompt("请输入楼层长度:", "200");
+                    var floor_height = prompt("请输入楼层宽度:", "80");
+                    if ((building_no !== null) && (floor !== null) && (floor_width !== null) && (floor_height !== null)) {
+                        var voxel = new THREE.Mesh(cubeGeo, cubeMaterial);
+                        voxel.position.copy(intersect.point).add(intersect.face.normal);
+                        voxel.position.divideScalar(100).floor().multiplyScalar(100).addScalar(50);
+                        voxel.building_no = building_no;
+                        voxel.floor = floor;
+                        voxel.x_axis = (voxel.position.x + 550) / step;
+                        voxel.y_axis = (voxel.position.z + 550) / step;
+                        voxel.floor_width = floor_width;
+                        voxel.floor_height = floor_height;
+                        scene.add(voxel);
+                        objects.push(voxel);
+                        buildings.push(voxel);
+                        addBuildings.push(voxel);
+                    }
+                }
+                render();
+
+            }
+        }
+
+        function onKeyDown(event) {
+            switch (event.keyCode) {
+                case 16:
+                    isShiftDown = true;
+                    break;
+            }
+        }
+
+        function onKeyUp(event) {
+            switch (event.keyCode) {
+                case 16:
+                    isShiftDown = false;
+                    break;
+            }
+        }
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+
+        function editMode() {
+            isEdit = true;
+            line.visible = true;
+            rollOverMesh.visible = true;
+
+            renderer.domElement.removeEventListener('mousemove', onMouseOver, false);
+            renderer.domElement.removeEventListener('mousedown', onMouseClick, false);
+
+            renderer.domElement.addEventListener('mousemove', onMouseMove, false);
+            renderer.domElement.addEventListener('mousedown', onMouseDown, false);
+            //document.addEventListener('keydown', onKeyDown, false);
+            //document.addEventListener('keyup', onKeyUp, false);
+            render();
+        }
+
+        function viewMode() {
+            isEdit = false;
+            line.visible = false;
+            rollOverMesh.visible = false;
+
+            renderer.domElement.removeEventListener('mousemove', onMouseMove, false);
+            renderer.domElement.removeEventListener('mousedown', onMouseDown, false);
+            //document.removeEventListener('keydown', onKeyDown, false);
+            //document.removeEventListener('keyup', onKeyUp, false);
+
+            renderer.domElement.addEventListener('mousemove', onMouseOver, false);
+            renderer.domElement.addEventListener('mousedown', onMouseClick, false);
+            render();
+        }
+        function onMouseOver( event ) {
+            event.preventDefault();
+            mouse.x = ( (event.pageX - event.currentTarget.offsetLeft) / width ) * 2 - 1;
+            mouse.y = - ( (event.pageY - event.currentTarget.offsetTop) / height ) * 2 + 1;
+
+            raycaster.setFromCamera( mouse, camera );
+            var intersects = raycaster.intersectObjects( buildings );
+            if ( intersects.length > 0 ) {
+                if ( INTERSECTED !== intersects[ 0 ].object ) {
+                    if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+                    INTERSECTED = intersects[ 0 ].object;
+                    INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+                    INTERSECTED.material.emissive.setHex( 0x00ff00 );
+                }
+            } else {
+                if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+                INTERSECTED = null;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        function onMouseClick(event) {
+            event.preventDefault();
+            if (INTERSECTED !== null) {
+                window.location.href = 'index.php?r=site/view-building&id='+INTERSECTED.building_id;
+            }
+        }
     }
 }

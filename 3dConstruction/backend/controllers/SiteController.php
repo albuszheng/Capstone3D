@@ -15,6 +15,8 @@ use common\models\Room;
 use common\models\Model;
 use common\models\Floor;;
 use common\models\Goods;
+use common\models\Building;
+use common\models\Module;
 
 /**
  * Site controller
@@ -102,17 +104,42 @@ class SiteController extends Controller
     }
 
     /**
-     * Display floor page.
+     * Display overview page.
      *
      * @return mixed
      */
     public function actionOverview()
     {
         if (Yii::$app->user->can('viewFloor')) {
-            $floor = Config::getFloor()->floor;
+            $canEdit = Yii::$app->user->can('editRoom');
             return $this->render('overview', [
-                'floor' => $floor,
+                'canEdit' => $canEdit,
             ]);
+        }
+    }
+
+    /**
+     * Display building page.
+     *
+     * @return mixed
+     */
+    public function actionViewBuilding()
+    {
+        if (Yii::$app->user->can('viewFloor')) {
+            $building_id = isset(Yii::$app->request->get()['id']) ? Yii::$app->request->get()['id'] : 1;
+            $building = Building::findById($building_id);
+
+            return $this->render('viewBuilding', [
+                'building' => $building,
+            ]);
+        }
+    }
+
+    public function actionGetBuildings() {
+        if (Yii::$app->request->isAjax) {
+            $buildings = Building::findAllBuildings();
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['buildings' => $buildings];
         }
     }
 
@@ -124,11 +151,29 @@ class SiteController extends Controller
     public function actionViewFloor()
     {
         if (Yii::$app->user->can('viewFloor')) {
-            $floor_id = isset(Yii::$app->request->get()['floor_id']) ? Yii::$app->request->get()['floor_id'] : 1;
+            $floor_no = isset(Yii::$app->request->get()['floor']) ? Yii::$app->request->get()['floor'] : 1;
+            $building = Building::findById(Yii::$app->request->get()['id']);
+            $canEdit = Yii::$app->user->can('editRoom');
 
             return $this->render('viewFloor', [
-                'floor_id' => $floor_id,
+                'building' => $building,
+                'floor_no' => $floor_no,
+                'canEdit' => $canEdit,
             ]);
+        }
+    }
+
+    public function actionGetFloorData() {
+        if (Yii::$app->user->can('viewFloor')) {
+            if (Yii::$app->request->isAjax) {
+                $data = Yii::$app->request->post();
+                $floor_no = $data['floor_no'];
+                $building_id = $data['building_id'];
+                $rooms = Room::findRoomsByFloor($building_id, $floor_no);
+                $modules = Module::findAllModules();
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ['rooms' => $rooms, 'modules' => $modules];
+            }
         }
     }
 
@@ -143,29 +188,24 @@ class SiteController extends Controller
             $room_id = Yii::$app->request->get()['room_id'];
         } else {
             $room = Room::findByUserId(Yii::$app->getUser()->id);
-            $room_id = isset($room) ? $room->id : 101;
+            if (isset($room)) {
+                $room_id = $room->id;
+            } else {
+                Yii::$app->session->setFlash('error', 'no room');
+                return $this->redirect(Yii::$app->request->getReferrer());
+            }
         }
 
         if (Yii::$app->user->can('viewRoom') || Yii::$app->user->can('viewOwnRoom', ['room_id' => $room_id])) {
             $room = Room::findById($room_id);
-            if ($room) {
-                $data = isset($room->data) ? $room->data : 'null';
-
-                return $this->render('viewRoom', [
-                    'floor_id' => (int)($room->id/100),
-                    'room_id' => $room->id,
-                    'data' => $data,
-                ]);
-            } else {
-                Yii::$app->session->setFlash('error', 'no room');
-                return $this->render('overview');
-            }
+            return $this->render('viewRoom', [
+                'room' => $room,
+            ]);
         } else {
             Yii::$app->session->setFlash('error', 'no authority');
-            return $this->render('viewFloor', [
-                'floor_id' => (int)($room_id/100),
-            ]);
+            return $this->redirect(Yii::$app->request->getReferrer());
         }
+
     }
 
     /**

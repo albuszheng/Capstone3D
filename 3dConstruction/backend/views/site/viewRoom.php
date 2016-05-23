@@ -1,18 +1,17 @@
 <?php
 
 /* @var $this yii\web\View */
-/* @var $floor_id integer */
-/* @var $room_id integer */
-/* @var $data string */
+/* @var $room \common\models\Room */
 
 use yii\helpers\Html;
-use backend\assets\ThreeAsset;
+use frontend\assets\ThreeAsset;
 
 ThreeAsset::register($this);
 
-$this->title = 'View Room'.$room_id;
+$this->title = 'View Room'.$room->room_no;
 $this->params['breadcrumbs'][] = ['label' => 'Overview', 'url' => ['overview']];
-$this->params['breadcrumbs'][] = ['label' => 'View Floor'.$floor_id, 'url' => ['view-floor', 'floor_id'=>$floor_id]];
+$this->params['breadcrumbs'][] = ['label' => 'View Building', 'url' => ['view-building', 'id'=>$room->building_id]];
+$this->params['breadcrumbs'][] = ['label' => 'View Floor'.$room->floor_no, 'url' => ['view-floor', 'floor'=>$room->floor_no, 'id'=>$room->building_id]];
 $this->params['breadcrumbs'][] = $this->title;
 
 ?>
@@ -54,10 +53,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     // 加载场景
     function load() {
-        if (<?php echo $data ?> !== null) {
-            data = <?php echo $data ?>;
-        }
-
+        data = <?= isset($room->data) ? $room->data : 'null' ?>;
 
         if (data !== null) {
             if (data.type === "scene") {

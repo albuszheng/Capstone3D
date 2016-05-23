@@ -22,6 +22,15 @@ class AppAsset extends AssetBundle
         'css/screen.css',
     ];
     public $js = [
+        'assets/da80f562/jquery.js',
+        'js/three.js',
+        'js/ThreeBSP.js',
+        'js/ColladaLoader.js',
+        'js/FirstPersonControls.js',
+        'js/TrackballControls.js',
+        'js/SceneExport.js',
+        'js/pixi.js',
+        'js/SceneLoad.js',
     ];
     public $depends = [
         'yii\web\YiiAsset',
