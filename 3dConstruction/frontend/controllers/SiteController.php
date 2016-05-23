@@ -453,7 +453,7 @@ class SiteController extends Controller
      * 根据id获取模板信息
      * @return array
      */
-    public function actionFindModuleById()
+    public function actionFindSpecificModule()
     {
         if (Yii::$app->request->isAjax) {
             $data = Yii::$app->request->post();
