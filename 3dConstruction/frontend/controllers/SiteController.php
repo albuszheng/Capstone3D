@@ -450,6 +450,20 @@ class SiteController extends Controller
     }
 
     /**
+     * 根据id获取模板信息
+     * @return array
+     */
+    public function actionFindModuleById()
+    {
+        if (Yii::$app->request->isAjax) {
+            $data = Yii::$app->request->post();
+            $module = Module::findById($data['id']);
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['module' => $module];
+        }
+    }
+
+    /**
      * 获取所有模型信息
      * @return array
      */
