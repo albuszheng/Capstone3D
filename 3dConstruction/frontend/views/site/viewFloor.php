@@ -11,6 +11,7 @@ use frontend\assets\ThreeAsset;
 ThreeAsset::register($this);
 
 $this->title = 'View Floor'.$floor_no;
+$this->params['breadcrumbs'][] = ['label' => 'Overview', 'url' => ['overview']];
 $this->params['breadcrumbs'][] = ['label' => 'View Building'.$building->building_no, 'url' => ['view-building', 'id'=>$building->id]];
 $this->params['breadcrumbs'][] = $this->title;
 ?>

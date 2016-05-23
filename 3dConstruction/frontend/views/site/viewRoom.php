@@ -9,7 +9,7 @@ use frontend\assets\ThreeAsset;
 ThreeAsset::register($this);
 
 $this->title = 'View Room'.$room->room_no;
-//$this->params['breadcrumbs'][] = ['label' => 'Overview', 'url' => ['overview']];
+$this->params['breadcrumbs'][] = ['label' => 'Overview', 'url' => ['overview']];
 $this->params['breadcrumbs'][] = ['label' => 'View Building', 'url' => ['view-building', 'id'=>$room->building_id]];
 $this->params['breadcrumbs'][] = ['label' => 'View Floor'.$room->floor_no, 'url' => ['view-floor', 'floor'=>$room->floor_no, 'id'=>$room->building_id]];
 $this->params['breadcrumbs'][] = $this->title;

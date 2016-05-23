@@ -200,12 +200,12 @@ class SiteController extends Controller
      */
     public function actionOverview()
     {
-//        if (Yii::$app->user->can('viewFloor')) {
-//            $floor = Config::getFloor()->floor;
-//            $canEdit = Yii::$app->user->can('editRoom');
-//
-            return $this->render('overview');
-//        }
+        if (Yii::$app->user->can('viewFloor')) {
+            $canEdit = Yii::$app->user->can('editRoom');
+            return $this->render('overview', [
+                'canEdit' => $canEdit,
+            ]);
+        }
     }
 
     /**
@@ -273,6 +273,8 @@ class SiteController extends Controller
             $data = Yii::$app->request->post();
 
             $rooms = Json::decode($data['data'], true)['room'];
+            $deleteRooms = $data['dels'];
+            $ids = [];
             for ($i=0; $i<count($rooms); $i++) {
                 $room = $rooms[$i];
                 if ($room['id'] == 'undefined') {
@@ -283,12 +285,50 @@ class SiteController extends Controller
                     $updateRoom->size = $room['size'];
                     $updateRoom->position = $room['position'];
                     $result = $updateRoom->save();
+                    $ids[$i] = $updateRoom->id;
                 } else {
                     $result = Room::updateLayout($room['id'], $room['room_no'], $room['position']);
+                    $ids[$i] = $room['id'];
+                }
+            }
+            if ($deleteRooms[0] != 0) {
+                for ($j=0; $j<count($deleteRooms); $j++) {
+                    $result = Room::deleteById($deleteRooms[$j]);
                 }
             }
             Yii::$app->response->format = Response::FORMAT_JSON;
-            return ['result' => $result];
+            return ['result' => $result, 'ids' => $ids];
+        }
+    }
+
+    public function actionGetBuildings() {
+        if (Yii::$app->request->isAjax) {
+            $buildings = Building::findAllBuildings();
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['buildings' => $buildings];
+        }
+    }
+
+    public function actionAddBuildings() {
+        if (Yii::$app->request->isAjax) {
+            $data = Yii::$app->request->post();
+
+            $buildings = Json::decode($data['data'], true)['buildings'];
+            $ids = [];
+            for ($i=0; $i<count($buildings); $i++) {
+                $building = $buildings[$i];
+                $model = new Building();
+                $model->building_no = $building['building_no'];
+                $model->floor = $building['floor'];
+                $model->x_axis = $building['x_axis'];
+                $model->y_axis = $building['y_axis'];
+                $model->width = $building['width'];
+                $model->height = $building['height'];
+                $result = $model->save();
+                $ids[$i] = $model->id;
+            }
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['result' => $result, 'ids' => $ids];
         }
     }
 
@@ -367,11 +407,9 @@ class SiteController extends Controller
     public function actionEditRoom()
     {
         if (Yii::$app->user->can('editRoom')) {
-            $room_no = Yii::$app->request->get()['room'];
-            $floor_no = Yii::$app->request->get()['floor'];
-            $building_id = Yii::$app->request->get()['building'];
-            if ($room_no) {
-                $room = Room::findRoomByNo($room_no, $building_id, $floor_no);
+            $room_id = Yii::$app->request->get()['room_id'];
+            if ($room_id) {
+                $room = Room::findById($room_id);
                 return $this->render('editRoom', [
                     'room' => $room,
                 ]);

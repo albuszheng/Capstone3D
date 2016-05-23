@@ -9,7 +9,7 @@ use frontend\assets\ThreeAsset;
 ThreeAsset::register($this);
 
 $this->title = 'Edit Room'.$room->room_no;
-//$this->params['breadcrumbs'][] = ['label' => 'Overview', 'url' => ['overview']];
+$this->params['breadcrumbs'][] = ['label' => 'Overview', 'url' => ['overview']];
 $this->params['breadcrumbs'][] = ['label' => 'View Building', 'url' => ['view-building', 'id'=>$room->building_id]];
 $this->params['breadcrumbs'][] = ['label' => 'View Floor'.$room->floor_no, 'url' => ['view-floor', 'floor'=>$room->floor_no, 'id'=>$room->building_id]];
 $this->params['breadcrumbs'][] = $this->title;
@@ -97,7 +97,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     function start() {
         if (<?= $room->id ?> !== null) {
-            data = <?= isset($room->data) ? $room->data : 'null' ?>;
+            data = <?= (isset($room->data) && !(is_null($room->data))) ? $room->data : 'null' ?>;
 
             // 获取所有模型信息
             $.ajax({
@@ -120,10 +120,12 @@ $this->params['breadcrumbs'][] = $this->title;
                     console.log('load');
                 }
             } else {
-                $.getJSON('scene/init.json', function(result) {
-                    data = result;
-                    load(data);
-                });
+                var room_size = <?= "'" . $room->size . "'" ?>;
+                var size = room_size.split(',');
+                var exporter = new SceneExport();
+                var sceneJSON = exporter.parseInitRoom(size[0], size[1]);
+                data = sceneJSON;
+                load(sceneJSON);
             }
 
         } else {
@@ -190,7 +192,11 @@ $this->params['breadcrumbs'][] = $this->title;
     /**
      * 加载场景
      */
-    function load(scene) {
+    function load(scene, width, height) {
+        var width = width || scene.floor.width;
+        var height = height || scene.floor.height;
+        step = Math.min(width2d/width, height2d/height);
+
         if (isEdit) {
             if(confirm("是否保存当前场景?")) {
                 save();
@@ -202,12 +208,11 @@ $this->params['breadcrumbs'][] = $this->title;
         }
 
         var loader = new SceneLoad();
-        stage = loader.load2d(scene, width2d, height2d, document.getElementById('canvas2d'), models);
+        stage = loader.load2d(scene, width2d, height2d, document.getElementById('canvas2d'), models, step);
         floor = stage.getChildAt(0);
         walls = stage.getChildAt(1);
         group = stage.getChildAt(2);
 
-        step = Math.min(width2d/scene.floor.width, height2d/scene.floor.height);
         createLine();
         updateInfo();
     }

@@ -178,8 +178,8 @@ SceneExport.prototype = {
 
             '   "floor": {',
             '       "type": "floor",',
-            '       "width": 20' + ',',
-            '       "height": 20' + ',',
+            '       "width": ' + floor.width / step + ',',
+            '       "height": ' + floor.height / step + ',',
             '       "id": "' + floor.id + '"',
             '   },',
             '',
@@ -194,10 +194,69 @@ SceneExport.prototype = {
             '   ]',
             '}'
         ].join( '\n' );
-        console.log(output);
 
         return JSON.parse(output);
 
+    },
+
+    parseInitRoom: function ( width, height ) {
+        var wall = [];
+
+        wall.push("\n" + WallString((width-0.1), width/2, 0.1, 0));
+        wall.push("\n" + WallString((height-0.1), (width-0.1), height/2, 0.5));
+        wall.push("\n" + WallString((width-0.1), width/2, (height-0.1), 1));
+        wall.push("\n" + WallString((height-0.1), 0.1, height/2, 1.5));
+
+        /**
+         * 将墙壁类模型转换String格式,方便保存为JSON
+         * @param wall
+         * @returns {string}
+         * @constructor
+         */
+        function WallString(width, x, y, rotation) {
+            var output = [
+                '       {',
+                '           "type": "wall",',
+                '           "id": "4",',
+                '           "size": ['+ (width-0.1) + ',' + 0.1 + '],',
+                '           "position": [' + x + ',' + y + "],",
+                '           "rotation": ' + rotation + ',',
+                '           "doors": [',
+                '           ],',
+                '           "windows": [',
+                '           ],',
+                '           "sensors": [',
+                '           ]',
+                '       }'
+            ].join( '\n' );
+
+            return output;
+        }
+
+        var output = [
+            '{',
+            '   "version": "' + CONST.VERSION + '",',
+            '   "type": "scene",',
+
+            '   "floor": {',
+            '       "type": "floor",',
+            '       "width": ' + width + ',',
+            '       "height": ' + height + ',',
+            '       "id": "1"',
+            '   },',
+            '',
+
+            '   "wall": [',
+            wall,
+            '   ],',
+            '',
+
+            '   "objects": [',
+            '   ]',
+            '}'
+        ].join( '\n' );
+
+        return JSON.parse(output);
     },
 
     parseFloor: function ( group, width, height, scale ) {
@@ -243,6 +302,52 @@ SceneExport.prototype = {
             '   "height": ' + height + ',',
             '   "room": [',
             rooms,
+            '   ]',
+            '}'
+        ].join( '\n' );
+
+        //return JSON.parse(output);
+        return output;
+    },
+
+    parseBuilding: function ( group ) {
+        var buildings = [];
+
+        for (var i = 0; i < group.length; i++) {
+            var building = group[i];
+            if (building instanceof THREE.Mesh) {
+                buildings.push("\n" + BuildingString(building));
+            }
+        }
+
+        /**
+         * 将建筑转换String格式,方便保存为JSON
+         *
+         * @param building
+         * @returns {string}
+         * @constructor
+         */
+        function BuildingString(building) {
+            var output = [
+                '       {',
+                '           "building_no": "' + building.building_no + '",',
+                '           "floor": "' + building.floor + '",',
+                '           "x_axis": "' + building.x_axis + '",',
+                '           "y_axis": "' + building.y_axis + '",',
+                '           "width": "' + building.floor_width + '",',
+                '           "height": "' + building.floor_height + '"',
+                '       }'
+            ].join( '\n' );
+
+            return output;
+        }
+
+        var output = [
+            '{',
+            '   "version": "' + CONST.VERSION + '",',
+            '   "type": "building",',
+            '   "buildings": [',
+            buildings,
             '   ]',
             '}'
         ].join( '\n' );

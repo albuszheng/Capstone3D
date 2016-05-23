@@ -161,4 +161,9 @@ class Room extends ActiveRecord
     public static function findRoomByNo($room_no, $building_id, $floor_no) {
         return static::findOne(['room_no' => $room_no, 'building_id' => $building_id, 'floor_no' => $floor_no]);
     }
+
+    public static function deleteById($id) {
+        $room = self::findById($id);
+        return $room->delete();
+    }
 }

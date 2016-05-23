@@ -9,6 +9,7 @@ use frontend\assets\ThreeAsset;
 ThreeAsset::register($this);
 
 $this->title = 'View Building'.$building->building_no;
+$this->params['breadcrumbs'][] = ['label' => 'Overview', 'url' => ['overview']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="site-view-building">
@@ -34,6 +35,7 @@ $this->params['breadcrumbs'][] = $this->title;
     // 加载场景
     function load() {
         var mouse = new THREE.Vector2(), INTERSECTED;
+        var floors = [];
 
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
@@ -64,8 +66,10 @@ $this->params['breadcrumbs'][] = $this->title;
         var texture = new THREE.TextureLoader().load( "model/images/wall/2.jpg" );
 
         for (var i = 1; i <= <?= $building->floor?>; i++) {
-            addMesh(i, new THREE.Vector3(0,i*0.8-0.8,0));
+            var mesh = addMesh(i, new THREE.Vector3(0,i*0.8-0.8,0));
+            floors.push(mesh);
         }
+        addRoof(i, new THREE.Vector3(0,i*0.8-0.8,0));
 
         canvas.innerHTML="";
         canvas.appendChild(renderer.domElement);
@@ -86,7 +90,7 @@ $this->params['breadcrumbs'][] = $this->title;
             mouse.y = - ( (event.pageY - event.currentTarget.offsetTop) / height ) * 2 + 1;
 
             raycaster.setFromCamera( mouse, camera );
-            var intersects = raycaster.intersectObjects( scene.children );
+            var intersects = raycaster.intersectObjects( floors );
             if ( intersects.length > 0 ) {
                 if ( INTERSECTED !== intersects[ 0 ].object ) {
                     if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
@@ -120,7 +124,30 @@ $this->params['breadcrumbs'][] = $this->title;
             mesh.material.map.repeat.set(5, 1);
             mesh.position.copy(position);
             scene.add(mesh);
+            return mesh;
+        }
 
+        function addRoof(id, position) {
+            var position = position || new THREE.Vector3();
+            var geometry = new THREE.BoxGeometry(5,0.8,5);
+            var texture = new THREE.TextureLoader().load( "img/roof.png" );
+            var matArray = [];
+            var mapMaterial = new THREE.MeshBasicMaterial({map:texture});
+            mapMaterial.map.wrapS = THREE.RepeatWrapping;
+            mapMaterial.map.wrapT = THREE.RepeatWrapping;
+            mapMaterial.map.repeat.set(10,1);
+            var roofMaterial = new THREE.MeshBasicMaterial({map:new THREE.TextureLoader().load( "img/roof2.png" )});
+            matArray.push(mapMaterial);
+            matArray.push(mapMaterial);
+            matArray.push(roofMaterial);
+            matArray.push(mapMaterial);
+            matArray.push(mapMaterial);
+            matArray.push(new THREE.MeshBasicMaterial({}));
+            var material = new THREE.MeshFaceMaterial(matArray);
+//            var material = new THREE.MeshLambertMaterial( { color: 0xfeb74c, map: texture } );
+            var mesh = new THREE.Mesh(geometry, material);
+            mesh.position.copy(position);
+            scene.add(mesh);
         }
     }
 

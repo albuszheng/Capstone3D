@@ -30,7 +30,7 @@ class Building extends ActiveRecord
         return [
             ['id', 'unique'],
             [['id', 'building_no', 'floor', 'x_axis', 'y_axis', 'width', 'height'], 'integer'],
-            [['id', 'building_no', 'floor', 'x_axis', 'y_axis', 'width', 'height'], 'required'],
+            [['building_no', 'floor', 'x_axis', 'y_axis', 'width', 'height'], 'required'],
         ];
     }
 
@@ -43,6 +43,18 @@ class Building extends ActiveRecord
     public static function findById($id)
     {
         return static::findOne(['id' => $id]);
+    }
+
+    /**
+     * Finds all buildings
+     *
+     * @return array|\yii\db\ActiveRecord[]
+     */
+    public static function findAllBuildings()
+    {
+        $sql = 'select * from building';
+        $building = parent::findBySql($sql)->all();
+        return $building;
     }
 
 }
