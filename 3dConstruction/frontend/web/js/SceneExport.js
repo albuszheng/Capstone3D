@@ -86,6 +86,7 @@ SceneExport.prototype = {
         function WallString(wall) {
             var doors = [];
             var windows = [];
+            var sensors = [];
 
             for (var i = 0; i < wall.children.length; i++) {
                 var object = wall.getChildAt(i);
@@ -96,6 +97,10 @@ SceneExport.prototype = {
 
                     if (object.type === CONST.TYPE.WINDOW) {
                         windows.push("\n" + DoorWindowString(object, "window"));
+                    }
+
+                    if (object.type === CONST.TYPE.SENSOR) {
+                        sensors.push("\n" + DoorWindowString(object, "sensor"));
                     }
                 }
             }
@@ -112,6 +117,9 @@ SceneExport.prototype = {
                 '           ],',
                 '           "windows": [',
                             windows,
+                '           ],',
+                '           "sensors": [',
+                            sensors,
                 '           ]',
                 '       }'
             ].join( '\n' );
@@ -186,6 +194,7 @@ SceneExport.prototype = {
             '   ]',
             '}'
         ].join( '\n' );
+        console.log(output);
 
         return JSON.parse(output);
 

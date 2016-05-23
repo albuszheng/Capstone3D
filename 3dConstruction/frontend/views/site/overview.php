@@ -40,13 +40,13 @@ $this->params['breadcrumbs'][] = $this->title;
         var scene = new THREE.Scene();
 
         // roll-over helpers
-        var rollOverGeo = new THREE.BoxGeometry(50, 50, 50);
+        var rollOverGeo = new THREE.BoxGeometry(100, 100, 100);
         var rollOverMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, opacity: 0.5, transparent: true});
         var rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
         scene.add(rollOverMesh);
 
         // cubes
-        var cubeGeo = new THREE.BoxGeometry(50, 50, 50);
+        var cubeGeo = new THREE.BoxGeometry(100, 100, 100);
         var cubeMaterial = new THREE.MeshLambertMaterial({
             color: 0xfeb74c,
             map: new THREE.TextureLoader().load("model/images/wall/square-outline-textured.png")
@@ -92,10 +92,10 @@ $this->params['breadcrumbs'][] = $this->title;
         renderer.setSize(width, height);
         canvas.appendChild(renderer.domElement);
 
-        document.addEventListener('mousemove', onDocumentMouseMove, false);
-        document.addEventListener('mousedown', onDocumentMouseDown, false);
-        document.addEventListener('keydown', onDocumentKeyDown, false);
-        document.addEventListener('keyup', onDocumentKeyUp, false);
+        canvas.addEventListener('mousemove', onDocumentMouseMove, false);
+        canvas.addEventListener('mousedown', onDocumentMouseDown, false);
+        canvas.addEventListener('keydown', onDocumentKeyDown, false);
+        canvas.addEventListener('keyup', onDocumentKeyUp, false);
 
         render();
 
@@ -110,7 +110,7 @@ $this->params['breadcrumbs'][] = $this->title;
             if (intersects.length > 0) {
                 var intersect = intersects[0];
                 rollOverMesh.position.copy(intersect.point).add(intersect.face.normal);
-                rollOverMesh.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+                rollOverMesh.position.divideScalar(100).floor().multiplyScalar(100).addScalar(50);
             }
 
             render();
@@ -118,33 +118,39 @@ $this->params['breadcrumbs'][] = $this->title;
 
         function onDocumentMouseDown(event) {
             event.preventDefault();
-            mouse.x = ( (event.pageX - event.target.offsetLeft) / width ) * 2 - 1;
-            mouse.y = - ( (event.pageY - event.target.offsetTop) / height ) * 2 + 1;
+            var floor = prompt("请输入楼层数:","1");
+            if (floor != null){
+                mouse.x = ( (event.pageX - event.target.offsetLeft) / width ) * 2 - 1;
+                mouse.y = - ( (event.pageY - event.target.offsetTop) / height ) * 2 + 1;
 
-            raycaster.setFromCamera(mouse, camera);
-            var intersects = raycaster.intersectObjects(objects);
+                raycaster.setFromCamera(mouse, camera);
+                var intersects = raycaster.intersectObjects(objects);
 
-            if (intersects.length > 0) {
-                var intersect = intersects[0];
+                if (intersects.length > 0) {
+                    var intersect = intersects[0];
 
-                // delete cube
-                if (isShiftDown) {
-                    if (intersect.object != plane) {
-                        scene.remove(intersect.object);
-                        objects.splice(objects.indexOf(intersect.object), 1);
+                    // delete cube
+                    if (isShiftDown) {
+                        if (intersect.object != plane) {
+                            scene.remove(intersect.object);
+                            objects.splice(objects.indexOf(intersect.object), 1);
+                        }
+
+                    // create cube
+                    } else {
+                        var voxel = new THREE.Mesh(cubeGeo, cubeMaterial);
+                        voxel.position.copy(intersect.point).add(intersect.face.normal);
+                        console.log(voxel.position);
+                        voxel.position.divideScalar(100).floor().multiplyScalar(100).addScalar(50);
+                        scene.add(voxel);
+                        objects.push(voxel);
                     }
+                    render();
 
-                // create cube
-                } else {
-                    var voxel = new THREE.Mesh(cubeGeo, cubeMaterial);
-                    voxel.position.copy(intersect.point).add(intersect.face.normal);
-                    voxel.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
-                    scene.add(voxel);
-                    objects.push(voxel);
                 }
-                render();
-
             }
+
+
         }
 
         function onDocumentKeyDown(event) {

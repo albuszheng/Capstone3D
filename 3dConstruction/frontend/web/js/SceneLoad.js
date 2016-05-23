@@ -139,6 +139,12 @@ SceneLoad.prototype = {
                         });
                     }
 
+                    if (object.sensors !== undefined) {
+                        $.each(object.sensors, function(index, model) {
+                            wallBSP = loadSensor(model, wallBSP, rotation, group);
+                        });
+                    }
+
                     var wall = wallBSP.toMesh();
                     wall.geometry.computeFaceNormals();
                     wall.geometry.computeVertexNormals();
@@ -205,6 +211,29 @@ SceneLoad.prototype = {
             }
 
             return wallBSP;
+        }
+
+        // 加载传感器
+        function loadSensor(model, wallBSP, wallrotation, group) {
+            var sensor = findModelById(model.id);
+
+            if (sensor !== null) {
+                var rotation = -model.rotation * Math.PI;
+                var position3D = [
+                    model.position[0] - 10 + Math.sin(rotation) * 0.05,
+                    2,
+                    model.position[1] - 10 + Math.cos(rotation) * 0.05];
+                var rotation3D = [-Math.PI/2 , 0, rotation];
+                var size = sensor.size.split(',');
+                //var bspposition = convertBSPPosition(rotation3D[2], position3D, size);
+                loadModel(model.id, position3D, rotation3D, group);
+
+                //var modelBSP = new ThreeBSP(addWall(size, bspposition, wallrotation));
+                //wallBSP = wallBSP.subtract(modelBSP);
+            }
+
+            return wallBSP;
+
         }
 
         // 加载家具模型
@@ -356,6 +385,10 @@ SceneLoad.prototype = {
                     if (object.windows !== undefined) {
                         loadDoorWindow(object.windows, wall, CONST.TYPE.WINDOW);
                     }
+
+                    if (object.sensors !== undefined) {
+                        loadDoorWindow(object.sensors, wall, CONST.TYPE.SENSOR);
+                    }
                 }
             });
         }
@@ -500,6 +533,7 @@ SceneLoad.prototype = {
             switch (selected.type) {
                 case CONST.TYPE.DOOR:
                 case CONST.TYPE.WINDOW:
+                case CONST.TYPE.SENSOR:
                     var wall = selected.wall;
                     var outBounds;
                     if (isZero(Math.sin(selected.rotation))) {
@@ -541,6 +575,7 @@ SceneLoad.prototype = {
                 switch (event.target.type) {
                     case CONST.TYPE.DOOR:
                     case CONST.TYPE.WINDOW:
+                    case CONST.TYPE.SENSOR:
                         if (isZero(Math.abs(Math.sin(selected.rotation)))) {
                             this.position.x = newPosition.x;
                         } else {
@@ -757,7 +792,7 @@ SceneLoad.prototype = {
 
         function onMouseOver() {
             var new_style = {
-                font : 'bold italic 35px Arial',
+                font : 'bold italic 28px Arial',
                 fill : '#4cae4c'
             };
             this.getChildAt(1).style = new_style;

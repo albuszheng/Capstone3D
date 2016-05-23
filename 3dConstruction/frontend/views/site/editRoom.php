@@ -46,6 +46,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <button id="12" onclick="addFurniture(this.id)">sofa</button>
             <button id="11" onclick="addFurniture(this.id)">table</button>
             <button id="10" onclick="addFurniture(this.id)">TV</button>
+            <button id="13" onclick="addDoorWindow(this.id, CONST.TYPE.SENSOR)">sensor</button>
         </div>
         <div>
             <button onclick="rotateModel()">rotate</button>
@@ -412,12 +413,12 @@ $this->params['breadcrumbs'][] = $this->title;
         parent.children.push(model);
         selectMode(model, type);
         updateInfo(selected);
+        console.log(parent.children);
     }
 
     /**
      * 添加家具模型
      * @param id
-     * @param size
      */
     function addFurniture(id) {
         if (!isEdit) {
@@ -427,6 +428,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
         $("#canvas2d").unbind('mousedown', dragStart);
         var model = createFurniture(id, [width2d/2, height2d/2], 0);
+        console.log(model);
         if (model !== null) {
             selectMode(model, CONST.TYPE.FURNITURE);
             updateInfo(selected);
@@ -451,6 +453,7 @@ $this->params['breadcrumbs'][] = $this->title;
         switch (selected.type) {
             case CONST.TYPE.DOOR:
             case CONST.TYPE.WINDOW:
+            case CONST.TYPE.SENSOR:
                 var wall = selected.wall;
                 var outBounds;
                 if (isZero(Math.sin(selected.rotation))) {
@@ -492,6 +495,7 @@ $this->params['breadcrumbs'][] = $this->title;
             switch (event.target.type) {
                 case CONST.TYPE.DOOR:
                 case CONST.TYPE.WINDOW:
+                case CONST.TYPE.SENSOR:
                     if (isZero(Math.abs(Math.sin(selected.rotation)))) {
                         this.position.x = newPosition.x;
                     } else {
@@ -621,6 +625,7 @@ $this->params['breadcrumbs'][] = $this->title;
             switch (selected.type) {
                 case CONST.TYPE.DOOR:
                 case CONST.TYPE.WINDOW:
+                case CONST.TYPE.SENSOR:
                     console.log("请对门窗所在墙壁进行操作");
                     break;
                 case CONST.TYPE.WALL:
@@ -654,6 +659,7 @@ $this->params['breadcrumbs'][] = $this->title;
             switch (selected.type) {
                 case CONST.TYPE.DOOR:
                 case CONST.TYPE.WINDOW:
+                case CONST.TYPE.SENSOR:
                     var object = selected.wall.children;
                     object.splice(object.indexOf(selected), 1);
                     walls.removeChild(selected);

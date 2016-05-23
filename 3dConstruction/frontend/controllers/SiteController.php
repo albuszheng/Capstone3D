@@ -403,14 +403,15 @@ class SiteController extends Controller
     public function actionManageModule()
     {
         if (Yii::$app->user->can('modelManagement')) {
-            $dataProvider = new ActiveDataProvider([
-                'query' => Module::find(),
-                'pagination' => [
-                    'pageSize' => 5,
-                ],
-            ]);
+//            $dataProvider = new ActiveDataProvider([
+//                'query' => Module::find(),
+//                'pagination' => [
+//                    'pageSize' => 5,
+//                ],
+//            ]);
+            $modules = Module::findAllModules();
             return $this->render('moduleManagement', [
-                'dataProvider' => $dataProvider,
+                'modules' => $modules,
             ]);
         }
     }
