@@ -437,6 +437,19 @@ class SiteController extends Controller
     }
 
     /**
+     * 获取所有模板信息
+     * @return array
+     */
+    public function actionFindAllModules()
+    {
+        if (Yii::$app->request->isAjax) {
+            $modules = Module::findAllModules();
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['modules' => $modules];
+        }
+    }
+
+    /**
      * 获取所有模型信息
      * @return array
      */
