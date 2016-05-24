@@ -4,7 +4,7 @@
  * @author paulirish / http://paulirish.com/
  */
 
-THREE.FirstPersonControls = function ( object, domElement ) {
+THREE.FirstPersonControls = function ( object, domElement, limit_width, limit_height ) {
 
 	this.object = object;
 	this.target = new THREE.Vector3( 0, 0, 0 );
@@ -258,10 +258,12 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		var targetPosition = this.target,
 			position = this.object.position;
 
-		if (this.object.position.x < -10) this.object.position.x = -9;
-		if (this.object.position.x > 10) this.object.position.x = 9;
-		if (this.object.position.z < -10) this.object.position.z = -9;
-		if (this.object.position.z > 10) this.object.position.z = 9;
+		if ((limit_width !== undefined) && (limit_height !== undefined)) {
+			if (this.object.position.x < -limit_width) this.object.position.x = -limit_width+1;
+			if (this.object.position.x > limit_width) this.object.position.x = limit_width-1;
+			if (this.object.position.z < -limit_height) this.object.position.z = -limit_height+1;
+			if (this.object.position.z > limit_height) this.object.position.z = limit_height-1;
+		}
 
 		targetPosition.x = position.x + 100 * Math.sin( this.phi ) * Math.cos( this.theta );
 		targetPosition.y = position.y + 100 * Math.cos( this.phi );

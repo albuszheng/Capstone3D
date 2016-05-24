@@ -17,7 +17,9 @@ SceneLoad.prototype = {
         camera.position.z = 2;
         camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-        var controls = new THREE.FirstPersonControls(camera);
+        var floor_width = data.floor.width;
+        var floor_height = data.floor.height;
+        var controls = new THREE.FirstPersonControls(camera, document, floor_width/2, floor_height/2);
         controls.lookSpeed = 0.1;
         controls.movementSpeed = 5;
         controls.noFly = true;
@@ -40,7 +42,7 @@ SceneLoad.prototype = {
             camera.position.x = 1;
             camera.position.y = 0.5;
             camera.position.z = 2;
-            controls = new THREE.FirstPersonControls(camera);
+            controls = new THREE.FirstPersonControls(camera, document, floor_width/2, floor_height/2);
             controls.lookSpeed = 0.1;
             controls.movementSpeed = 5;
             controls.noFly = true;
@@ -123,7 +125,7 @@ SceneLoad.prototype = {
                     wallMaterial.side = THREE.DoubleSide;
 
                     var size = [object.size[0], 4, object.size[1]];
-                    var position = [object.position[0]-10, 2, object.position[1]-10];
+                    var position = [object.position[0]-floor_width/2, 2, object.position[1]-floor_height/2];
                     var rotation = [0, -object.rotation*Math.PI ,0];
 
                     var wallBSP = new ThreeBSP(addWall(size, position, rotation, url));
@@ -169,9 +171,9 @@ SceneLoad.prototype = {
             if (door !== null) {
                 var rotation = -model.rotation * Math.PI;
                 var position3D = [
-                    model.position[0] - 10 + Math.sin(rotation) * 0.05,
+                    model.position[0] - floor_width/2 + Math.sin(rotation) * 0.05,
                     0,
-                    model.position[1] - 10 + Math.cos(rotation) * 0.05];
+                    model.position[1] - floor_height/2 + Math.cos(rotation) * 0.05];
                 var rotation3D = [-Math.PI/2 , 0, rotation];
                 var size = door.size.split(',');
                 var bspposition = convertBSPPosition(rotation3D[2], position3D, size);
@@ -193,9 +195,9 @@ SceneLoad.prototype = {
                 var defaultRotation = 0.5 * Math.PI;
                 var rotation = -model.rotation * Math.PI;
                 var position3D = [
-                    model.position[0] - 10 - Math.sin(rotation)*0.05,
+                    model.position[0] - floor_width/2 - Math.sin(rotation)*0.05,
                     2,
-                    model.position[1] - 10 - Math.cos(rotation)*0.05];
+                    model.position[1] - floor_height/2 - Math.cos(rotation)*0.05];
                 var rotation3D = [-Math.PI/2 , 0, rotation-defaultRotation];
                 var size = window.size.split(',');
                 var tmpsize = size.slice();
@@ -220,9 +222,9 @@ SceneLoad.prototype = {
             if (sensor !== null) {
                 var rotation = -model.rotation * Math.PI;
                 var position3D = [
-                    model.position[0] - 10 + Math.sin(rotation) * 0.05,
+                    model.position[0] - floor_width/2 + Math.sin(rotation) * 0.05,
                     2,
-                    model.position[1] - 10 + Math.cos(rotation) * 0.05];
+                    model.position[1] - floor_height/2 + Math.cos(rotation) * 0.05];
                 var rotation3D = [-Math.PI/2 , 0, rotation];
                 var size = sensor.size.split(',');
                 //var bspposition = convertBSPPosition(rotation3D[2], position3D, size);
@@ -239,7 +241,7 @@ SceneLoad.prototype = {
         // 加载家具模型
         function loadObject(data) {
             $.each(data, function (index, object) {
-                var position3D = [object.position[0]-10, 0, object.position[1]-10];
+                var position3D = [object.position[0]-floor_width/2, 0, object.position[1]-floor_height/2];
                 var rotation3D = [-Math.PI/2 , 0, -object.rotation * Math.PI];
 
                 loadModel(object.id, position3D, rotation3D, scene);
@@ -989,6 +991,27 @@ SceneLoad.prototype = {
             edit.appendChild(editText);
             canvas.appendChild(edit);
 
+            // 退出
+            var exit = document.createElement('button');
+            exit.addEventListener('click', function () {
+                if (isEdit) {
+                    if(confirm("是否保存当前场景?")) {
+                        saveBuilding();
+                    } else {
+                        for (var i = addBuildings.length; i > 0; i--) {
+                            scene.remove(addBuildings[i-1]);
+                            objects.splice(objects.indexOf(addBuildings[i-1]), 1);
+                            buildings.splice(objects.indexOf(addBuildings[i-1]), 1);
+                            addBuildings.pop();
+                        }
+                        console.log(buildings);
+                    }
+                    viewMode();
+                }
+            });
+            var exitText = document.createTextNode('退出');
+            exit.appendChild(exitText);
+            canvas.appendChild(exit);
         }
 
         canvas.appendChild(renderer.domElement);
