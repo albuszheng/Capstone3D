@@ -2,6 +2,7 @@
 namespace backend\controllers;
 
 use common\models\Config;
+use common\models\Operation;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
@@ -258,7 +259,15 @@ class SiteController extends Controller
     public function actionManageAuthority()
     {
         if (Yii::$app->user->can('authManagement')) {
-            return $this->render('authManagement');
+            $users = User::findAll(['status' => User::STATUS_ACTIVE]);
+            $operations = Operation::findAllOperations();
+            $sql = 'select user_id,description from auth_item_child ic,auth_assignment a,auth_item i where ic.parent=a.item_name and ic.child=i.name;';
+            $authorities = Yii::$app->db->createCommand($sql)->query();
+            return $this->render('authManagement', [
+                'users' => $users,
+                'operations' => $operations,
+                'authorities' => $authorities,
+            ]);
         }
     }
 

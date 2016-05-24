@@ -40,4 +40,16 @@ class Operation extends ActiveRecord
         return static::findOne(['id' => $id]);
     }
 
+    /**
+     * Finds all operations
+     *
+     * @return array|\yii\db\ActiveRecord[]
+     */
+    public static function findAllOperations()
+    {
+        $sql = 'select * from operation';
+        $operations = parent::findBySql($sql)->all();
+        return $operations;
+    }
+
 }

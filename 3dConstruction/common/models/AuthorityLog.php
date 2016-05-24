@@ -42,7 +42,7 @@ class AuthorityLog extends ActiveRecord
         return static::findOne(['id' => $id]);
     }
 
-    public function getOperation()
+    public function findOperation()
     {
         return $this->hasOne(Operation::className(), ['id' => $this->operation_id]);
     }
