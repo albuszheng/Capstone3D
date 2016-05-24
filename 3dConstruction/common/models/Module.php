@@ -43,6 +43,17 @@ class Module extends ActiveRecord
     }
 
     /**
+     * Finds module by size
+     *
+     * @param $size
+     * @return static[]
+     */
+    public static function findBySize($size)
+    {
+        return static::findAll(['size' => $size]);
+    }
+
+    /**
      * Finds all modules
      *
      * @return array|\yii\db\ActiveRecord[]

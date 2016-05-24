@@ -34,7 +34,7 @@ class Room extends ActiveRecord
         return [
             ['id', 'unique'],
             [['id', 'room_no', 'floor_no', 'building_id', 'user_id'], 'integer'],
-            [['room_no', 'floor_no', 'building_id'], 'required'],
+            [['room_no', 'floor_no', 'building_id', 'size'], 'required'],
         ];
     }
 

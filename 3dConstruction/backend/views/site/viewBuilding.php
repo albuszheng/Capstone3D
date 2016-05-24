@@ -63,13 +63,13 @@ $this->params['breadcrumbs'][] = $this->title;
 
         var raycaster = new THREE.Raycaster();
 
-        var texture = new THREE.TextureLoader().load( "model/images/wall/2.jpg" );
+        var texture = new THREE.TextureLoader().load( "img/floor.png" );
 
         for (var i = 1; i <= <?= $building->floor?>; i++) {
             var mesh = addMesh(i, new THREE.Vector3(0,i*0.8-0.8,0));
             floors.push(mesh);
         }
-        addRoof(i, new THREE.Vector3(0,i*0.8-0.8,0));
+        addRoof(i, new THREE.Vector3(0,i*0.8-0.9,0));
 
         canvas.innerHTML="";
         canvas.appendChild(renderer.domElement);
@@ -116,12 +116,12 @@ $this->params['breadcrumbs'][] = $this->title;
         function addMesh(id, position) {
             var position = position || new THREE.Vector3();
             var geometry = new THREE.BoxGeometry(5,0.8,5);
-            var material = new THREE.MeshLambertMaterial( { color: 0xfeb74c, map: texture } );
+            var material = new THREE.MeshLambertMaterial( { map: texture } );
             var mesh = new THREE.Mesh(geometry, material);
             mesh.floorid = id;
-            mesh.material.map.wrapS = THREE.RepeatWrapping;
-            mesh.material.map.wrapT = THREE.RepeatWrapping;
-            mesh.material.map.repeat.set(5, 1);
+//            mesh.material.map.wrapS = THREE.RepeatWrapping;
+//            mesh.material.map.wrapT = THREE.RepeatWrapping;
+//            mesh.material.map.repeat.set(5, 1);
             mesh.position.copy(position);
             scene.add(mesh);
             return mesh;
@@ -129,13 +129,13 @@ $this->params['breadcrumbs'][] = $this->title;
 
         function addRoof(id, position) {
             var position = position || new THREE.Vector3();
-            var geometry = new THREE.BoxGeometry(5,0.8,5);
-            var texture = new THREE.TextureLoader().load( "img/roof.png" );
+            var geometry = new THREE.BoxGeometry(5,0.6,5);
+            var texture = new THREE.TextureLoader().load( "img/nav.png" );
             var matArray = [];
             var mapMaterial = new THREE.MeshBasicMaterial({map:texture});
-            mapMaterial.map.wrapS = THREE.RepeatWrapping;
-            mapMaterial.map.wrapT = THREE.RepeatWrapping;
-            mapMaterial.map.repeat.set(10,1);
+//            mapMaterial.map.wrapS = THREE.RepeatWrapping;
+//            mapMaterial.map.wrapT = THREE.RepeatWrapping;
+//            mapMaterial.map.repeat.set(10,1);
             var roofMaterial = new THREE.MeshBasicMaterial({map:new THREE.TextureLoader().load( "img/roof2.png" )});
             matArray.push(mapMaterial);
             matArray.push(mapMaterial);

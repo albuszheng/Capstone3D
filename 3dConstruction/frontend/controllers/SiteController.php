@@ -410,8 +410,10 @@ class SiteController extends Controller
             $room_id = Yii::$app->request->get()['room_id'];
             if ($room_id) {
                 $room = Room::findById($room_id);
+                $modules = Module::findBySize($room->size);
                 return $this->render('editRoom', [
                     'room' => $room,
+                    'modules' => $modules,
                 ]);
             } else {
                 Yii::$app->session->setFlash('error', 'no room');

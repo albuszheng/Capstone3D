@@ -2,6 +2,7 @@
 
 /* @var $this yii\web\View */
 /* @var $room \common\models\Room */
+/* @var $modules \common\models\Module[] */
 
 use yii\helpers\Html;
 use frontend\assets\ThreeAsset;
@@ -22,36 +23,45 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <div id="webgl-output">
         <div id="2dbutton">
-            <button onclick="save()">save</button>
-            <button onclick="load()">load</button>
-            <button onclick="edit()">edit</button>
-            <button onclick="see()">see</button>
-            <button onclick="to3d()">to3d</button>
+            <button onclick="save()">保存</button>
+            <button onclick="load()">加载</button>
+            <button onclick="edit()">编辑</button>
+            <button onclick="see()">查看</button>
+            <button onclick="to3d()">查看3d场景</button>
+            <button onclick="importScene('data')">导入</button>
+            <button onclick="exportScene()">导出</button>
         </div>
 
         <div id="3dbutton" style="visibility: hidden">
-            <button id="to2dbutton">to2d</button>
+            <button id="to2dbutton">查看2d场景</button>
         </div>
 
         <div>
-            <button id="1" onclick="addFloor(this.id)">floor0</button>
-            <button id="2" onclick="addFloor(this.id)">floor1</button>
-            <button id="3" onclick="addFloor(this.id)">floor2</button>
-            <button id="4" onclick="addWall(this.id)">wall</button>
-            <button id="5" onclick="addDoorWindow(this.id, CONST.TYPE.DOOR)">door</button>
-            <button id="6" onclick="addDoorWindow(this.id, CONST.TYPE.WINDOW)">window</button>
-            <button id="7" onclick="addFurniture(this.id)">bed</button>
-            <button id="8" onclick="addFurniture(this.id)">cabinet</button>
-            <button id="9" onclick="addFurniture(this.id)">drawer</button>
-            <button id="12" onclick="addFurniture(this.id)">sofa</button>
-            <button id="11" onclick="addFurniture(this.id)">table</button>
-            <button id="10" onclick="addFurniture(this.id)">TV</button>
-            <button id="13" onclick="addDoorWindow(this.id, CONST.TYPE.SENSOR)">sensor</button>
+            <button id="1" onclick="addFloor(this.id)">地板0</button>
+            <button id="2" onclick="addFloor(this.id)">地板1</button>
+            <button id="3" onclick="addFloor(this.id)">地板2</button>
+            <button id="4" onclick="addWall(this.id)">墙壁</button>
+            <button id="5" onclick="addDoorWindow(this.id, CONST.TYPE.DOOR)">门</button>
+            <button id="6" onclick="addDoorWindow(this.id, CONST.TYPE.WINDOW)">窗</button>
+            <button id="7" onclick="addFurniture(this.id)">床</button>
+            <button id="8" onclick="addFurniture(this.id)">衣橱</button>
+            <button id="9" onclick="addFurniture(this.id)">床头柜</button>
+            <button id="12" onclick="addFurniture(this.id)">沙发</button>
+            <button id="11" onclick="addFurniture(this.id)">桌子</button>
+            <button id="10" onclick="addFurniture(this.id)">电视</button>
+            <button id="13" onclick="addDoorWindow(this.id, CONST.TYPE.SENSOR)">传感器</button>
+        </div>
+        <?php
+        foreach ($modules as $module): ?>
+            <button id=<?=$module->id?> onclick=importScene(<?= $module->data ?>)><?= $module->name ?></button>
+        <?php endforeach;?>
+        <div>
+
         </div>
         <div>
-            <button onclick="rotateModel()">rotate</button>
-            <button onclick="deleteModel()">delete</button>
-            <button onclick="clearModel()">clear</button>
+            <button onclick="rotateModel()">旋转</button>
+            <button onclick="deleteModel()">删除</button>
+            <button onclick="clearModel()">清空</button>
         </div>
         <div id="info">
             <ul>
@@ -120,7 +130,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     console.log('load');
                 }
             } else {
-                var room_size = <?= "'" . $room->size . "'" ?>;
+                var room_size = <?= (isset($room->size) && !(is_null($room->size))) ? "'" . $room->size . "'" : '0,0' ?>;
                 var size = room_size.split(',');
                 var exporter = new SceneExport();
                 var sceneJSON = exporter.parseInitRoom(size[0], size[1]);
@@ -162,9 +172,7 @@ $this->params['breadcrumbs'][] = $this->title;
             selected = undefined;
         }
 
-        var exporter = new SceneExport();
-        var sceneJSON = exporter.parse(floor, walls, group, step);
-
+        var sceneJSON = exportScene();
         $.ajax({
             type:'post',
             data:{id:<?= $room->id ?>, data:JSON.stringify(sceneJSON)},
@@ -193,6 +201,10 @@ $this->params['breadcrumbs'][] = $this->title;
      * 加载场景
      */
     function load(scene, width, height) {
+        if (scene === undefined) {
+            scene = data;
+        }
+
         var width = width || scene.floor.width;
         var height = height || scene.floor.height;
         step = Math.min(width2d/width, height2d/height);
@@ -201,10 +213,6 @@ $this->params['breadcrumbs'][] = $this->title;
             if(confirm("是否保存当前场景?")) {
                 save();
             }
-        }
-
-        if (scene === undefined) {
-            scene = data;
         }
 
         var loader = new SceneLoad();
@@ -299,6 +307,28 @@ $this->params['breadcrumbs'][] = $this->title;
 
         step = Math.min(width2d/data.floor.width, height2d/data.floor.height);
         createLine();
+    }
+
+    function importScene(data) {
+        if (!isEdit) {
+            console.log("当前非编辑模式");
+            return;
+        }
+
+        var loader = new SceneLoad();
+        stage = loader.load2d(data, width2d, height2d, document.getElementById('canvas2d'), models, step);
+        floor = stage.getChildAt(0);
+        walls = stage.getChildAt(1);
+        group = stage.getChildAt(2);
+        createLine();
+        edit();
+    }
+
+    function exportScene() {
+        var exporter = new SceneExport();
+        var sceneJSON = exporter.parse(floor, walls, group, step);
+        console.log(sceneJSON);
+        return sceneJSON;
     }
 
     /**

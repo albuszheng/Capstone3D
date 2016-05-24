@@ -681,6 +681,24 @@ SceneLoad.prototype = {
             change.appendChild(changeText);
             canvas.appendChild(change);
 
+            // 导入
+            var importButton = document.createElement('button');
+            importButton.addEventListener('click', function(){
+                //import
+            });
+            var importText = document.createTextNode('导入');
+            importButton.appendChild(importText);
+            canvas.appendChild(importButton);
+
+            // 导出
+            var exportButton = document.createElement('button');
+            exportButton.addEventListener('click', function(){
+                //export
+            });
+            var exportText = document.createTextNode('导出');
+            exportButton.appendChild(exportText);
+            canvas.appendChild(exportButton);
+
             $.each(modules, function (index, object) {
                 var module = document.createElement('button');
                 module.addEventListener('click', function(){
@@ -921,18 +939,29 @@ SceneLoad.prototype = {
         camera.lookAt(new THREE.Vector3());
 
         // roll-over helpers
-        var rollOverGeo = new THREE.BoxGeometry(100, 100, 100);
+        var rollOverGeo = new THREE.BoxGeometry(100, 200, 100);
         var rollOverMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, opacity: 0.5, transparent: true});
         var rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
         rollOverMesh.visible = false;
         scene.add(rollOverMesh);
 
         // cubes
-        var cubeGeo = new THREE.BoxGeometry(100, 100, 100);
-        var cubeMaterial = new THREE.MeshLambertMaterial({
-            color: 0xfeb74c,
-            map: new THREE.TextureLoader().load("model/images/wall/square-outline-textured.png")
-        });
+        var cubeGeo = new THREE.BoxGeometry(100, 200, 100);
+        var cubeTexture = new THREE.TextureLoader().load( "img/building2.png" );
+        var matArray = [];
+        var mapMaterial = new THREE.MeshBasicMaterial({map:cubeTexture});
+        mapMaterial.map.wrapS = THREE.RepeatWrapping;
+        mapMaterial.map.wrapT = THREE.RepeatWrapping;
+        mapMaterial.map.repeat.set(1,2);
+        var roofMaterial = new THREE.MeshBasicMaterial({map:new THREE.TextureLoader().load( "img/roof2.png" )});
+        matArray.push(mapMaterial);
+        matArray.push(mapMaterial);
+        matArray.push(roofMaterial);
+        matArray.push(mapMaterial);
+        matArray.push(mapMaterial);
+        matArray.push(new THREE.MeshBasicMaterial({}));
+        var cubeMaterial = new THREE.MeshFaceMaterial(matArray);
+
 
         // grid
         var size = 500, step = 100;
@@ -1022,7 +1051,7 @@ SceneLoad.prototype = {
         function load(data) {
             $.each(data, function(index, object) {
                 var voxel = new THREE.Mesh(cubeGeo, cubeMaterial);
-                voxel.position.set(object.x_axis*100-550, 50, object.y_axis*100-550);
+                voxel.position.set(object.x_axis*100-550, 100, object.y_axis*100-550);
                 voxel.building_id = object.id;
                 voxel.building_no = object.building_no;
                 voxel.floor = object.floor;
@@ -1079,6 +1108,7 @@ SceneLoad.prototype = {
                 var intersect = intersects[0];
                 rollOverMesh.position.copy(intersect.point).add(intersect.face.normal);
                 rollOverMesh.position.divideScalar(100).floor().multiplyScalar(100).addScalar(50);
+                rollOverMesh.position.y = 100;
             }
 
             render();
@@ -1115,6 +1145,7 @@ SceneLoad.prototype = {
                         var voxel = new THREE.Mesh(cubeGeo, cubeMaterial);
                         voxel.position.copy(intersect.point).add(intersect.face.normal);
                         voxel.position.divideScalar(100).floor().multiplyScalar(100).addScalar(50);
+                        voxel.position.y = 100;
                         voxel.building_no = building_no;
                         voxel.floor = floor;
                         voxel.x_axis = (voxel.position.x + 550) / step;
@@ -1192,11 +1223,11 @@ SceneLoad.prototype = {
                 if ( INTERSECTED !== intersects[ 0 ].object ) {
                     if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
                     INTERSECTED = intersects[ 0 ].object;
-                    INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
-                    INTERSECTED.material.emissive.setHex( 0x00ff00 );
+                    rollOverMesh.position.copy( INTERSECTED.position );
+                    rollOverMesh.visible = true;
                 }
             } else {
-                if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+                if ( INTERSECTED ) rollOverMesh.visible = false;
                 INTERSECTED = null;
             }
 
