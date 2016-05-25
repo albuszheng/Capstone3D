@@ -8,6 +8,7 @@ use yii\db\ActiveRecord;
  * Model model
  *
  * @property integer $id
+ * @property string $name
  * @property string $size
  * @property string $scale
  * @property string $url2d
@@ -68,6 +69,7 @@ class Model extends ActiveRecord
 
     public static function updateModel($data) {
         $model = self::findById($data['id']);
+        $model->name = $data['name'];
         $model->size = $data['size'];
         $model->scale = $data['scale'];
         $model->url2d = $data['url2d'];

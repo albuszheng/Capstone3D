@@ -63,6 +63,7 @@ class m130524_201442_init extends Migration
         // table model
         $this->createTable('{{%model}}', [
             'id' => $this->primaryKey(),
+            'name' => $this->string(),
             'size' => $this->string(),
             'scale' => $this->string(),
             'url2d' => $this->string()->notNull(),
@@ -71,21 +72,21 @@ class m130524_201442_init extends Migration
         ], $tableOptions);
 
         $this->batchInsert('{{%model}}', [
-            'id', 'size', 'scale', 'url2d', 'url3d', 'type'
+            'id', 'name', 'size', 'scale', 'url2d', 'url3d', 'type'
         ], [
-            ['1', null, null, 'null', null, '0'],
-            ['2', null, null, 'floor-wood.jpg', null, '0'],
-            ['3', null, null, 'wood-2.jpg', null, '0'],
-            ['4', null, null, 'brick-wall.jpg', null, '1'],
-            ['5', '1,2.1,0.1', '0.02,0.02,0.02', 'door.png', 'door.dae', '2'],
-            ['6', '1.44,0.96,0.1', '0.02,0.02,0.02', 'window.png', 'window.dae', '3'],
-            ['7', '3,2.5', '0.03,0.03,0.03', 'bed.png', 'bed.dae', '4'],
-            ['8', '1.5,1', '0.05,0.05,0.06', 'cabinet.png', 'cabinet.dae', '4'],
-            ['9', '1,0.5', '0.02,0.02,0.02', 'drawer.png', 'drawer.dae', '4'],
-            ['10', '4,1', '0.04,0.04,0.04', 'TV.png', 'TV.dae', '4'],
-            ['11', '3,3', '0.04,0.04,0.04', 'table.png', 'table.dae', '4'],
-            ['12', '4,1.5', '0.04,0.04,0.04', 'sofa.png', 'sofa.dae', '4'],
-            ['13', '0.2,0.3,0.1', '0.05,0.05,0.05', 'sensor.png', 'sensor.dae', '5']
+            ['1', '地板0', null, null, 'null', null, '0'],
+            ['2', '地板1', null, null, 'floor-wood.jpg', null, '0'],
+            ['3', '地板2', null, null, 'wood-2.jpg', null, '0'],
+            ['4', '墙', null, null, 'brick-wall.jpg', null, '1'],
+            ['5', '门', '1,2.1,0.1', '0.02,0.02,0.02', 'door.png', 'door.dae', '2'],
+            ['6', '窗', '1.44,0.96,0.1', '0.02,0.02,0.02', 'window.png', 'window.dae', '3'],
+            ['7', '床', '3,2.5', '0.03,0.03,0.03', 'bed.png', 'bed.dae', '4'],
+            ['8', '橱柜', '1.5,1', '0.05,0.05,0.06', 'cabinet.png', 'cabinet.dae', '4'],
+            ['9', '抽屉', '1,0.5', '0.02,0.02,0.02', 'drawer.png', 'drawer.dae', '4'],
+            ['10', '电视', '4,1', '0.04,0.04,0.04', 'TV.png', 'TV.dae', '4'],
+            ['11', '桌子', '3,3', '0.04,0.04,0.04', 'table.png', 'table.dae', '4'],
+            ['12', '沙发', '4,1.5', '0.04,0.04,0.04', 'sofa.png', 'sofa.dae', '4'],
+            ['13', '传感器', '0.2,0.3,0.1', '0.06,0.05,0.06', 'sensor.png', 'sensor.dae', '5']
         ]);
 
         // table module

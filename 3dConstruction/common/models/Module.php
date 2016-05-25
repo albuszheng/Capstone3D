@@ -69,14 +69,11 @@ class Module extends ActiveRecord
      * Update by id
      *
      * @param $id
-     * @param $name
      * @param $data
      * @return bool
      */
-    public static function updatModule($id, $name, $size, $data) {
+    public static function updatModule($id, $data) {
         $module = self::findById($id);
-        $module->name = $name;
-        $module->size = $size;
         $module->data = $data;
         return $module->save();
     }
