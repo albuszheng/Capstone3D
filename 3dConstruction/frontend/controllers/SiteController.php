@@ -218,10 +218,21 @@ class SiteController extends Controller
         if (Yii::$app->user->can('viewFloor')) {
             $building_id = isset(Yii::$app->request->get()['id']) ? Yii::$app->request->get()['id'] : 1;
             $building = Building::findById($building_id);
+            $canEdit = Yii::$app->user->can('editRoom');
 
             return $this->render('viewBuilding', [
                 'building' => $building,
+                'canEdit' => $canEdit,
             ]);
+        }
+    }
+
+    public function actionExportBuilding() {
+        if (Yii::$app->request->isAjax) {
+            $data = Yii::$app->request->post();
+            $rooms = Room::findRoomsByBuilding($data['id']);
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['rooms' => $rooms];
         }
     }
 
@@ -301,6 +312,47 @@ class SiteController extends Controller
         }
     }
 
+    public function actionExportFloor() {
+        if (Yii::$app->request->isAjax) {
+            $data = Yii::$app->request->post();
+
+            $building_id = $data['id'];
+            $floor_no = $data['floor'];
+            $rooms = Room::findRoomsByFloor($building_id, $floor_no);
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['rooms' => $rooms];
+        }
+    }
+
+    public function actionImportFloor() {
+        if (Yii::$app->request->isAjax) {
+            $data = Yii::$app->request->post();
+            $rooms = $data['data']['room'];
+            $newRooms = [];
+            $result = false;
+
+            $delRooms = Room::findRoomsByFloor($data['id'], $data['floor']);
+            for ($j=0; $j<count($delRooms); $j++) {
+                $result = $delRooms[$j]->delete();
+            }
+
+            for ($i=0; $i<count($rooms); $i++) {
+                $room = $rooms[$i];
+                $newRoom = new Room();
+                $newRoom->room_no = $room['room_no'];
+                $newRoom->floor_no = $data['floor'];
+                $newRoom->building_id = $data['id'];
+                $newRoom->size = $room['size'];
+                $newRoom->position = $room['position'];
+                $newRoom->data = Json::encode($room['data']);
+                $result = $newRoom->save();
+                $newRooms[$i] = $newRoom;
+            }
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['result' => $result, 'rooms' => $newRooms];
+        }
+    }
+
     public function actionGetBuildings() {
         if (Yii::$app->request->isAjax) {
             $buildings = Building::findAllBuildings();
@@ -329,6 +381,61 @@ class SiteController extends Controller
             }
             Yii::$app->response->format = Response::FORMAT_JSON;
             return ['result' => $result, 'ids' => $ids];
+        }
+    }
+
+    public function actionImportBuilding() {
+        if (Yii::$app->request->isAjax) {
+            $data = Yii::$app->request->post();
+            $building_data = $data['data'];
+            $rooms = $building_data['room'];
+            $floor = $building_data['floor'];
+            $building = Building::findById($data['id']);
+            $newRooms = [];
+            $result = false;
+
+            $delRooms = Room::findRoomsByBuilding($data['id']);
+            for ($j=0; $j<count($delRooms); $j++) {
+                $result = $delRooms[$j]->delete();
+            }
+
+            if ($data['changeFloor'] === true) {
+                $building->floor = $floor;
+
+                for ($i=0; $i<count($rooms); $i++) {
+                    $room = $rooms[$i];
+                    $newRoom = new Room();
+                    $newRoom->room_no = $room['room_no'];
+                    $newRoom->floor_no = $room['floor_no'];
+                    $newRoom->building_id = $building->id;
+                    $newRoom->size = $room['size'];
+                    $newRoom->position = $room['position'];
+                    $newRoom->data = Json::encode($room['data']);
+                    $result = $newRoom->save();
+                    $newRooms[$i] = $newRoom;
+                }
+            } else {
+                for ($i=0; $i<count($rooms); $i++) {
+                    $room = $rooms[$i];
+                    if ($room['floor_no'] > $building->floor) {
+                        continue;
+                    }
+                    $newRoom = new Room();
+                    $newRoom->room_no = $room['room_no'];
+                    $newRoom->floor_no = $room['floor_no'];
+                    $newRoom->building_id = $building->id;
+                    $newRoom->size = $room['size'];
+                    $newRoom->position = $room['position'];
+                    $newRoom->data = Json::encode($room['data']);
+                    $result = $newRoom->save();
+                    $newRooms[$i] = $newRoom;
+                }
+
+            }
+            $result = $result && Building::updateBuilding($building->id, $building_data['width'], $building_data['height'], $building->floor);
+
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['result' => $result];
         }
     }
 

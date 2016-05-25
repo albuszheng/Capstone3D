@@ -2,6 +2,7 @@
 
 /* @var $this yii\web\View */
 /* @var $building \common\models\Building */
+/* @var $canEdit boolean */
 
 use yii\helpers\Html;
 use frontend\assets\ThreeAsset;
@@ -17,6 +18,10 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <p>建筑场景</p>
 
+    <div id="operations" style="display: none">
+        <button onclick="importBuilding()">导入</button>
+        <button onclick="exportBuilding()">导出</button>
+    </div>
     <div id="canvas">
     </div>
 
@@ -34,6 +39,15 @@ $this->params['breadcrumbs'][] = $this->title;
 
     // 加载场景
     function load() {
+        if (<?php
+            if($canEdit) {
+                echo 1;
+            } else {
+                echo 0;
+            } ?>) {
+            $('#operations').css('display', 'block');
+        }
+
         var mouse = new THREE.Vector2(), INTERSECTED;
         var floors = [];
 
@@ -149,6 +163,65 @@ $this->params['breadcrumbs'][] = $this->title;
             mesh.position.copy(position);
             scene.add(mesh);
         }
+    }
+
+    function importBuilding() {
+        var data = {"version":"1.0.0","type":"building","floor":2,"width":200,"height":120,"room":[{"floor_no":"1","room_no":"101","size":"20,20","position":"14.320482866043612,14.883720930232558","data":""},{"floor_no":"1","room_no":"102","size":"20,20","position":"66.34540498442367,19.844961240310077","data":{"version":"1.0.0","type":"scene","floor":{"type":"floor","width":"20","height":"20","id":"2"},"wall":[{"type":"wall","id":"4","size":["19.9","0.1"],"position":["0.1","10"],"rotation":"1.5"},{"type":"wall","id":"4","size":["19.9","0.1"],"position":["19.9","10"],"rotation":"0.5"},{"type":"wall","id":"4","size":["19.9","0.1"],"position":["10","19.9"],"rotation":"1"},{"type":"wall","id":"4","size":["19.9","0.1"],"position":["10","0.1"],"rotation":"0"}],"objects":[{"type":"furniture","id":"7","position":["10","10"],"rotation":"0"}]}},{"floor_no":"2","room_no":"201","size":"30,30","position":"100,60","data":{"version":"1.0.0","type":"scene","floor":{"type":"floor","width":30,"height":30,"id":"1"},"wall":[{"type":"wall","id":"4","size":[29.799999999999997,0.1],"position":[15,0.1],"rotation":0,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[29.799999999999997,0.1],"position":[29.899999999999995,15],"rotation":0.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[29.799999999999997,0.1],"position":[15,29.899999999999995],"rotation":1,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[29.799999999999997,0.1],"position":[0.1,15],"rotation":1.5,"doors":[],"windows":[],"sensors":[]}],"objects":[{"type":"furniture","id":"7","position":[1.82666015625,4.21875],"rotation":0}]}}]};
+
+        var changeFloor = false;
+        var change = true;
+
+        if ((data.width !== <?= $building->width?>) || (data.height !== <?= $building->height?>)) {
+            if(confirm("楼层面积不一致,是否继续?点击确定更改楼层面积,点击取消放弃此次操作!")) {
+                if (data.floor !== <?= $building->floor?>) {
+                    if(confirm("楼层数不一致,是否继续?点击确定更改楼层数,点击取消不更改!")) {
+                        changeFloor = true;
+                    }
+                }
+            } else {
+                change = false;
+            }
+        }
+
+        if (change) {
+            $.ajax({
+                type: 'post',
+                data: {data:data, id: <?= $building->id?>, changeFloor: changeFloor},
+                url: 'index.php?r=site/import-building',
+                success: function (data) {
+                    console.log(data);
+
+                    if (data.result) {
+                        location.reload();
+                    }
+                },
+
+                error: function (xhr) {
+                    console.log(xhr.responseText);
+                }
+
+            });
+        }
+
+    }
+
+    function exportBuilding() {
+        $.ajax({
+            type: 'post',
+            data: {id: <?= $building->id ?>},
+            url: 'index.php?r=site/export-building',
+            success: function (data) {
+                var exporter = new SceneExport();
+                var sceneJSON = exporter.parseBuildingRomms(data.rooms, <?= $building->width?>, <?= $building->height?>, <?= $building->floor?>);
+                alert(sceneJSON);
+            },
+
+            error: function (xhr) {
+                console.log(xhr.responseText);
+            }
+
+        });
+
     }
 
     window.onload = load;
