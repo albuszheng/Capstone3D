@@ -51,7 +51,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <button id="12" onclick="addFurniture(this.id)">沙发</button>
             <button id="11" onclick="addFurniture(this.id)">桌子</button>
             <button id="10" onclick="addFurniture(this.id)">电视</button>
-            <button id="13" onclick="addDoorWindow(this.id, CONST.TYPE.SENSOR)">传感器</button>
+            <button id="13" onclick="addSensor(this.id)">传感器</button>
         </div>
         <?php
         foreach ($modules as $module): ?>
@@ -236,8 +236,17 @@ $this->params['breadcrumbs'][] = $this->title;
         graph.visible = true;
 
         $.each(walls.children, function (index, object) {
-            object.interactive = true;
-            object.buttonMode = true;
+            if (object.type === CONST.TYPE.SENSOR) {
+                object.removeAllListeners();
+                object
+                    .on('mousedown', onDragStart)
+                    .on('mouseup', onDragEnd)
+                    .on('mouseupoutside', onDragEnd)
+                    .on('mousemove', onDragMove);
+            } else {
+                object.interactive = true;
+                object.buttonMode = true;
+            }
         });
 
         $.each(group.children, function (index, object) {
@@ -260,7 +269,13 @@ $this->params['breadcrumbs'][] = $this->title;
         }
 
         $.each(walls.children, function (index, object) {
-            object.interactive = false;
+            if (object.type === CONST.TYPE.SENSOR) {
+                object.removeAllListeners();
+                object
+                    .on('mousedown', onMouseMove);
+            } else {
+                object.interactive = false;
+            }
         });
 
         $.each(group.children, function (index, object) {
@@ -463,6 +478,30 @@ $this->params['breadcrumbs'][] = $this->title;
         console.log(parent.children);
     }
 
+    function addSensor(id) {
+        if (!isEdit) {
+            console.log("当前非编辑模式");
+            return;
+        }
+
+        if (selected === undefined || selected.type !== CONST.TYPE.WALL) {
+            console.log("请选择一面墙壁");
+            return;
+        }
+
+        $("#canvas2d").unbind('mousedown', dragStart);
+        var parent = selected;
+        var position = [parent.position.x, parent.position.y];
+        var model = createDoorWindow(id, position, parent.rotation);
+        model.type = type;
+        model.id = id;
+        model.info = 'info'+position[0];
+        model.wall = parent;
+        parent.children.push(model);
+        selectMode(model, CONST.TYPE.SENSOR);
+        updateInfo(selected);
+    }
+
     /**
      * 添加家具模型
      * @param id
@@ -564,6 +603,12 @@ $this->params['breadcrumbs'][] = $this->title;
             updateInfo(selected);
 
         }
+    }
+
+    // 传感器信息
+    function onMouseMove( event ) {
+        //event.preventDefault();
+        alert(event.target.info);
     }
 
     // 创建墙壁

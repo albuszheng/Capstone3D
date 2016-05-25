@@ -390,7 +390,7 @@ SceneLoad.prototype = {
                     }
 
                     if (object.sensors !== undefined) {
-                        loadDoorWindow(object.sensors, wall, CONST.TYPE.SENSOR);
+                        loadSensor(object.sensors, wall, CONST.TYPE.SENSOR);
                     }
                 }
             });
@@ -471,6 +471,49 @@ SceneLoad.prototype = {
             return model;
         }
 
+        // 加载传感器
+        function loadSensor(data, wall, type) {
+            $.each(data, function (index, object) {
+                var position = [object.position[0] * step, object.position[1] * step];
+                var rotation = object.rotation * Math.PI;
+
+                var model = createSensor(object.id, position, rotation);
+                if (model !== null) {
+                    model.type = type;
+                    model.wall = wall;
+                    wall.children.push(model);
+                }
+            });
+        }
+
+        // 创建传感器
+        function createSensor(id, position, rotation) {
+            var model = null;
+            var sensor = findModelById(id);
+
+            if (sensor !== null) {
+                var texture = PIXI.Texture.fromImage('model/plan/' + sensor.url2d);
+                model = new PIXI.Sprite(texture);
+                model.anchor.set(0, 0.5);
+                model.position.set(position[0], position[1]);
+                var size = sensor.size.split(',');
+                model.width = size[0] * step;
+                model.height = size[2] * step * 2;
+                model.rotation = rotation;
+                model.id = id;
+                model.info = 'info'+position[0];
+                model.interactive = true;
+                model.buttonMode = true;
+
+                model
+                    .on('mousedown', onMouseMove);
+
+                walls.addChild(model);
+            }
+
+            return model;
+        }
+
         // 加载家具模型
         function loadFurniture(data) {
             $.each(data, function (index, object) {
@@ -516,6 +559,12 @@ SceneLoad.prototype = {
                 }
             }
             return null;
+        }
+
+        // 传感器信息
+        function onMouseMove( event ) {
+            //event.preventDefault();
+            alert(event.target.info);
         }
 
         // 开始模型拖动事件
@@ -1279,7 +1328,7 @@ SceneLoad.prototype = {
             var intersects = raycaster.intersectObjects( buildings );
             if ( intersects.length > 0 ) {
                 if ( INTERSECTED !== intersects[ 0 ].object ) {
-                    if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+                    //if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
                     INTERSECTED = intersects[ 0 ].object;
                     rollOverMesh.position.copy( INTERSECTED.position );
                     rollOverMesh.visible = true;
