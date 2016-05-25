@@ -92,23 +92,29 @@ header {
 /*}*/
 
 body div.landing {
-  height: 800px;
-  /*width:1170px;*/
-    position: relative;
-    top:-50px;
+  height: 100vh;
+  width:100%;
+    position: absolute;
+    top:0;
     left: 0;
-    margin-left: -338px;
-margin-right: -338px;
+    bottom:0;
+    right:0;
+    /*margin-left: -338px;*/
+/*margin-right: -338px;*/
     overflow: hidden;
+    text-align: center;
   background-image:url(../img/photo-1456930266018-fda42f7404a7.jpg);
   background-position: center;
   background-size: cover;
 }
 
 footer.landing {
-  position: relative;
+    position: absolute;
   text-align: center;
-  top: 650px;
+  bottom:50px;
+    left: 50%;
+    width: 980px;
+    margin-left: -490px;
 }
 
 footer.landing p {
