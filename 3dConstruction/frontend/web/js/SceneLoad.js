@@ -756,6 +756,11 @@ SceneLoad.prototype = {
 
             });
 
+            var importInput = document.createElement('input');
+            importInput.type = 'file';
+            importInput.id = 'importFile';
+            canvas.appendChild(importInput);
+
             // 导入
             var importButton = document.createElement('button');
             importButton.addEventListener('click', function(){
@@ -859,25 +864,39 @@ SceneLoad.prototype = {
                 alert("当前非编辑状态!");
             }
 
-            var data = {"version":"1.0.0","type":"floor","width":200,"height":80,"room":[{"room_no":"601","size":"20,20","position":"14.320482866043612,14.883720930232558","data":null},{"room_no":"602","size":"20,20","position":"66.34540498442367,19.844961240310077","data":{"version":"1.0.0","type":"scene","floor":{"type":"floor","width":20,"height":20,"id":"2"},"wall":[{"type":"wall","id":"4","size":[19.9,0.1],"position":[0.1,10],"rotation":1.5,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[19.9,10],"rotation":0.5,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,19.9],"rotation":1,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,0.1],"rotation":0,"doors":[],"windows":[]}],"objects":[{"type":"furniture","id":"7","position":[10,10],"rotation":0}]}}]};
+            if (typeof FileReader) {
+                var file = document.getElementById('importFile').files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.readAsText(file, 'utf-8');
+                    reader.onload = function (e) {
+                        $.ajax({
+                            type: 'post',
+                            data: {data:JSON.parse(this.result), id: building_id, floor: floor_no},
+                            url: 'index.php?r=site/import-floor',
+                            success: function (data) {
+                                if (data.result) {
+                                    load(data.rooms);
+                                }
+                            },
 
-            $.ajax({
-                type: 'post',
-                data: {data:data, id: building_id, floor: floor_no},
-                url: 'index.php?r=site/import-floor',
-                success: function (data) {
-                    if (data.result) {
-                        load(data.rooms);
+                            error: function (xhr) {
+                                console.log(xhr.responseText);
+                            }
+
+                        });
+
+                        viewMode();
                     }
-                },
-
-                error: function (xhr) {
-                    console.log(xhr.responseText);
+                } else {
+                    alert("请选择规范的文件导入!");
                 }
 
-            });
 
-            viewMode();
+            } else {
+                alert("您的浏览器不支持此功能!");
+            }
+
         }
 
         // 导出楼层场景
@@ -893,7 +912,17 @@ SceneLoad.prototype = {
                 success: function (data) {
                     var exporter = new SceneExport();
                     var sceneJSON = exporter.parseFloor(data.rooms, width, height, step, true);
-                    alert(JSON.parse(sceneJSON));
+                    //alert(JSON.parse(sceneJSON));
+                    var a = window.document.createElement('a');
+                    a.href = window.URL.createObjectURL(new Blob([sceneJSON], {type: 'text/dta'}));
+                    a.download = 'test.dta';
+                    a.target = '_blank';
+
+                    console.log(a);
+                    document.body.appendChild(a);
+                    a.click();
+
+                    document.body.removeChild(a);
                 },
 
                 error: function (xhr) {

@@ -27,10 +27,10 @@ $this->params['breadcrumbs'][] = $this->title;
             <button onclick="load()">加载</button>
             <button onclick="edit()">编辑</button>
             <button onclick="see()">查看</button>
-            <button onclick="to3d()">查看3d场景</button>
+            <button onclick="to3d()">查看3d场景</button></br>
+            <input type="file" name="file" id="importFile"/>
             <button onclick="importRoom()">导入</button>
             <button onclick="exportRoom()">导出</button>
-<!--            <a id='save-btn' href="data:text/paint; utf-8, 。" download="scene.txt">保存</a>-->
 
         </div>
 
@@ -343,14 +343,31 @@ $this->params['breadcrumbs'][] = $this->title;
     }
 
     function importRoom() {
-        // TODO get data
-        var data = {"version":"1.0.0","type":"scene","floor":{"type":"floor","width":20,"height":20,"id":"1"},"wall":[{"type":"wall","id":"4","size":[19.9,0.1],"position":[0.1,10],"rotation":1.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[19.9,10],"rotation":0.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,19.9],"rotation":1,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,0.1],"rotation":0,"doors":[],"windows":[],"sensors":[]}],"objects":[{"type":"furniture","id":"7","position":[10,10],"rotation":0}]};
-//        console.log(data); //sceneJSON
-        importModule(data);
+        if (!isEdit) {
+            console.log("当前非编辑模式");
+            return;
+        }
+
+        if (typeof FileReader) {
+            var file = document.getElementById('importFile').files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.readAsText(file, 'utf-8');
+                reader.onload = function (e) {
+                    importModule(JSON.parse(this.result));
+                }
+            } else {
+                alert("请选择规范的文件导入!");
+            }
+
+
+        } else {
+            alert("您的浏览器不支持此功能!");
+        }
+
     }
 
     function exportRoom() {
-        // TODO to file
         var exporter = new SceneExport();
         var sceneJSON = exporter.parse(floor, walls, group, step);
         console.log(sceneJSON);
