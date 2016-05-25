@@ -34,8 +34,12 @@ $this->params['breadcrumbs'][] = $this->title;
             <!-- </div> -->
             <!-- <div class="btn-group btn-group"> -->
                 <button onclick="see()" class="btn btn-default">查看</button>
-                <input type="file" name="file" id="importFile" class="btn btn-default" />
-                <button onclick="importRoom()" class="btn btn-default">导入</button>
+                <!-- <input type="file" name="file" id="importFile" class="btn btn-default" /> -->
+                <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">导入 <span class="caret"></span></button>     
+                <ul class="dropdown-menu">
+                  <li><input type="file" name="file" id="importFile" /></li>
+                  <li><button onclick="importRoom()" class="btn btn-default btn-sm">确认</button></li>
+                </ul>
                 <button onclick="exportRoom()" class="btn btn-default">导出</button>
             <!-- </div> -->
             </div>

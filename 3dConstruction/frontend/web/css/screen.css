@@ -376,7 +376,7 @@ ul.nav-menu li a.active {
 }
 
 .control-group .model-control {
-  margin-top: -100%;
+  margin-top: -80%;
 }
 
 .control-group #info {
@@ -406,7 +406,7 @@ ul.nav-menu li a.active {
 }
 
 .control-group .model-list {
-  margin-left: 41px;
+  margin-left: 35px;
 }
 
 .view-change button.active {
