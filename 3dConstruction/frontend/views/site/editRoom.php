@@ -354,7 +354,16 @@ $this->params['breadcrumbs'][] = $this->title;
         var exporter = new SceneExport();
         var sceneJSON = exporter.parse(floor, walls, group, step);
         console.log(sceneJSON);
-        alert(sceneJSON);
+        var a = window.document.createElement('a');
+        a.href = window.URL.createObjectURL(new Blob([JSON.stringify(sceneJSON)], {type: 'text/dta'}));
+        a.download = 'test.dta';
+        a.target = '_blank';
+
+        console.log(a);
+        document.body.appendChild(a);
+        a.click();
+
+        document.body.removeChild(a);
         return sceneJSON;
     }
 
