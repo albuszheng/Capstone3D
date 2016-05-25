@@ -140,6 +140,16 @@ class Room extends ActiveRecord
     }
 
     /**
+     * Find rooms by building
+     *
+     * @param $building_id
+     * @return static[]
+     */
+    public static function findRoomsByBuilding($building_id) {
+        return static::findAll(['building_id' => $building_id]);
+    }
+
+    /**
      * Find rooms by floor
      *
      * @param $building_id

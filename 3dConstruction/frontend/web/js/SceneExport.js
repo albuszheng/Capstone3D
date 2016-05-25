@@ -259,15 +259,23 @@ SceneExport.prototype = {
         return JSON.parse(output);
     },
 
-    parseFloor: function ( group, width, height, scale ) {
+    parseFloor: function ( group, width, height, scale, isExport ) {
         var rooms = [];
 
-        for (var i = 0; i < group.length; i++) {
-            var room = group[i];
-            if (room instanceof PIXI.Container) {
-                rooms.push("\n" + RoomString(room));
+        if (isExport) {
+            for (var i = 0; i < group.length; i++) {
+                var room = group[i];
+                rooms.push("\n" + ExportString(room));
+            }
+        } else {
+            for (var i = 0; i < group.length; i++) {
+                var room = group[i];
+                if (room instanceof PIXI.Container) {
+                    rooms.push("\n" + RoomString(room));
+                }
             }
         }
+
 
         /**
          * 将房间转换String格式,方便保存为JSON
@@ -282,6 +290,19 @@ SceneExport.prototype = {
                 '           "room_no": "' + room.getChildAt(1).text + '",',
                 '           "size": "' + Vector2String(room.width, room.height, scale) + '",',
                 '           "position": "' + Vector2String(room.position.x, room.position.y, scale) + '"',
+                '       }'
+            ].join( '\n' );
+
+            return output;
+        }
+
+        function ExportString(room) {
+            var output = [
+                '       {',
+                '           "room_no": "' + room.room_no + '",',
+                '           "size": "' + room.size + '",',
+                '           "position": "' + room.position + '",',
+                '           "data": ' + room.data,
                 '       }'
             ].join( '\n' );
 
@@ -306,7 +327,6 @@ SceneExport.prototype = {
             '}'
         ].join( '\n' );
 
-        //return JSON.parse(output);
         return output;
     },
 
@@ -354,5 +374,45 @@ SceneExport.prototype = {
 
         //return JSON.parse(output);
         return output;
+    },
+
+    parseBuildingRomms: function ( data, width, height, floor ) {
+        var rooms = [];
+
+        for (var i = 0; i < data.length; i++) {
+            var room = data[i];
+            rooms.push("\n" + ExportString(room));
+        }
+
+        function ExportString(room) {
+            var data = !(room.data) ? 'null' : room.data;
+            var output = [
+                '       {',
+                '           "floor_no": "' + room.floor_no + '",',
+                '           "room_no": "' + room.room_no + '",',
+                '           "size": "' + room.size + '",',
+                '           "position": "' + room.position + '",',
+                '           "data": ' + data,
+                '       }'
+            ].join('\n');
+
+            return output;
+        }
+
+
+        var output = [
+            '{',
+            '   "version": "' + CONST.VERSION + '",',
+            '   "type": "building",',
+            '   "floor": ' + floor + ',',
+            '   "width": ' + width + ',',
+            '   "height": ' + height + ',',
+            '   "room": [',
+            rooms,
+            '   ]',
+            '}'
+        ].join('\n');
+
+        return JSON.parse(output);
     }
 }

@@ -28,8 +28,10 @@ $this->params['breadcrumbs'][] = $this->title;
             <button onclick="edit()">编辑</button>
             <button onclick="see()">查看</button>
             <button onclick="to3d()">查看3d场景</button>
-            <button onclick="importScene('data')">导入</button>
-            <button onclick="exportScene()">导出</button>
+            <button onclick="importRoom()">导入</button>
+            <button onclick="exportRoom()">导出</button>
+<!--            <a id='save-btn' href="data:text/paint; utf-8, 。" download="scene.txt">保存</a>-->
+
         </div>
 
         <div id="3dbutton" style="visibility: hidden">
@@ -53,7 +55,7 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
         <?php
         foreach ($modules as $module): ?>
-            <button id=<?=$module->id?> onclick=importScene(<?= $module->data ?>)><?= $module->name ?></button>
+            <button id=<?=$module->id?> onclick=importModule(<?= $module->data ?>)><?= $module->name ?></button>
         <?php endforeach;?>
         <div>
 
@@ -107,7 +109,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     function start() {
         if (<?= $room->id ?> !== null) {
-            data = <?= (isset($room->data) && !(is_null($room->data))) ? $room->data : 'null' ?>;
+            data = <?= (isset($room->data) && !(is_null($room->data)) && !(empty($room->data))) ? $room->data : 'null' ?>;
 
             // 获取所有模型信息
             $.ajax({
@@ -124,7 +126,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 }
 
             });
-            if (data !== null) {
+            if (data) {
                 if (data.type === "scene") {
                     load(data);
                     console.log('load');
@@ -172,7 +174,8 @@ $this->params['breadcrumbs'][] = $this->title;
             selected = undefined;
         }
 
-        var sceneJSON = exportScene();
+        var exporter = new SceneExport();
+        var sceneJSON = exporter.parse(floor, walls, group, step);
         $.ajax({
             type:'post',
             data:{id:<?= $room->id ?>, data:JSON.stringify(sceneJSON)},
@@ -309,7 +312,7 @@ $this->params['breadcrumbs'][] = $this->title;
         createLine();
     }
 
-    function importScene(data) {
+    function importModule(data) {
         if (!isEdit) {
             console.log("当前非编辑模式");
             return;
@@ -324,10 +327,19 @@ $this->params['breadcrumbs'][] = $this->title;
         edit();
     }
 
-    function exportScene() {
+    function importRoom() {
+        // TODO get data
+        var data = {"version":"1.0.0","type":"scene","floor":{"type":"floor","width":20,"height":20,"id":"1"},"wall":[{"type":"wall","id":"4","size":[19.9,0.1],"position":[0.1,10],"rotation":1.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[19.9,10],"rotation":0.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,19.9],"rotation":1,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,0.1],"rotation":0,"doors":[],"windows":[],"sensors":[]}],"objects":[{"type":"furniture","id":"7","position":[10,10],"rotation":0}]};
+//        console.log(data); //sceneJSON
+        importModule(data);
+    }
+
+    function exportRoom() {
+        // TODO to file
         var exporter = new SceneExport();
         var sceneJSON = exporter.parse(floor, walls, group, step);
         console.log(sceneJSON);
+        alert(sceneJSON);
         return sceneJSON;
     }
 
@@ -463,7 +475,6 @@ $this->params['breadcrumbs'][] = $this->title;
 
         $("#canvas2d").unbind('mousedown', dragStart);
         var model = createFurniture(id, [width2d/2, height2d/2], 0);
-        console.log(model);
         if (model !== null) {
             selectMode(model, CONST.TYPE.FURNITURE);
             updateInfo(selected);

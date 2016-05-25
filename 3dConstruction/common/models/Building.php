@@ -57,4 +57,22 @@ class Building extends ActiveRecord
         return $building;
     }
 
+    /**
+     * Update building info
+     *
+     * @param $id
+     * @param $width
+     * @param $height
+     * @param $floor
+     * @return bool
+     */
+    public static function updateBuilding($id, $width, $height, $floor)
+    {
+        $building = self::findById($id);
+        $building->width = $width;
+        $building->height = $height;
+        $building->floor = $floor;
+        return $building->save();
+    }
+
 }

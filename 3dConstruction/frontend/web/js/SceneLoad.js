@@ -628,8 +628,8 @@ SceneLoad.prototype = {
             // 保存
             var save = document.createElement('button');
             save.addEventListener('click', function(){
-                viewMode();
                 saveFloor();
+                viewMode();
             });
             var saveText = document.createTextNode('保存');
             save.appendChild(saveText);
@@ -681,24 +681,6 @@ SceneLoad.prototype = {
             change.appendChild(changeText);
             canvas.appendChild(change);
 
-            // 导入
-            var importButton = document.createElement('button');
-            importButton.addEventListener('click', function(){
-                //import
-            });
-            var importText = document.createTextNode('导入');
-            importButton.appendChild(importText);
-            canvas.appendChild(importButton);
-
-            // 导出
-            var exportButton = document.createElement('button');
-            exportButton.addEventListener('click', function(){
-                //export
-            });
-            var exportText = document.createTextNode('导出');
-            exportButton.appendChild(exportText);
-            canvas.appendChild(exportButton);
-
             $.each(modules, function (index, object) {
                 var module = document.createElement('button');
                 module.addEventListener('click', function(){
@@ -724,6 +706,27 @@ SceneLoad.prototype = {
                 canvas.appendChild(module);
 
             });
+
+            // 导入
+            var importButton = document.createElement('button');
+            importButton.addEventListener('click', function(){
+                importFloor();
+            });
+            var importText = document.createTextNode('导入');
+            importButton.appendChild(importText);
+            canvas.appendChild(importButton);
+            importButton.style.display = 'none';
+
+            // 导出
+            var exportButton = document.createElement('button');
+            exportButton.addEventListener('click', function(){
+                exportFloor();
+            });
+            var exportText = document.createTextNode('导出');
+            exportButton.appendChild(exportText);
+            canvas.appendChild(exportButton);
+            exportButton.style.display = 'block';
+
         }
 
         canvas.appendChild(renderer.view);
@@ -799,6 +802,57 @@ SceneLoad.prototype = {
                 }
 
             });
+        }
+
+        // 导入楼层场景
+        function importFloor() {
+            if (!isEdit) {
+                alert("当前非编辑状态!");
+            }
+
+            var data = {"version":"1.0.0","type":"floor","width":200,"height":80,"room":[{"room_no":"601","size":"20,20","position":"14.320482866043612,14.883720930232558","data":null},{"room_no":"602","size":"20,20","position":"66.34540498442367,19.844961240310077","data":{"version":"1.0.0","type":"scene","floor":{"type":"floor","width":20,"height":20,"id":"2"},"wall":[{"type":"wall","id":"4","size":[19.9,0.1],"position":[0.1,10],"rotation":1.5,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[19.9,10],"rotation":0.5,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,19.9],"rotation":1,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,0.1],"rotation":0,"doors":[],"windows":[]}],"objects":[{"type":"furniture","id":"7","position":[10,10],"rotation":0}]}}]};
+
+            $.ajax({
+                type: 'post',
+                data: {data:data, id: building_id, floor: floor_no},
+                url: 'index.php?r=site/import-floor',
+                success: function (data) {
+                    if (data.result) {
+                        load(data.rooms);
+                    }
+                },
+
+                error: function (xhr) {
+                    console.log(xhr.responseText);
+                }
+
+            });
+
+            viewMode();
+        }
+
+        // 导出楼层场景
+        function exportFloor() {
+            if (isEdit) {
+                alert("请先保存场景!");
+            }
+
+            $.ajax({
+                type: 'post',
+                data: {id: building_id, floor: floor_no},
+                url: 'index.php?r=site/export-floor',
+                success: function (data) {
+                    var exporter = new SceneExport();
+                    var sceneJSON = exporter.parseFloor(data.rooms, width, height, step, true);
+                    alert(JSON.parse(sceneJSON));
+                },
+
+                error: function (xhr) {
+                    console.log(xhr.responseText);
+                }
+
+            });
+
         }
 
         function createRoom(size, position, room_no) {
@@ -896,6 +950,8 @@ SceneLoad.prototype = {
         function editMode() {
             isEdit = true;
             linegraph.visible = true;
+            importButton.style.display = 'block';
+            exportButton.style.display = 'none';
             $.each(group.children, function (index, object) {
                 object.removeAllListeners();
                 object
@@ -909,6 +965,8 @@ SceneLoad.prototype = {
         function viewMode() {
             isEdit = false;
             linegraph.visible = false;
+            importButton.style.display = 'none';
+            exportButton.style.display = 'block';
             if (selected !== undefined) {
                 selected.alpha = 1;
                 selected = undefined;
