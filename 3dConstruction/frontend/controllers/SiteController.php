@@ -550,16 +550,22 @@ class SiteController extends Controller
     public function actionManageModule()
     {
         if (Yii::$app->user->can('modelManagement')) {
-//            $dataProvider = new ActiveDataProvider([
-//                'query' => Module::find(),
-//                'pagination' => [
-//                    'pageSize' => 5,
-//                ],
-//            ]);
             $modules = Module::findAllModules();
             return $this->render('moduleManagement', [
                 'modules' => $modules,
             ]);
+        }
+    }
+
+    public function actionUpdateModule()
+    {
+        if (Yii::$app->request->isAjax) {
+            $data = Yii::$app->request->post();
+            $module_id = $data['id'];
+            $module_data = $data['data'];
+            $result = Module::updatModule($module_id, $module_data);
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ['result' => $result];
         }
     }
 

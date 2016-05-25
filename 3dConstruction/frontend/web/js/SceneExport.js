@@ -178,8 +178,8 @@ SceneExport.prototype = {
 
             '   "floor": {',
             '       "type": "floor",',
-            '       "width": ' + floor.width / step + ',',
-            '       "height": ' + floor.height / step + ',',
+            '       "width": ' + floor.width / scale + ',',
+            '       "height": ' + floor.height / scale + ',',
             '       "id": "' + floor.id + '"',
             '   },',
             '',
