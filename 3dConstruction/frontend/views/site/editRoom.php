@@ -34,6 +34,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <!-- </div> -->
             <!-- <div class="btn-group btn-group"> -->
                 <button onclick="see()" class="btn btn-default">查看</button>
+                <input type="file" name="file" id="importFile" class="btn btn-default" />
                 <button onclick="importRoom()" class="btn btn-default">导入</button>
                 <button onclick="exportRoom()" class="btn btn-default">导出</button>
             <!-- </div> -->
@@ -140,7 +141,6 @@ $this->params['breadcrumbs'][] = $this->title;
             if (data) {
                 if (data.type === "scene") {
                     load(data);
-                    console.log('load');
                 }
             } else {
                 var room_size = <?= (isset($room->size) && !(is_null($room->size))) ? "'" . $room->size . "'" : '0,0' ?>;
@@ -176,7 +176,7 @@ $this->params['breadcrumbs'][] = $this->title;
      */
     function save() {
         if (!isEdit) {
-            console.log("当前非编辑模式");
+            alert("当前非编辑模式");
             return;
         }
 
@@ -300,7 +300,7 @@ $this->params['breadcrumbs'][] = $this->title;
      */
     function to3d() {
         if (isEdit) {
-            console.log("当前编辑模式,无法查看3d场景");
+            alert("当前编辑模式,无法查看3d场景");
             return;
         }
 
@@ -348,7 +348,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
     function importModule(data) {
         if (!isEdit) {
-            console.log("当前非编辑模式");
+            alert("当前非编辑模式");
             return;
         }
 
@@ -362,23 +362,38 @@ $this->params['breadcrumbs'][] = $this->title;
     }
 
     function importRoom() {
-        // TODO get data
-        var data = {"version":"1.0.0","type":"scene","floor":{"type":"floor","width":20,"height":20,"id":"1"},"wall":[{"type":"wall","id":"4","size":[19.9,0.1],"position":[0.1,10],"rotation":1.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[19.9,10],"rotation":0.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,19.9],"rotation":1,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,0.1],"rotation":0,"doors":[],"windows":[],"sensors":[]}],"objects":[{"type":"furniture","id":"7","position":[10,10],"rotation":0}]};
-//        console.log(data); //sceneJSON
-        importModule(data);
+        if (!isEdit) {
+            alert("当前非编辑模式");
+            return;
+        }
+
+        if (typeof FileReader) {
+            var file = document.getElementById('importFile').files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.readAsText(file, 'utf-8');
+                reader.onload = function (e) {
+                    importModule(JSON.parse(this.result));
+                }
+            } else {
+                alert("请选择规范的文件导入!");
+            }
+
+
+        } else {
+            alert("您的浏览器不支持此功能!");
+        }
+
     }
 
     function exportRoom() {
-        // TODO to file
         var exporter = new SceneExport();
         var sceneJSON = exporter.parse(floor, walls, group, step);
-        console.log(sceneJSON);
         var a = window.document.createElement('a');
         a.href = window.URL.createObjectURL(new Blob([JSON.stringify(sceneJSON)], {type: 'text/dta'}));
         a.download = 'test.dta';
         a.target = '_blank';
 
-        console.log(a);
         document.body.appendChild(a);
         a.click();
 
@@ -391,7 +406,7 @@ $this->params['breadcrumbs'][] = $this->title;
      */
     function addFloor(id) {
         if (!isEdit) {
-            console.log("当前非编辑模式");
+            alert("当前非编辑模式");
             return;
         }
 
@@ -420,7 +435,7 @@ $this->params['breadcrumbs'][] = $this->title;
         });
 
         if (!isEdit) {
-            console.log("当前非编辑模式");
+            alert("当前非编辑模式");
             return;
         }
 
@@ -484,12 +499,12 @@ $this->params['breadcrumbs'][] = $this->title;
      */
     function addDoorWindow(id, type) {
         if (!isEdit) {
-            console.log("当前非编辑模式");
+            alert("当前非编辑模式");
             return;
         }
 
         if (selected === undefined || selected.type !== CONST.TYPE.WALL) {
-            console.log("请选择一面墙壁");
+            alert("请选择一面墙壁");
             return;
         }
 
@@ -503,17 +518,16 @@ $this->params['breadcrumbs'][] = $this->title;
         parent.children.push(model);
         selectMode(model, type);
         updateInfo(selected);
-        console.log(parent.children);
     }
 
     function addSensor(id) {
         if (!isEdit) {
-            console.log("当前非编辑模式");
+            alert("当前非编辑模式");
             return;
         }
 
         if (selected === undefined || selected.type !== CONST.TYPE.WALL) {
-            console.log("请选择一面墙壁");
+            alert("请选择一面墙壁");
             return;
         }
 
@@ -536,7 +550,7 @@ $this->params['breadcrumbs'][] = $this->title;
      */
     function addFurniture(id) {
         if (!isEdit) {
-            console.log("当前非编辑模式");
+            alert("当前非编辑模式");
             return;
         }
 
@@ -595,7 +609,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 }
                 break;
             default:
-                console.log("unknown model");
+                alert("unknown model");
                 break;
         }
         updateInfo(selected);
@@ -625,7 +639,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     this.position.y = newPosition.y;
                     break;
                 default:
-                    console.log("unknown model");
+                    alert("unknown model");
                     break;
             }
             updateInfo(selected);
@@ -736,7 +750,7 @@ $this->params['breadcrumbs'][] = $this->title;
      */
     function rotateModel() {
         if (!isEdit) {
-            console.log("当前非编辑模式");
+            alert("当前非编辑模式");
             return;
         }
 
@@ -745,7 +759,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 case CONST.TYPE.DOOR:
                 case CONST.TYPE.WINDOW:
                 case CONST.TYPE.SENSOR:
-                    console.log("请对门窗所在墙壁进行操作");
+                    alert("请对门窗所在墙壁进行操作");
                     break;
                 case CONST.TYPE.WALL:
                     $.each(selected.children, function (index, object) {
@@ -759,7 +773,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     updateInfo(selected);
                     break;
                 default:
-                    console.log("unknown type");
+                    alert("unknown type");
                     break;
             }
         }
@@ -770,7 +784,7 @@ $this->params['breadcrumbs'][] = $this->title;
      */
     function deleteModel() {
         if (!isEdit) {
-            console.log("当前非编辑模式");
+            alert("当前非编辑模式");
             return;
         }
 
@@ -795,7 +809,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     updateInfo();
                     break;
                 default:
-                    console.log("unknown model");
+                    alert("unknown model");
                     break;
             }
         }
@@ -807,7 +821,7 @@ $this->params['breadcrumbs'][] = $this->title;
      */
     function clearModel() {
         if (!isEdit) {
-            console.log("当前非编辑模式");
+            alert("当前非编辑模式");
             return;
         }
 

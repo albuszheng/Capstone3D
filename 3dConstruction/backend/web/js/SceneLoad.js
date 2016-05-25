@@ -614,7 +614,7 @@ SceneLoad.prototype = {
                     }
                     break;
                 default:
-                    console.log("unknown model");
+                    alert("unknown model");
                     break;
             }
             updateInfo(selected);
@@ -644,7 +644,7 @@ SceneLoad.prototype = {
                         this.position.y = newPosition.y;
                         break;
                     default:
-                        console.log("unknown model");
+                        alert("unknown model");
                         break;
                 }
                 updateInfo(selected);
@@ -1140,7 +1140,6 @@ SceneLoad.prototype = {
                             buildings.splice(objects.indexOf(addBuildings[i-1]), 1);
                             addBuildings.pop();
                         }
-                        console.log(buildings);
                     }
                     viewMode();
                 }
@@ -1187,7 +1186,6 @@ SceneLoad.prototype = {
                     async: false,
                     success: function (data) {
                         if (data.result == true) {
-                            console.log(data.ids);
                             var ids = data.ids;
                             for (var i = 0; i < addBuildings.length; i++) {
                                 addBuildings[i].building_id = ids[i];
