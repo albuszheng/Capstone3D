@@ -348,3 +348,8 @@ ul.nav-menu li a.active {
     margin: 0;
     padding: 0;
 }
+
+#module-canvas {
+    width: 640px;
+    height: 640px;
+}
