@@ -188,8 +188,6 @@ $this->params['breadcrumbs'][] = $this->title;
                             data: {data:data, id: <?= $building->id?>, changeFloor: changeFloor},
                             url: 'index.php?r=site/import-building',
                             success: function (data) {
-                                console.log(data);
-
                                 if (data.result) {
                                     location.reload();
                                 }
@@ -226,7 +224,6 @@ $this->params['breadcrumbs'][] = $this->title;
                 a.download = 'test.dta';
                 a.target = '_blank';
 
-                console.log(a);
                 document.body.appendChild(a);
                 a.click();
 

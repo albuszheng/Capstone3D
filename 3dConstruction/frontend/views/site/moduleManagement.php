@@ -150,11 +150,11 @@ $this->params['breadcrumbs'][] = $this->title;
                 step = Math.min(width2d/data.floor.width, height2d/data.floor.height);
                 createLine();
                 load(data);
-                console.log('load');
             }
 
             // 2d操作button
             var button2d = document.getElementById('2d-btn');
+            button2d.innerHTML="";
             var save_btn = createModelButton(button2d, '保存');
             save_btn.addEventListener('click', function() {save();}, false);
             var load_btn = createModelButton(button2d, '加载');
@@ -169,17 +169,18 @@ $this->params['breadcrumbs'][] = $this->title;
 
             // 3d操作button
             var button3d = document.getElementById('3d-btn');
+            button3d.innerHTML="";
             var see2d_btn = createModelButton(button3d, '查看2D场景');
             see2d_btn.id = 'to2dbutton';
             see2d_btn.addEventListener('click', function() {to2d();}, false);
 
             // 模型button
             var models_btn = document.getElementById('models-btn');
+            models_btn.innerHTML="";
             for (var i = 0; i < models.length; i++) {
                 var button = createModelButton(models_btn, models[i].name);
                 button.id = models[i].id;
 
-                console.log(models[i].type);
                 switch (models[i].type) {
                     case CONST.TYPE.FLOOR:
                         button.addEventListener('click', function() {addFloor(this.id);}, false);
@@ -200,13 +201,14 @@ $this->params['breadcrumbs'][] = $this->title;
                         button.addEventListener('click', function() {addSensor(this.id)}, false);
                         break;
                     default:
-                        console.log('unknown type');
+                        alert('unknown type');
                         break;
                 }
             }
 
             // 模型操作button
             var operate_btns = document.getElementById('operate-btn');
+            operate_btns.innerHTML="";
             var rotate_btn = createModelButton(operate_btns, '旋转');
             rotate_btn.addEventListener('click', function() {rotateModel();}, false);
             var del_btn = createModelButton(operate_btns, '删除');
@@ -228,7 +230,7 @@ $this->params['breadcrumbs'][] = $this->title;
          */
         function save() {
             if (!isEdit) {
-                console.log("当前非编辑模式");
+                alert("当前非编辑模式");
                 return;
             }
 
@@ -247,9 +249,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     if (result.result === true) {
                         data = sceneJSON;
                         see();
-                        console.log('save success');
                     } else {
-                        console.log('save fail');
                     }
 
                 },
@@ -269,24 +269,12 @@ $this->params['breadcrumbs'][] = $this->title;
                 scene = data;
             }
 
-//            var width = width || scene.floor.width;
-//            var height = height || scene.floor.height;
-//            step = Math.min(width2d/width, height2d/height);
-//
             if (isEdit) {
                 if(confirm("是否保存当前场景?")) {
                     save();
                 }
             }
 
-//            var loader = new SceneLoad();
-//            console.log(isEdit);
-//            stage = loader.load2d(scene, width2d, height2d, document.getElementById('canvas2d'), models, step);
-//            floor = stage.getChildAt(0);
-//            walls = stage.getChildAt(1);
-//            group = stage.getChildAt(2);
-//
-//            createLine();
             walls.removeChildren(0, walls.children.length);
             group.removeChildren(0, group.children.length);
 
@@ -461,12 +449,11 @@ $this->params['breadcrumbs'][] = $this->title;
          */
         function to3d() {
             if (isEdit) {
-                console.log("当前编辑模式,无法查看3d场景");
+                alert("当前编辑模式,无法查看3d场景");
                 return;
             }
 
             var exporter = new SceneExport();
-            console.log(step);
 
             var sceneJSON = exporter.parse(floor, walls, group, step);
 
@@ -508,7 +495,7 @@ $this->params['breadcrumbs'][] = $this->title;
          */
         function addFloor(id) {
             if (!isEdit) {
-                console.log("当前非编辑模式");
+                alert("当前非编辑模式");
                 return;
             }
 
@@ -537,7 +524,7 @@ $this->params['breadcrumbs'][] = $this->title;
             });
 
             if (!isEdit) {
-                console.log("当前非编辑模式");
+                alert("当前非编辑模式");
                 return;
             }
 
@@ -601,12 +588,12 @@ $this->params['breadcrumbs'][] = $this->title;
          */
         function addDoorWindow(id, type) {
             if (!isEdit) {
-                console.log("当前非编辑模式");
+                alert("当前非编辑模式");
                 return;
             }
 
             if (selected === undefined || selected.type !== CONST.TYPE.WALL) {
-                console.log("请选择一面墙壁");
+                alert("请选择一面墙壁");
                 return;
             }
 
@@ -623,12 +610,12 @@ $this->params['breadcrumbs'][] = $this->title;
 
         function addSensor(id) {
             if (!isEdit) {
-                console.log("当前非编辑模式");
+                alert("当前非编辑模式");
                 return;
             }
 
             if (selected === undefined || selected.type !== CONST.TYPE.WALL) {
-                console.log("请选择一面墙壁");
+                alert("请选择一面墙壁");
                 return;
             }
 
@@ -650,7 +637,7 @@ $this->params['breadcrumbs'][] = $this->title;
          */
         function addFurniture(id) {
             if (!isEdit) {
-                console.log("当前非编辑模式");
+                alert("当前非编辑模式");
                 return;
             }
 
@@ -706,7 +693,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     }
                     break;
                 default:
-                    console.log("unknown model");
+                    alert("unknown model");
                     break;
             }
         }
@@ -735,7 +722,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         this.position.y = newPosition.y;
                         break;
                     default:
-                        console.log("unknown model");
+                        alert("unknown model");
                         break;
                 }
             }
@@ -871,7 +858,7 @@ $this->params['breadcrumbs'][] = $this->title;
          */
         function rotateModel() {
             if (!isEdit) {
-                console.log("当前非编辑模式");
+                alert("当前非编辑模式");
                 return;
             }
 
@@ -880,7 +867,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     case CONST.TYPE.DOOR:
                     case CONST.TYPE.WINDOW:
                     case CONST.TYPE.SENSOR:
-                        console.log("请对门窗所在墙壁进行操作");
+                        alert("请对门窗所在墙壁进行操作");
                         break;
                     case CONST.TYPE.WALL:
                         $.each(selected.children, function (index, object) {
@@ -893,7 +880,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         selected.rotation = (selected.rotation + Math.PI / 2) % CONST.PI_2;
                         break;
                     default:
-                        console.log("unknown type");
+                        alert("unknown type");
                         break;
                 }
             }
@@ -904,7 +891,7 @@ $this->params['breadcrumbs'][] = $this->title;
          */
         function deleteModel() {
             if (!isEdit) {
-                console.log("当前非编辑模式");
+                alert("当前非编辑模式");
                 return;
             }
 
@@ -927,7 +914,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         group.removeChild(selected);
                         break;
                     default:
-                        console.log("unknown model");
+                        alert("unknown model");
                         break;
                 }
             }
@@ -939,7 +926,7 @@ $this->params['breadcrumbs'][] = $this->title;
          */
         function clearModel() {
             if (!isEdit) {
-                console.log("当前非编辑模式");
+                alert("当前非编辑模式");
                 return;
             }
 
