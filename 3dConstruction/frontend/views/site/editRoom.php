@@ -17,64 +17,80 @@ $this->params['breadcrumbs'][] = $this->title;
 
 ?>
 <div class="site-view-room">
-    <h1><?= Html::encode($this->title) ?></h1>
+    <div id="webgl-output row">
+        <div class="control-group col-md-2">
+            <div id="info">
+                <ul>
+                    <li id="pos">position:</li>
+                    <li id="rot">rotation:</li>
+                </ul>
+            </div>
 
-    <p>This is one room:</p>
+            <div id="2dbutton" class="btn-group-vertical btn-group">
+            <!-- <div class="btn-group btn-group"> -->
+                <button onclick="save()" class="btn btn-default">保存</button>
+                <button onclick="load()" class="btn btn-default">加载</button>
+                <button onclick="edit()" class="btn btn-default">编辑</button>
+            <!-- </div> -->
+            <!-- <div class="btn-group btn-group"> -->
+                <button onclick="see()" class="btn btn-default">查看</button>
+                <!-- <input type="file" name="file" id="importFile" class="btn btn-default" /> -->
+                <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">导入 <span class="caret"></span></button>     
+                <ul class="dropdown-menu">
+                  <li><input type="file" name="file" id="importFile" /></li>
+                  <li><button onclick="importRoom()" class="btn btn-default btn-sm">确认</button></li>
+                </ul>
+                <button onclick="exportRoom()" class="btn btn-default">导出</button>
+            <!-- </div> -->
+            </div>
 
-    <div id="webgl-output">
-        <div id="2dbutton">
-            <button onclick="save()">保存</button>
-            <button onclick="load()">加载</button>
-            <button onclick="edit()">编辑</button>
-            <button onclick="see()">查看</button>
-            <button onclick="to3d()">查看3d场景</button></br>
-            <input type="file" name="file" id="importFile"/>
-            <button onclick="importRoom()">导入</button>
-            <button onclick="exportRoom()">导出</button>
+            <div class="btn-group btn-group-sm btn-group-vertical model-list">
+                <button id="1" onclick="addFloor(this.id)" class="btn btn-sm btn-default">地板0</button>
+                <button id="2" onclick="addFloor(this.id)" class="btn btn-sm btn-default">地板1</button>
+                <button id="3" onclick="addFloor(this.id)" class="btn btn-sm btn-default">地板2</button>
+                <button id="4" onclick="addWall(this.id)" class="btn btn-sm btn-default">墙壁</button>
+                <button id="5" onclick="addDoorWindow(this.id, CONST.TYPE.DOOR)" class="btn btn-sm btn-default">门</button>
+                <button id="6" onclick="addDoorWindow(this.id, CONST.TYPE.WINDOW)" class="btn btn-sm btn-default">窗</button>
+                <button id="7" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">床</button>
+                <button id="8" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">衣橱</button>
+                <button id="9" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">床头柜</button>
+                <button id="12" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">沙发</button>
+                <button id="11" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">桌子</button>
+                <button id="10" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">电视</button>
+                <button id="13" onclick="addSensor(this.id)" class="btn btn-sm btn-default">传感器</button>
+            </div>
+            <br/>
+            <div class="btn-group btn-group-vertical model-control">
+                <button onclick="rotateModel()" class="btn btn-default">旋转</button>
+                <button onclick="deleteModel()" class="btn btn-default">删除</button>
+                <button onclick="clearModel()" class="btn btn-default">清空</button>
+            </div>
+
+
+            
+            <div class="seperator"></div>
+
+            <div class="btn-group-vertical">
+            <?php
+            foreach ($modules as $module): ?>
+                <button class="btn btn-default" id=<?=$module->id?> onclick=importModule(<?= $module->data ?>)><?= $module->name ?></button>
+            <?php endforeach;?>
+            </div>
+
+            <div class="seperator"></div>
+            
+            <div id="3dbutton" class="view-change">
+                <button id="to3dbutton" onclick="to3d()" class="btn btn-lg btn-link">3D</button>
+                /
+                <button id="to2dbutton" class="btn btn-lg btn-link active" disabled="disabled">2D</button>
+            </div>
 
         </div>
 
-        <div id="3dbutton" style="visibility: hidden">
-            <button id="to2dbutton">查看2d场景</button>
+        <div class="col-md-10">
+            <div id="canvas2d"></div>
+            <div id="canvas3d"></div>
         </div>
-
-        <div>
-            <button id="1" onclick="addFloor(this.id)">地板0</button>
-            <button id="2" onclick="addFloor(this.id)">地板1</button>
-            <button id="3" onclick="addFloor(this.id)">地板2</button>
-            <button id="4" onclick="addWall(this.id)">墙壁</button>
-            <button id="5" onclick="addDoorWindow(this.id, CONST.TYPE.DOOR)">门</button>
-            <button id="6" onclick="addDoorWindow(this.id, CONST.TYPE.WINDOW)">窗</button>
-            <button id="7" onclick="addFurniture(this.id)">床</button>
-            <button id="8" onclick="addFurniture(this.id)">衣橱</button>
-            <button id="9" onclick="addFurniture(this.id)">床头柜</button>
-            <button id="12" onclick="addFurniture(this.id)">沙发</button>
-            <button id="11" onclick="addFurniture(this.id)">桌子</button>
-            <button id="10" onclick="addFurniture(this.id)">电视</button>
-            <button id="13" onclick="addSensor(this.id)">传感器</button>
-        </div>
-        <?php
-        foreach ($modules as $module): ?>
-            <button id=<?=$module->id?> onclick=importModule(<?= $module->data ?>)><?= $module->name ?></button>
-        <?php endforeach;?>
-        <div>
-
-        </div>
-        <div>
-            <button onclick="rotateModel()">旋转</button>
-            <button onclick="deleteModel()">删除</button>
-            <button onclick="clearModel()">清空</button>
-        </div>
-        <div id="info">
-            <ul>
-                <li id="pos">position:</li>
-                <li id="rot">rotation:</li>
-            </ul>
-        </div>
-
-        <div id="canvas2d">
-        </div>
-        <div id="canvas3d"></div>
     </div>
 </div>
 
@@ -295,10 +311,14 @@ $this->params['breadcrumbs'][] = $this->title;
         var exporter = new SceneExport();
         var sceneJSON = exporter.parse(floor, walls, group, step);
 
-        $('#2dbutton').css('visibility', 'hidden');
-        $('#3dbutton').css('visibility', 'visible');
+        // $('#2dbutton').css('visibility', 'hidden');
+        // $('#3dbutton').css('visibility', 'visible');
+        $('#to3dbutton').attr('disabled','disabled');
+        $('#to3dbutton').addClass('active');
+        $('#to2dbutton').removeAttr('disabled');
+        $('#to2dbutton').removeClass('active');
         $('#canvas2d').css('display', 'none');
-        $('#canvas3d').css('display', 'block');
+        $('#canvas3d').css('display', 'inline-block');
         document.getElementById('to2dbutton').onclick = function() {
           to2d(sceneJSON);
         };
@@ -311,10 +331,14 @@ $this->params['breadcrumbs'][] = $this->title;
      * 查看2d场景
      */
     function to2d(data) {
-        $('#2dbutton').css('visibility', 'visible');
-        $('#3dbutton').css('visibility', 'hidden');
+        // $('#2dbutton').css('visibility', 'visible');
+        // $('#3dbutton').css('visibility', 'hidden');
+        $('#to2dbutton').attr('disabled','disabled');
+        $('#to2dbutton').addClass('active');
+        $('#to3dbutton').removeAttr('disabled');
+        $('#to3dbutton').removeClass('active');
         $('#canvas3d').css('display', 'none');
-        $('#canvas2d').css('display', 'block');
+        $('#canvas2d').css('display', 'inline-block');
 
         var loader = new SceneLoad();
         stage = loader.load2d(data, width2d, height2d, document.getElementById('canvas2d'), models);

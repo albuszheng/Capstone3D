@@ -19,8 +19,11 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>This is your room:</p>
-    <button onclick="view2d()">2d</button>
-    <button onclick="view3d()">3d</button>
+    <div class="view-change">
+        <button id="to2dbutton" class="btn btn-lg btn-link active" disabled="disabled" onclick="view2d()">2D</button>
+        /
+        <button id="to3dbutton" class="btn btn-lg btn-link" onclick="view3d()">3D</button>
+    </div>
 
     <div id="canvas2d">
     </div>
@@ -90,6 +93,10 @@ $this->params['breadcrumbs'][] = $this->title;
             loader.load2d(data, width2d, height2d, canvas2d, models);
 
             viewMode = 0;
+            $('#to2dbutton').attr('disabled','disabled');
+            $('#to2dbutton').addClass('active');
+            $('#to3dbutton').removeAttr('disabled');
+            $('#to3dbutton').removeClass('active');
             $('#canvas3d').css('display', 'none');
             $('#canvas2d').css('display', 'block');
         }
@@ -105,6 +112,10 @@ $this->params['breadcrumbs'][] = $this->title;
             var loader = new SceneLoad();
             loader.load3d(data, width3d, height3d, canvas3d, models);
             viewMode = 1;
+            $('#to3dbutton').attr('disabled','disabled');
+            $('#to3dbutton').addClass('active');
+            $('#to2dbutton').removeAttr('disabled');
+            $('#to2dbutton').removeClass('active');
             $('#canvas2d').css('display', 'none');
             $('#canvas3d').css('display', 'block');
         }
