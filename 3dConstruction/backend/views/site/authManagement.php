@@ -138,6 +138,7 @@ $this->params['breadcrumbs'][] = $this->title;
         var confirm_btn = createModelButton(operate_btn, '确定');
         confirm_btn.setAttribute('type', 'button');
         confirm_btn.setAttribute('class', 'btn btn-primary');
+        confirm_btn.setAttribute('data-dismiss', 'modal');
         confirm_btn.addEventListener('click', function() {changeAuthority();}, false);
 
         function changeAuthority() {
@@ -158,8 +159,8 @@ $this->params['breadcrumbs'][] = $this->title;
                 data:{user_id: user, operation_id: operation_id, user_group: user_group},
                 url:'index.php?r=site/update-authority',
                 success: function (data) {
+                    location.reload();
                     alert(data.result);
-                    $('.template-canvas').modal('hide');
                 },
 
                 error:function(xhr) {
