@@ -54,6 +54,7 @@ SceneLoad.prototype = {
             controls.lat = 0;
         });
         var firstPesonText = document.createTextNode('第一人称视角');
+        fitstPersonButton.class="btn btn-default btn-sm";
         firstPersonButton.appendChild(firstPesonText);
         canvas.appendChild(firstPersonButton);
 
@@ -69,6 +70,7 @@ SceneLoad.prototype = {
         });
         var overText = document.createTextNode('总览视角');
         overButton.appendChild(overText);
+        overButton.class="btn btn-default btn-sm";
         canvas.appendChild(overButton);
 
         canvas.appendChild(renderer.domElement);
@@ -1142,12 +1144,14 @@ SceneLoad.prototype = {
                 viewMode();
                 saveBuilding();
             });
+            save.class="btn btn-default btn-sm";
             var saveText = document.createTextNode('保存');
             save.appendChild(saveText);
             canvas.appendChild(save);
 
             // 编辑
             var edit = document.createElement('button');
+            edit.class="btn btn-default btn-sm"
             edit.addEventListener('click', function () {
                 editMode();
             });
@@ -1157,6 +1161,7 @@ SceneLoad.prototype = {
 
             // 退出
             var exit = document.createElement('button');
+            exit.class="btn btn-default btn-sm";
             exit.addEventListener('click', function () {
                 if (isEdit) {
                     if(confirm("是否保存当前场景?")) {
