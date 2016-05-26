@@ -97,6 +97,13 @@ class m130524_201442_init extends Migration
             'data' => $this->text(),
         ], $tableOptions);
 
+        $this->batchInsert('{{%module}}', [
+            'id', 'name', 'size', 'data'
+        ], [
+            ['1', '两室一厅', '20,20', '{"version":"1.0.0","type":"scene","floor":{"type":"floor","width":20,"height":20,"id":"1"},"wall":[{"type":"wall","id":"4","size":[19.9,0.1],"position":[0.1,10],"rotation":1.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[19.9,10],"rotation":0.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,19.9],"rotation":1,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,0.1],"rotation":0,"doors":[],"windows":[{"type":"window","id":"6","position":[14.5927734375,0.1],"rotation":0},{"type":"window","id":"6","position":[3.7177734375,0.1],"rotation":0}],"sensors":[]},{"type":"wall","id":"4","size":[8.21875,0.1],"position":[11.6865234375,4.1875],"rotation":0.5,"doors":[{"type":"door","id":"5","position":[11.6865234375,4.1875],"rotation":0.5}],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[8.1875,0.1],"position":[15.7802734375,8.25],"rotation":0,"doors":[],"windows":[],"sensors":[{"type":"sensor","id":"13","position":[18.4990234375,8.25],"rotation":0}]},{"type":"wall","id":"4","size":[8.15625,0.1],"position":[7.2490234375,4.1875],"rotation":0.5,"doors":[{"type":"door","id":"5","position":[7.2490234375,5.71875],"rotation":0.5}],"windows":[],"sensors":[{"type":"sensor","id":"13","position":[7.2490234375,7.90625],"rotation":0.5}]},{"type":"wall","id":"4","size":[7.156249999999999,0.1],"position":[3.7490234375,8.3125],"rotation":0,"doors":[],"windows":[{"type":"window","id":"6","position":[3.7490234375,8.3125],"rotation":0}],"sensors":[]}],"objects":[{"type":"furniture","id":"7","position":[14.5302734375,1.03125],"rotation":0.5},{"type":"furniture","id":"7","position":[1.5927734375,0.7499999999999999],"rotation":0.5},{"type":"furniture","id":"9","position":[4.9365234375,1.34375],"rotation":0},{"type":"furniture","id":"8","position":[17.5927734375,2.0625],"rotation":0},{"type":"furniture","id":"9","position":[12.9677734375,1.625],"rotation":0},{"type":"furniture","id":"11","position":[14.6865234375,17.34375],"rotation":0},{"type":"furniture","id":"10","position":[17.8740234375,6.03125],"rotation":1},{"type":"furniture","id":"12","position":[5.9052734375,16.5625],"rotation":1},{"type":"furniture","id":"10","position":[1.8740234375,13.46875],"rotation":0}]}'],
+            ['2', '三室一厅', '30,30', '{"version":"1.0.0","type":"scene","floor":{"type":"floor","width":30,"height":30,"id":"1"},"wall":[{"type":"wall","id":"4","size":[29.899999999999995,0.1],"position":[0.1,15],"rotation":1.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[29.899999999999995,0.1],"position":[29.899999999999995,15],"rotation":0.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[29.899999999999995,0.1],"position":[15,29.899999999999995],"rotation":1,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[29.899999999999995,0.1],"position":[15,0.1],"rotation":0,"doors":[],"windows":[{"type":"window","id":"6","position":[14.5927734375,0.1],"rotation":0},{"type":"window","id":"6","position":[3.7177734375,0.1],"rotation":0}],"sensors":[]},{"type":"wall","id":"4","size":[8.21875,0.1],"position":[11.6865234375,4.1875],"rotation":0.5,"doors":[{"type":"door","id":"5","position":[11.6865234375,4.1875],"rotation":0.5}],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[8.1875,0.1],"position":[15.7802734375,8.25],"rotation":0,"doors":[],"windows":[],"sensors":[{"type":"sensor","id":"13","position":[18.4990234375,8.25],"rotation":0}]},{"type":"wall","id":"4","size":[8.15625,0.1],"position":[7.249023437499999,4.1875],"rotation":0.5,"doors":[{"type":"door","id":"5","position":[7.249023437499999,5.71875],"rotation":0.5}],"windows":[],"sensors":[{"type":"sensor","id":"13","position":[7.249023437499999,7.90625],"rotation":0.5}]},{"type":"wall","id":"4","size":[7.15625,0.1],"position":[3.7490234374999996,8.3125],"rotation":0,"doors":[],"windows":[{"type":"window","id":"6","position":[3.7490234374999996,8.3125],"rotation":0}],"sensors":[]},{"type":"wall","id":"4","size":[8.0625,0.1],"position":[19.82666015625,4.171875],"rotation":0.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[0,0.1],"position":[23.953125,0.234375],"rotation":0,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[7.78125,0.1],"position":[21.70166015625,25.96875],"rotation":0.5,"doors":[],"windows":[{"type":"window","id":"6","position":[21.70166015625,25.96875],"rotation":0.5}],"sensors":[]},{"type":"wall","id":"4","size":[8.296875,0.1],"position":[25.77978515625,22.078125],"rotation":0,"doors":[{"type":"door","id":"5","position":[27.60791015625,22.078125],"rotation":0}],"windows":[],"sensors":[{"type":"sensor","id":"13","position":[22.59228515625,22.078125],"rotation":0}]}],"objects":[{"type":"furniture","id":"7","position":[14.530273437499998,1.03125],"rotation":0.5},{"type":"furniture","id":"7","position":[1.5927734375,0.75],"rotation":0.5},{"type":"furniture","id":"9","position":[4.9365234375,1.34375],"rotation":0},{"type":"furniture","id":"8","position":[17.5927734375,2.0625],"rotation":0},{"type":"furniture","id":"9","position":[12.9677734375,1.625],"rotation":0},{"type":"furniture","id":"11","position":[16.54541015625,14.625],"rotation":0},{"type":"furniture","id":"10","position":[17.8740234375,6.03125],"rotation":1},{"type":"furniture","id":"12","position":[7.40478515625,26.4375],"rotation":1},{"type":"furniture","id":"10","position":[3.56103515625,22.546875],"rotation":0},{"type":"furniture","id":"7","position":[22.73291015625,29.15625],"rotation":0},{"type":"furniture","id":"8","position":[23.67041015625,24.796875],"rotation":1.5},{"type":"furniture","id":"11","position":[23.01416015625,18.375],"rotation":0}]}']
+        ]);
+
         // table building
         $this->createTable('{{%building}}', [
             'id' => $this->primaryKey(),
@@ -174,7 +181,7 @@ class m130524_201442_init extends Migration
             'building_id',
             'building',
             'id',
-            'SET NULL'
+            'CASCADE'
         );
 
         $this->createIndex(
@@ -204,7 +211,7 @@ class m130524_201442_init extends Migration
             'last_modify_id',
             'user',
             'id',
-            'SET NULL'
+            'NO ACTION'
         );
 
         // table goods
@@ -243,7 +250,7 @@ class m130524_201442_init extends Migration
             'user_id',
             'user',
             'id',
-            'SET NULL'
+            'NO ACTION'
         );
 
         $this->createIndex(
@@ -258,7 +265,7 @@ class m130524_201442_init extends Migration
             'staff_id',
             'user',
             'id',
-            'SET NULL'
+            'NO ACTION'
         );
 
         // table order_detail
@@ -281,7 +288,7 @@ class m130524_201442_init extends Migration
             'order_id',
             'order',
             'id',
-            'SET NULL'
+            'NO ACTION'
         );
 
         $this->createIndex(
@@ -296,21 +303,22 @@ class m130524_201442_init extends Migration
             'goods_id',
             'goods',
             'id',
-            'SET NULL'
+            'NO ACTION'
         );
 
         // table operation
         $this->createTable('{{%operation}}', [
             'id' => $this->primaryKey(),
             'operation' => $this->string()->notNull(),
+            'user_group' => $this->smallInteger()->notNull()->defaultValue(0),
         ], $tableOptions);
 
         $this->batchInsert('{{%operation}}', [
-            'id', 'operation'
+            'id', 'operation', 'user_group'
         ], [
-            ['1', 'to admin'],
-            ['2', 'to engineer'],
-            ['3', 'to staff'],
+            ['1', 'to admin', User::GROUP_ADMIN],
+            ['2', 'to engineer', User::GROUP_ENGINEER],
+            ['3', 'to staff', User::GROUP_STAFF],
         ]);
 
         // table auth_log
@@ -334,7 +342,7 @@ class m130524_201442_init extends Migration
             'operator_id',
             'user',
             'id',
-            'SET NULL'
+            'NO ACTION'
         );
 
         $this->createIndex(
@@ -349,7 +357,7 @@ class m130524_201442_init extends Migration
             'user_id',
             'user',
             'id',
-            'SET NULL'
+            'NO ACTION'
         );
 
         $this->createIndex(
@@ -364,7 +372,7 @@ class m130524_201442_init extends Migration
             'operation_id',
             'operation',
             'id',
-            'SET NULL'
+            'NO ACTION'
         );
 
     }

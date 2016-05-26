@@ -1080,7 +1080,7 @@ SceneLoad.prototype = {
         var scene = new THREE.Scene();
 
         var camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
-        camera.position.set(300, 700, 1400);
+        camera.position.set(0, 700, 1400);
         camera.lookAt(new THREE.Vector3());
 
         // roll-over helpers
@@ -1118,17 +1118,40 @@ SceneLoad.prototype = {
             geometry.vertices.push(new THREE.Vector3(i, 0, size));
         }
 
-        var material = new THREE.LineBasicMaterial({color: 0x000000, opacity: 0.2, transparent: true});
+        var material = new THREE.LineBasicMaterial({color: 0x000000, opacity: 0.6, transparent: true});
         var line = new THREE.LineSegments(geometry, material);
         line.visible = false;
         scene.add(line);
 
         var raycaster = new THREE.Raycaster();
 
-        var geometry = new THREE.PlaneBufferGeometry(1000, 1000);
-        geometry.rotateX(-Math.PI / 2);
+        var geometry = new THREE.Geometry();
+        //var geometry = new THREE.PlaneBufferGeometry(1000,1000);
+        //geometry.rotateX(-Math.PI / 2);
 
-        var plane = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: 0x73D764}));
+        var planMaterial1 = new THREE.MeshBasicMaterial({color: 0x73D764});
+        var planMaterial2 = new THREE.MeshBasicMaterial({color: 0xCDF1CC});
+        for (var i = 0; i < 10; i++) {
+            for (var j = (i+1) % 2; j < 10; j = j + 2) {
+                var planGeometry = new THREE.PlaneGeometry(97, 97);
+                planGeometry.rotateX(-Math.PI / 2);
+                var planMesh = new THREE.Mesh(planGeometry, planMaterial1);
+                planMesh.position.set(i * 100 - 450, 0, j * 100 - 450);
+                THREE.GeometryUtils.merge(geometry, planMesh, 0);
+
+            }
+
+            for (var j = i % 2; j < 10; j = j + 2) {
+                var planGeometry2 = new THREE.PlaneGeometry(97, 97);
+                planGeometry2.rotateX(-Math.PI / 2);
+                var planMesh2 = new THREE.Mesh(planGeometry2, planMaterial2);
+                planMesh2.position.set(i * 100 - 450, 0, j * 100 - 450);
+                THREE.GeometryUtils.merge(geometry, planMesh2, 1);
+            }
+        }
+
+
+        var plane = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial([planMaterial1, planMaterial2]));
         scene.add(plane);
         objects.push(plane);
 

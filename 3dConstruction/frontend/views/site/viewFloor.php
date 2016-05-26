@@ -46,7 +46,7 @@ $this->params['breadcrumbs'][] = $this->title;
             success:function(data) {
                 var step = Math.min(width/<?= $building->width ?>, height/<?= $building->height ?>);
                 var loader = new SceneLoad();
-                loader.loadfloor(data, step, <?= $building->width ?>, <?= $building->height ?>, canvas, btnGroup,<?php
+                loader.loadfloor(data, step, <?= $building->width ?>, <?= $building->height ?>, canvas, btnGroup, <?php
                     if($canEdit) {
                         echo 1;
                     } else {

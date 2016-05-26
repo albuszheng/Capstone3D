@@ -69,7 +69,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         <td>
                         <?php
                         foreach ($operations as $operation): ?>
-                         <button class="btn btn-link template-name" id=<?= $operation->id?> data-toggle="modal" data-target=".template-canvas" data-operate="<?= $operation->operation ?>" data-user="<?= $user->id ?>"><?= $operation->operation?></button>
+                         <button class="btn btn-link template-name" id=<?= $operation->id?> data-toggle="modal" data-target=".template-canvas" data-operate="<?= $operation->operation ?>" data-group="<?= $operation->user_group?>" data-user="<?= $user->id ?>"><?= $operation->operation?></button>
                         <?php endforeach;?>
                         </td>
                     </tr>
@@ -123,11 +123,9 @@ $this->params['breadcrumbs'][] = $this->title;
 <script>
     $(".template-canvas").on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);
-        var operation = button.data('operate');
         var user = button.data('user');
-        var operation_id = button.context.id;
         var modal = $(this);
-        modal.find('.modal-body').text("Sure to change user "+user+" "+operation+"?");
+        modal.find('.modal-body').text("Sure to change user "+user+" "+button.data('operate')+"?");
 
         var operate_btn = document.getElementById('operate-btn');
         operate_btn.innerHTML="";
@@ -142,21 +140,9 @@ $this->params['breadcrumbs'][] = $this->title;
         confirm_btn.addEventListener('click', function() {changeAuthority();}, false);
 
         function changeAuthority() {
-            var user_group = <?= User::GROUP_USER?>;
-            switch (operation) {
-                case 'to admin':
-                    user_group = <?= User::GROUP_ADMIN?>; break;
-                case 'to engineer':
-                    user_group = <?= User::GROUP_ENGINEER?>; break;
-                case 'to staff':
-                    user_group = <?= User::GROUP_STAFF?>; break;
-                default:
-                    break;
-            }
-
             $.ajax({
                 type:'post',
-                data:{user_id: user, operation_id: operation_id, user_group: user_group},
+                data:{user_id: user, operation_id: button.context.id, user_group: button.data('group')},
                 url:'index.php?r=site/update-authority',
                 success: function (data) {
                     location.reload();
