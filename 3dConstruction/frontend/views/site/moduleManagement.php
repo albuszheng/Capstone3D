@@ -225,7 +225,7 @@ $this->params['breadcrumbs'][] = $this->title;
             
             model.appendChild(modelText);
             element.appendChild(model);
-            // model.addAttribute("class","btn btn-small btn-defautl");
+            model.setAttribute("class","btn btn-small btn-link");
             return model;
         }
 
