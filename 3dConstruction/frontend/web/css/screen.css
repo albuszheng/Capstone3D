@@ -361,12 +361,12 @@ ul.nav-menu li a.active {
 }
 
 #webgl-output {
-  border: 1px solid #ccc;
+  border: 1px solid #aaa;
   padding: 20px 10px;
   margin-bottom: 50px;
 }
 
-#canvas2d, #canvas3d, .control-group {
+.control-group {
   display: inline-block;
 }
 
