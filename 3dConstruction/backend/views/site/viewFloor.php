@@ -20,6 +20,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <p>楼层场景</p>
 
+    <div id="button-group" class="btn-group"></div>
+
     <div id="canvas">
     </div>
 
@@ -33,6 +35,7 @@ $this->params['breadcrumbs'][] = $this->title;
     var width = $('#canvas').width();
     var height = $('#canvas').height();
     var canvas = document.getElementById('canvas');
+    var btnGroup = document.getElementById('button-group');
 
     // 加载场景
     function load() {
@@ -43,7 +46,7 @@ $this->params['breadcrumbs'][] = $this->title;
             success:function(data) {
                 var step = Math.min(width/<?= $building->width ?>, height/<?= $building->height ?>);
                 var loader = new SceneLoad();
-                loader.loadfloor(data, step, <?= $building->width ?>, <?= $building->height ?>, canvas, <?php
+                loader.loadfloor(data, step, <?= $building->width ?>, <?= $building->height ?>, canvas, btnGroup, <?php
                     if($canEdit) {
                         echo 1;
                     } else {

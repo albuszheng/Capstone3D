@@ -9,6 +9,7 @@ use yii\db\ActiveRecord;
  *
  * @property integer $id
  * @property string $operation
+ * @property integer $user_group
  */
 class Operation extends ActiveRecord
 {
@@ -24,8 +25,8 @@ class Operation extends ActiveRecord
     {
         return [
             ['id', 'unique'],
-            ['id', 'integer'],
-            [['id', 'operation'], 'required'],
+            [['id', 'user_group'], 'integer'],
+            [['id', 'operation', 'user_group'], 'required'],
         ];
     }
 

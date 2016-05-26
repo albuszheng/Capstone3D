@@ -54,6 +54,7 @@ SceneLoad.prototype = {
             controls.lat = 0;
         });
         var firstPesonText = document.createTextNode('第一人称视角');
+        firstPersonButton.setAttribute("class", "btn btn-default btn-sm");
         firstPersonButton.appendChild(firstPesonText);
         canvas.appendChild(firstPersonButton);
 
@@ -69,6 +70,7 @@ SceneLoad.prototype = {
         });
         var overText = document.createTextNode('总览视角');
         overButton.appendChild(overText);
+        overButton.setAttribute("class", "btn btn-default btn-sm");
         canvas.appendChild(overButton);
 
         canvas.appendChild(renderer.domElement);
@@ -655,7 +657,7 @@ SceneLoad.prototype = {
         return stage;
     },
 
-    loadfloor: function (data, step, width, height, canvas, canEdit, building_id, floor_no) {
+    loadfloor: function (data, step, width, height, canvas, btnGroup, canEdit, building_id, floor_no) {
         var rooms = data.rooms;
         var modules = data.modules;
         var isEdit = false;
@@ -674,6 +676,7 @@ SceneLoad.prototype = {
         stage.addChildAt(group, 1);
 
         if (canEdit) {
+            // var btn_group = document.getElementById("button-group");
             // 保存
             var save = document.createElement('button');
             save.addEventListener('click', function(){
@@ -682,7 +685,8 @@ SceneLoad.prototype = {
             });
             var saveText = document.createTextNode('保存');
             save.appendChild(saveText);
-            canvas.appendChild(save);
+            save.setAttribute('class', 'btn btn-default btn-sm');
+            btnGroup.appendChild(save);
 
             // 编辑
             var edit = document.createElement('button');
@@ -691,7 +695,8 @@ SceneLoad.prototype = {
             });
             var editText = document.createTextNode('编辑');
             edit.appendChild(editText);
-            canvas.appendChild(edit);
+            edit.setAttribute('class', 'btn btn-default btn-sm');
+            btnGroup.appendChild(edit);
 
             // 删除
             var deleteButton = document.createElement('button');
@@ -708,8 +713,9 @@ SceneLoad.prototype = {
                 }
             });
             var deleteText = document.createTextNode('删除');
+            deleteButton.setAttribute('class', 'btn btn-default btn-sm');
             deleteButton.appendChild(deleteText);
-            canvas.appendChild(deleteButton);
+            btnGroup.appendChild(deleteButton);
 
             // 更改房间号
             var change = document.createElement('button');
@@ -727,8 +733,9 @@ SceneLoad.prototype = {
                 }
             });
             var changeText = document.createTextNode('更改房间号');
+            change.setAttribute('class', 'btn btn-default btn-sm');
             change.appendChild(changeText);
-            canvas.appendChild(change);
+            btnGroup.appendChild(change);
 
             $.each(modules, function (index, object) {
                 var module = document.createElement('button');
@@ -752,9 +759,15 @@ SceneLoad.prototype = {
                 });
                 var moduleText = document.createTextNode(object.name);
                 module.appendChild(moduleText);
-                canvas.appendChild(module);
+                module.setAttribute('class', 'btn btn-default btn-sm');
+                btnGroup.appendChild(module);
 
             });
+
+            var importInput = document.createElement('input');
+            importInput.type = 'file';
+            importInput.id = 'importFile';
+            canvas.appendChild(importInput);
 
             // 导入
             var importButton = document.createElement('button');
@@ -764,6 +777,7 @@ SceneLoad.prototype = {
             var importText = document.createTextNode('导入');
             importButton.appendChild(importText);
             canvas.appendChild(importButton);
+            importButton.setAttribute('class', 'btn btn-default');
             importButton.style.display = 'none';
 
             // 导出
@@ -772,6 +786,7 @@ SceneLoad.prototype = {
                 exportFloor();
             });
             var exportText = document.createTextNode('导出');
+            exportButton.setAttribute('class', 'btn btn-default');
             exportButton.appendChild(exportText);
             canvas.appendChild(exportButton);
             exportButton.style.display = 'block';
@@ -859,25 +874,39 @@ SceneLoad.prototype = {
                 alert("当前非编辑状态!");
             }
 
-            var data = {"version":"1.0.0","type":"floor","width":200,"height":80,"room":[{"room_no":"601","size":"20,20","position":"14.320482866043612,14.883720930232558","data":null},{"room_no":"602","size":"20,20","position":"66.34540498442367,19.844961240310077","data":{"version":"1.0.0","type":"scene","floor":{"type":"floor","width":20,"height":20,"id":"2"},"wall":[{"type":"wall","id":"4","size":[19.9,0.1],"position":[0.1,10],"rotation":1.5,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[19.9,10],"rotation":0.5,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,19.9],"rotation":1,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,0.1],"rotation":0,"doors":[],"windows":[]}],"objects":[{"type":"furniture","id":"7","position":[10,10],"rotation":0}]}}]};
+            if (typeof FileReader) {
+                var file = document.getElementById('importFile').files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.readAsText(file, 'utf-8');
+                    reader.onload = function (e) {
+                        $.ajax({
+                            type: 'post',
+                            data: {data:JSON.parse(this.result), id: building_id, floor: floor_no},
+                            url: 'index.php?r=site/import-floor',
+                            success: function (data) {
+                                if (data.result) {
+                                    load(data.rooms);
+                                }
+                            },
 
-            $.ajax({
-                type: 'post',
-                data: {data:data, id: building_id, floor: floor_no},
-                url: 'index.php?r=site/import-floor',
-                success: function (data) {
-                    if (data.result) {
-                        load(data.rooms);
+                            error: function (xhr) {
+                                console.log(xhr.responseText);
+                            }
+
+                        });
+
+                        viewMode();
                     }
-                },
-
-                error: function (xhr) {
-                    console.log(xhr.responseText);
+                } else {
+                    alert("请选择规范的文件导入!");
                 }
 
-            });
 
-            viewMode();
+            } else {
+                alert("您的浏览器不支持此功能!");
+            }
+
         }
 
         // 导出楼层场景
@@ -893,7 +922,16 @@ SceneLoad.prototype = {
                 success: function (data) {
                     var exporter = new SceneExport();
                     var sceneJSON = exporter.parseFloor(data.rooms, width, height, step, true);
-                    alert(JSON.parse(sceneJSON));
+                    //alert(JSON.parse(sceneJSON));
+                    var a = window.document.createElement('a');
+                    a.href = window.URL.createObjectURL(new Blob([sceneJSON], {type: 'text/dta'}));
+                    a.download = 'test.dta';
+                    a.target = '_blank';
+
+                    document.body.appendChild(a);
+                    a.click();
+
+                    document.body.removeChild(a);
                 },
 
                 error: function (xhr) {
@@ -1042,7 +1080,7 @@ SceneLoad.prototype = {
         var scene = new THREE.Scene();
 
         var camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
-        camera.position.set(300, 700, 1400);
+        camera.position.set(0, 700, 1400);
         camera.lookAt(new THREE.Vector3());
 
         // roll-over helpers
@@ -1080,17 +1118,40 @@ SceneLoad.prototype = {
             geometry.vertices.push(new THREE.Vector3(i, 0, size));
         }
 
-        var material = new THREE.LineBasicMaterial({color: 0x000000, opacity: 0.2, transparent: true});
+        var material = new THREE.LineBasicMaterial({color: 0x000000, opacity: 0.6, transparent: true});
         var line = new THREE.LineSegments(geometry, material);
         line.visible = false;
         scene.add(line);
 
         var raycaster = new THREE.Raycaster();
 
-        var geometry = new THREE.PlaneBufferGeometry(1000, 1000);
-        geometry.rotateX(-Math.PI / 2);
+        var geometry = new THREE.Geometry();
+        //var geometry = new THREE.PlaneBufferGeometry(1000,1000);
+        //geometry.rotateX(-Math.PI / 2);
 
-        var plane = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: 0x73D764}));
+        var planMaterial1 = new THREE.MeshBasicMaterial({color: 0x73D764});
+        var planMaterial2 = new THREE.MeshBasicMaterial({color: 0xCDF1CC});
+        for (var i = 0; i < 10; i++) {
+            for (var j = (i+1) % 2; j < 10; j = j + 2) {
+                var planGeometry = new THREE.PlaneGeometry(97, 97);
+                planGeometry.rotateX(-Math.PI / 2);
+                var planMesh = new THREE.Mesh(planGeometry, planMaterial1);
+                planMesh.position.set(i * 100 - 450, 0, j * 100 - 450);
+                THREE.GeometryUtils.merge(geometry, planMesh, 0);
+
+            }
+
+            for (var j = i % 2; j < 10; j = j + 2) {
+                var planGeometry2 = new THREE.PlaneGeometry(97, 97);
+                planGeometry2.rotateX(-Math.PI / 2);
+                var planMesh2 = new THREE.Mesh(planGeometry2, planMaterial2);
+                planMesh2.position.set(i * 100 - 450, 0, j * 100 - 450);
+                THREE.GeometryUtils.merge(geometry, planMesh2, 1);
+            }
+        }
+
+
+        var plane = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial([planMaterial1, planMaterial2]));
         scene.add(plane);
         objects.push(plane);
 
@@ -1114,12 +1175,14 @@ SceneLoad.prototype = {
                 viewMode();
                 saveBuilding();
             });
+            save.class="btn btn-default btn-sm";
             var saveText = document.createTextNode('保存');
             save.appendChild(saveText);
             canvas.appendChild(save);
 
             // 编辑
             var edit = document.createElement('button');
+            edit.class="btn btn-default btn-sm"
             edit.addEventListener('click', function () {
                 editMode();
             });
@@ -1129,6 +1192,7 @@ SceneLoad.prototype = {
 
             // 退出
             var exit = document.createElement('button');
+            exit.class="btn btn-default btn-sm";
             exit.addEventListener('click', function () {
                 if (isEdit) {
                     if(confirm("是否保存当前场景?")) {
