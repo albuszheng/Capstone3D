@@ -657,7 +657,7 @@ SceneLoad.prototype = {
         return stage;
     },
 
-    loadfloor: function (data, step, width, height, canvas, canEdit, building_id, floor_no) {
+    loadfloor: function (data, step, width, height, canvas, btnGroup, canEdit, building_id, floor_no) {
         var rooms = data.rooms;
         var modules = data.modules;
         var isEdit = false;
@@ -676,6 +676,7 @@ SceneLoad.prototype = {
         stage.addChildAt(group, 1);
 
         if (canEdit) {
+            // var btn_group = document.getElementById("button-group");
             // 保存
             var save = document.createElement('button');
             save.addEventListener('click', function(){
@@ -684,7 +685,8 @@ SceneLoad.prototype = {
             });
             var saveText = document.createTextNode('保存');
             save.appendChild(saveText);
-            canvas.appendChild(save);
+            save.setAttribute('class', 'btn btn-default btn-sm');
+            btnGroup.appendChild(save);
 
             // 编辑
             var edit = document.createElement('button');
@@ -693,7 +695,8 @@ SceneLoad.prototype = {
             });
             var editText = document.createTextNode('编辑');
             edit.appendChild(editText);
-            canvas.appendChild(edit);
+            edit.setAttribute('class', 'btn btn-default btn-sm');
+            btnGroup.appendChild(edit);
 
             // 删除
             var deleteButton = document.createElement('button');
@@ -710,8 +713,9 @@ SceneLoad.prototype = {
                 }
             });
             var deleteText = document.createTextNode('删除');
+            deleteButton.setAttribute('class', 'btn btn-default btn-sm');
             deleteButton.appendChild(deleteText);
-            canvas.appendChild(deleteButton);
+            btnGroup.appendChild(deleteButton);
 
             // 更改房间号
             var change = document.createElement('button');
@@ -729,8 +733,9 @@ SceneLoad.prototype = {
                 }
             });
             var changeText = document.createTextNode('更改房间号');
+            change.setAttribute('class', 'btn btn-default btn-sm');
             change.appendChild(changeText);
-            canvas.appendChild(change);
+            btnGroup.appendChild(change);
 
             $.each(modules, function (index, object) {
                 var module = document.createElement('button');
@@ -754,7 +759,8 @@ SceneLoad.prototype = {
                 });
                 var moduleText = document.createTextNode(object.name);
                 module.appendChild(moduleText);
-                canvas.appendChild(module);
+                module.setAttribute('class', 'btn btn-default btn-sm');
+                btnGroup.appendChild(module);
 
             });
 
@@ -771,6 +777,7 @@ SceneLoad.prototype = {
             var importText = document.createTextNode('导入');
             importButton.appendChild(importText);
             canvas.appendChild(importButton);
+            importButton.setAttribute('class', 'btn btn-default');
             importButton.style.display = 'none';
 
             // 导出
@@ -779,6 +786,7 @@ SceneLoad.prototype = {
                 exportFloor();
             });
             var exportText = document.createTextNode('导出');
+            exportButton.setAttribute('class', 'btn btn-default');
             exportButton.appendChild(exportText);
             canvas.appendChild(exportButton);
             exportButton.style.display = 'block';

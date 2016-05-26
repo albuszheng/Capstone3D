@@ -18,10 +18,10 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <p>建筑场景</p>
 
-    <div id="operations" style="display: none">
+    <div id="operations" class="btn-group" style="display: none">
         <input type="file" name="file" id="importFile"/>
-        <button onclick="importBuilding()">导入</button>
-        <button onclick="exportBuilding()">导出</button>
+        <button onclick="importBuilding()" class="btn btn-sm btn-default">导入</button>
+        <button onclick="exportBuilding()" class="btn btn-sm btn-default">导出</button>
     </div>
     <div id="canvas">
     </div>
