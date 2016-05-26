@@ -15,16 +15,18 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="modal-dialog modal-lg">
 
             <div class="modal-title"></div>
-            <div class="modal-content canvas btn-group btn-group-justified" style="width: 640px">
-                <div id="2d-btn" class="btn-group" role="group"></div>
+            
+                <div class="modal-content canvas" style="width: 640px">
+                    <div id="2d-btn" class="btn-group"></div>
 
-                <div id="3d-btn" class="btn-group" role="group" style="visibility: hidden"></div>
+                    <div id="3d-btn" class="btn-group" role="group" style="visibility: hidden"></div>
 
-                <div id="models-btn" class="btn-group" role="group"></div>
-                <div id="operate-btn" class="btn-group" role="group"></div>
-            </div>
-            <div class="modal-content canvas" id="canvas2d"></div>
-            <div class="modal-content canvas" id="canvas3d" style="width: 640px;"></div>
+                    <div id="models-btn" class="btn-group" role="group"></div>
+                    <div id="operate-btn" class="btn-group" role="group"></div>
+                </div>
+                <div class="modal-content canvas" id="canvas2d"></div>
+                <div class="modal-content canvas" id="canvas3d" style="width: 640px;"></div>
+
 <!--            <div class="modal-content canvas" id="module-canvas">-->
 <!--            </div>-->
         </div>
@@ -157,13 +159,18 @@ $this->params['breadcrumbs'][] = $this->title;
             button2d.innerHTML="";
             var save_btn = createModelButton(button2d, '保存');
             save_btn.addEventListener('click', function() {save();}, false);
+            // save_btn.addClass("btn btn-sm");
             var load_btn = createModelButton(button2d, '加载');
             load_btn.addEventListener('click', function() {load();}, false);
+            // load_btn.addClass("btn btn-sm");
             var edit_btn = createModelButton(button2d, '编辑');
+            // edit_btn.addClass("btn btn-sm");
             edit_btn.addEventListener('click', function() {edit();}, false);
             var see_btn = createModelButton(button2d, '查看');
+            // see_btn.addClass("btn btn-sm");
             see_btn.addEventListener('click', function() {see();}, false);
             var see3d_btn = createModelButton(button2d, '查看3D场景');
+            // see3d_btn.addClass("btn btn-sm");
             see3d_btn.addEventListener('click', function() {to3d();}, false);
             see3d_btn.id = 'to3dbutton';
 
@@ -171,6 +178,7 @@ $this->params['breadcrumbs'][] = $this->title;
             var button3d = document.getElementById('3d-btn');
             button3d.innerHTML="";
             var see2d_btn = createModelButton(button3d, '查看2D场景');
+            // see2d_btn.addClass("btn btn-sm");
             see2d_btn.id = 'to2dbutton';
             see2d_btn.addEventListener('click', function() {to2d();}, false);
 
@@ -184,24 +192,31 @@ $this->params['breadcrumbs'][] = $this->title;
                 switch (models[i].type) {
                     case CONST.TYPE.FLOOR:
                         button.addEventListener('click', function() {addFloor(this.id);}, false);
+                        // button.addClass("btn btn-sm");
                         break;
                     case CONST.TYPE.WALL:
                         button.addEventListener('click', function() {addWall(this.id);}, false);
+                        // button.addClass("btn btn-sm");
                         break;
                     case CONST.TYPE.DOOR:
                         button.addEventListener('click', function() {addDoorWindow(this.id, CONST.TYPE.DOOR)}, false);
+                        // button.addClass("btn btn-sm");
                         break;
                     case CONST.TYPE.WINDOW:
                         button.addEventListener('click', function() {addDoorWindow(this.id, CONST.TYPE.WINDOW)}, false);
+                        // button.addClass("btn btn-sm");
                         break;
                     case CONST.TYPE.FURNITURE:
                         button.addEventListener('click', function() {addFurniture(this.id)}, false);
+                        // button.addClass("btn btn-sm");
                         break;
                     case CONST.TYPE.SENSOR:
                         button.addEventListener('click', function() {addSensor(this.id)}, false);
+                        // button.addClass("btn btn-sm");
                         break;
                     default:
                         alert('unknown type');
+                        // button.addClass("btn btn-sm");
                         break;
                 }
             }
@@ -210,11 +225,14 @@ $this->params['breadcrumbs'][] = $this->title;
             var operate_btns = document.getElementById('operate-btn');
             operate_btns.innerHTML="";
             var rotate_btn = createModelButton(operate_btns, '旋转');
+            // rotate_btn.addClass("btn btn-sm");
             rotate_btn.addEventListener('click', function() {rotateModel();}, false);
             var del_btn = createModelButton(operate_btns, '删除');
             del_btn.addEventListener('click', function() {deleteModel();}, false);
+            // del_btn.addClass("btn btn-sm");
             var clear_btn = createModelButton(operate_btns, '清空');
             clear_btn.addEventListener('click', function() {clearModel();}, false);
+            // clear_btn.addClass("btn btn-sm");
         }
 
         function createModelButton(element, name) {
