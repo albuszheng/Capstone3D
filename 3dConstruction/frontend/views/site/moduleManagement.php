@@ -12,19 +12,21 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <div class="modal fade template-canvas" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
 
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg container">
 
             <div class="modal-title"></div>
-            <div class="modal-content canvas btn-group btn-group-justified" style="width: 640px">
-                <div id="2d-btn" class="btn-group" role="group"></div>
+            <div class="row">
+                <div class="modal-content canvas col-md-2" style="width: 640px">
+                    <div id="2d-btn" class="btn-group btn-group-sm" role="group"></div>
 
-                <div id="3d-btn" class="btn-group" role="group" style="visibility: hidden"></div>
+                    <div id="3d-btn" class="btn-group" role="group btn-group-sm" style="visibility: hidden"></div>
 
-                <div id="models-btn" class="btn-group" role="group"></div>
-                <div id="operate-btn" class="btn-group" role="group"></div>
+                    <div id="models-btn" class="btn-group btn-group-sm" role="group"></div>
+                    <div id="operate-btn" class="btn-group btn-group-sm" role="group"></div>
+                </div>
+                <div class="modal-content canvas" id="canvas2d"></div>
+                <div class="modal-content canvas" id="canvas3d" style="width: 640px;"></div>
             </div>
-            <div class="modal-content canvas" id="canvas2d"></div>
-            <div class="modal-content canvas" id="canvas3d" style="width: 640px;"></div>
 <!--            <div class="modal-content canvas" id="module-canvas">-->
 <!--            </div>-->
         </div>
