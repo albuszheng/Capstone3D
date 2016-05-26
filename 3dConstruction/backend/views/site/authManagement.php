@@ -12,7 +12,18 @@ $this->title = 'Manage Authority';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="site-manage-authority">
-    <h1><?= Html::encode($this->title) ?></h1>
+    <div class="modal fade template-canvas" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+
+        <div class="modal-dialog modal-lg" style="background-color: #5cb85c">
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer" id="operate-btn">
+<!--                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>-->
+<!--                <button type="button" class="btn btn-primary">确定</button>-->
+            </div>
+
+        </div>
+    </div>
 
     <div class="container">
         <h2 class="title">权限管理</h2>
@@ -58,7 +69,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         <td>
                         <?php
                         foreach ($operations as $operation): ?>
-                         <button class="btn btn-link template-name" id=<?= $operation->id?> data-toggle="modal" data-target=".template-canvas"><?= $operation->operation?></button>
+                         <button class="btn btn-link template-name" id=<?= $operation->id?> data-toggle="modal" data-target=".template-canvas" data-operate="<?= $operation->operation ?>" data-user="<?= $user->id ?>"><?= $operation->operation?></button>
                         <?php endforeach;?>
                         </td>
                     </tr>
@@ -106,3 +117,64 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
     </div>
 </div>
+
+<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.js"></script>
+<script>
+    $(".template-canvas").on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var operation = button.data('operate');
+        var user = button.data('user');
+        var operation_id = button.context.id;
+        var modal = $(this);
+        modal.find('.modal-body').text("Sure to change user "+user+" "+operation+"?");
+
+        var operate_btn = document.getElementById('operate-btn');
+        operate_btn.innerHTML="";
+        var cancel_btn = createModelButton(operate_btn, '取消');
+        cancel_btn.setAttribute('type', 'button');
+        cancel_btn.setAttribute('class', 'btn btn-default');
+        cancel_btn.setAttribute('data-dismiss', 'modal');
+        var confirm_btn = createModelButton(operate_btn, '确定');
+        confirm_btn.setAttribute('type', 'button');
+        confirm_btn.setAttribute('class', 'btn btn-primary');
+        confirm_btn.addEventListener('click', function() {changeAuthority();}, false);
+
+        function changeAuthority() {
+            var user_group = <?= User::GROUP_USER?>;
+            switch (operation) {
+                case 'to admin':
+                    user_group = <?= User::GROUP_ADMIN?>; break;
+                case 'to engineer':
+                    user_group = <?= User::GROUP_ENGINEER?>; break;
+                case 'to staff':
+                    user_group = <?= User::GROUP_STAFF?>; break;
+                default:
+                    break;
+            }
+
+            $.ajax({
+                type:'post',
+                data:{user_id: user, operation_id: operation_id, user_group: user_group},
+                url:'index.php?r=site/update-authority',
+                success: function (data) {
+                    alert(data.result);
+                    $('.template-canvas').modal('hide');
+                },
+
+                error:function(xhr) {
+                    console.log(xhr.responseText);
+                }
+
+            });
+        }
+
+        function createModelButton(element, name) {
+            var model = document.createElement('button');
+            var modelText = document.createTextNode(name);
+            model.appendChild(modelText);
+            element.appendChild(model);
+            return model;
+        }
+    })
+</script>

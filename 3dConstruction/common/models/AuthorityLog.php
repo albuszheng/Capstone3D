@@ -20,7 +20,7 @@ class AuthorityLog extends ActiveRecord
      */
     public static function tableName()
     {
-        return '{{%authority_log}}';
+        return '{{%auth_log}}';
     }
 
     public function rules()

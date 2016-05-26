@@ -281,7 +281,7 @@ class SiteController extends Controller
                 $log->user_id = $data['user_id'];
                 $log->operation_id = $data['operation_id'];
                 $log->time = date('Y-m-d H:i:s');
-                $result = ($log->save()) && (User::updateUserGroup(Yii::$app->getUser()->id, $data['user_group']));
+                $result = ($log->save()) && (User::updateUserGroup($data['user_id'], $data['user_group']));
                 Yii::$app->response->format = Response::FORMAT_JSON;
                 return ['result' => $result];
             }
