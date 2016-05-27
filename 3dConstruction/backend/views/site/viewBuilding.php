@@ -136,7 +136,7 @@ $this->params['breadcrumbs'][] = $this->title;
 //            mapMaterial.map.wrapS = THREE.RepeatWrapping;
 //            mapMaterial.map.wrapT = THREE.RepeatWrapping;
 //            mapMaterial.map.repeat.set(10,1);
-            var roofMaterial = new THREE.MeshBasicMaterial({map:new THREE.TextureLoader().load( "img/roof2.png" )});
+            var roofMaterial = new THREE.MeshBasicMaterial({map:new THREE.TextureLoader().load( "img/1257081.jpg" )});
             matArray.push(mapMaterial);
             matArray.push(mapMaterial);
             matArray.push(roofMaterial);

@@ -951,13 +951,14 @@ SceneLoad.prototype = {
             room.buttonMode = true;
 
             var graphics = new PIXI.Graphics();
-            //graphics.lineStyle(2, 0x0000FF, 1);
-            graphics.beginFill(0xFFFF0B, 0.5);
+            //graphics.lineStyle(4, 0x99CCFF, 1);
+            graphics.beginFill(0xCCFFFF, 1);
             graphics.drawRect(0, 0, size[0]*step, size[1]*step);
+            //graphics.drawRect(2, 2, size[0]*step-4, size[1]*step-4);
             graphics.endFill();
             room.addChildAt(graphics, 0);
 
-            var roomText = new PIXI.Text(room_no, {});
+            var roomText = new PIXI.Text(room_no, {fill: '#66CCFF'});
             room.addChildAt(roomText, 1);
 
             group.addChild(room);
@@ -967,14 +968,14 @@ SceneLoad.prototype = {
         function onMouseOver() {
             var new_style = {
                 font : 'bold italic 28px Arial',
-                fill : '#4cae4c'
+                fill : '#0099CC'
             };
             this.getChildAt(1).style = new_style;
 
         }
 
         function onMouseOut() {
-            this.getChildAt(1).style = {};
+            this.getChildAt(1).style = {fill: '#66CCFF'};
         }
 
         function onMouseClick() {
@@ -1085,7 +1086,7 @@ SceneLoad.prototype = {
 
         // roll-over helpers
         var rollOverGeo = new THREE.BoxGeometry(100, 200, 100);
-        var rollOverMaterial = new THREE.MeshBasicMaterial({color: 0xff0000, opacity: 0.5, transparent: true});
+        var rollOverMaterial = new THREE.MeshBasicMaterial({color: 0x99CC66, opacity: 0.5, transparent: true});
         var rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
         rollOverMesh.visible = false;
         scene.add(rollOverMesh);
@@ -1098,7 +1099,7 @@ SceneLoad.prototype = {
         mapMaterial.map.wrapS = THREE.RepeatWrapping;
         mapMaterial.map.wrapT = THREE.RepeatWrapping;
         mapMaterial.map.repeat.set(1,2);
-        var roofMaterial = new THREE.MeshBasicMaterial({map:new THREE.TextureLoader().load( "img/roof2.png" )});
+        var roofMaterial = new THREE.MeshBasicMaterial({map:new THREE.TextureLoader().load( "img/1257081.jpg" )});
         matArray.push(mapMaterial);
         matArray.push(mapMaterial);
         matArray.push(roofMaterial);
@@ -1129,8 +1130,8 @@ SceneLoad.prototype = {
         //var geometry = new THREE.PlaneBufferGeometry(1000,1000);
         //geometry.rotateX(-Math.PI / 2);
 
-        var planMaterial1 = new THREE.MeshBasicMaterial({color: 0x73D764});
-        var planMaterial2 = new THREE.MeshBasicMaterial({color: 0xCDF1CC});
+        var planMaterial1 = new THREE.MeshBasicMaterial({color: 0x99CCFF});
+        var planMaterial2 = new THREE.MeshBasicMaterial({color: 0xCCFFFF});
         for (var i = 0; i < 10; i++) {
             for (var j = (i+1) % 2; j < 10; j = j + 2) {
                 var planGeometry = new THREE.PlaneGeometry(97, 97);

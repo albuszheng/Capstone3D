@@ -229,16 +229,6 @@ class SiteController extends Controller
         }
     }
 
-    public function actionConfigFloor() {
-        if (Yii::$app->request->isPost) {
-            $data = Yii::$app->request->post();
-            $floor = $data['floor'];
-            $result = Config::updateFloor($floor);
-            Yii::$app->response->format = Response::FORMAT_JSON;
-            return ['result' => $result];
-        }
-    }
-
     public function actionDeleteUser() {
         if (Yii::$app->user->can('userManagement')) {
             if (Yii::$app->request->isAjax) {

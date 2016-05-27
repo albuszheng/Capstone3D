@@ -151,7 +151,8 @@ $this->params['breadcrumbs'][] = $this->title;
             if (isLoad) {
                 step = Math.min(width2d/data.floor.width, height2d/data.floor.height);
                 createLine();
-                load(data);
+//                load(data);
+                to2d(data);
             }
 
             // 2d操作button
@@ -286,19 +287,6 @@ $this->params['breadcrumbs'][] = $this->title;
             loadWall(scene.wall);
             loadFurniture(scene.objects);
             see();
-        }
-
-        // 加载场景
-        function loadScene(data) {
-            step = Math.min(width/data.floor.width, height/data.floor.height);
-
-            walls.removeChildren(0, walls.children.length);
-            group.removeChildren(0, group.children.length);
-
-            loadFloor(data.floor);
-            loadWall(data.wall);
-            loadFurniture(data.objects);
-
         }
 
         // 加载地板
@@ -538,8 +526,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
         // 开始墙壁拖动事件
         var dragStart = function(e) {
-            mouseX = e.pageX - e.currentTarget.offsetLeft;
-            mouseY = e.pageY - e.currentTarget.offsetTop;
+            mouseX = e.pageX - e.currentTarget.offsetParent.offsetLeft - e.currentTarget.offsetLeft;
+            mouseY = e.pageY - e.currentTarget.offsetParent.offsetTop - e.currentTarget.offsetTop;
 
             $("#canvas2d")
                 .bind('mousemove', drag)
@@ -552,8 +540,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
         // 结束墙壁拖动事件
         var dragEnd = function(e) {
-            var x = e.pageX - e.currentTarget.offsetLeft;
-            var y = e.pageY - e.currentTarget.offsetTop;
+            var x = e.pageX - e.currentTarget.offsetParent.offsetLeft - e.currentTarget.offsetLeft;
+            var y = e.pageY - e.currentTarget.offsetParent.offsetTop - e.currentTarget.offsetTop;
 
             var position = [];
             var rotation = 0;

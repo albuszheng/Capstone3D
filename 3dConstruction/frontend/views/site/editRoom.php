@@ -451,8 +451,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
     // 开始墙壁拖动事件
     var dragStart = function(e) {
-        mouseX = e.pageX - e.currentTarget.offsetLeft;
-        mouseY = e.pageY - e.currentTarget.offsetTop;
+        mouseX = e.pageX - e.currentTarget.offsetParent.offsetLeft - e.currentTarget.offsetLeft;
+        mouseY = e.pageY - e.currentTarget.offsetParent.offsetTop - e.currentTarget.offsetTop;
 
         $("#canvas2d")
             .bind('mousemove', drag)
@@ -465,22 +465,26 @@ $this->params['breadcrumbs'][] = $this->title;
 
     // 结束墙壁拖动事件
     var dragEnd = function(e) {
-        var x = e.pageX - e.currentTarget.offsetLeft;
-        var y = e.pageY - e.currentTarget.offsetTop;
+        var x = e.pageX - e.currentTarget.offsetParent.offsetLeft - e.currentTarget.offsetLeft;
+        var y = e.pageY - e.currentTarget.offsetParent.offsetTop - e.currentTarget.offsetTop;
 
         var position = [];
         var rotation = 0;
         var size = [];
+        console.log(x+" " +y);
+        console.log(e);
 
         if (Math.abs(x - mouseX) < Math.abs(y - mouseY)) {
             x = mouseX;
             size = [Math.abs(y - mouseY), 0.1 * step];
             rotation = Math.PI / 2;
             position = [x, (y + mouseY) / 2];
+//            position=[100,100];
         } else {
             y = mouseY;
             size = [Math.abs(x - mouseX), 0.1 * step];
             position = [(x + mouseX) / 2, y];
+//            position=[100,100];
         }
 
         $.each(walls.children, function (index, object) {

@@ -145,7 +145,7 @@ $this->params['breadcrumbs'][] = $this->title;
             var texture = new THREE.TextureLoader().load( "img/nav.png" );
             var matArray = [];
             var mapMaterial = new THREE.MeshBasicMaterial({map:texture});
-            var roofMaterial = new THREE.MeshBasicMaterial({map:new THREE.TextureLoader().load( "img/roof2.png" )});
+            var roofMaterial = new THREE.MeshBasicMaterial({map:new THREE.TextureLoader().load( "img/1257081.png" )});
             matArray.push(mapMaterial);
             matArray.push(mapMaterial);
             matArray.push(roofMaterial);
