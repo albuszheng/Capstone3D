@@ -399,7 +399,7 @@ class SiteController extends Controller
                 $result = $delRooms[$j]->delete();
             }
 
-            if ($data['changeFloor'] === true) {
+            if ($data['changeFloor'] == true) {
                 $building->floor = $floor;
 
                 for ($i=0; $i<count($rooms); $i++) {
@@ -432,6 +432,7 @@ class SiteController extends Controller
                 }
 
             }
+
             $result = $result && Building::updateBuilding($building->id, $building_data['width'], $building_data['height'], $building->floor);
 
             Yii::$app->response->format = Response::FORMAT_JSON;

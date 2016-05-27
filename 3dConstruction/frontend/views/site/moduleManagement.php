@@ -319,9 +319,9 @@ $this->params['breadcrumbs'][] = $this->title;
                         loadDoorWindow(object.windows, wall, CONST.TYPE.WINDOW);
                     }
 
-                    if (object.sensors !== undefined) {
-                        loadSensor(object.sensors, wall, CONST.TYPE.SENSOR);
-                    }
+//                    if (object.sensors !== undefined) {
+//                        loadSensor(object.sensors, wall, CONST.TYPE.SENSOR);
+//                    }
                 }
             });
         }
@@ -341,7 +341,7 @@ $this->params['breadcrumbs'][] = $this->title;
             });
         }
 
-        // 加载传感器
+   /*     // 加载传感器
         function loadSensor(data, wall, type) {
             $.each(data, function (index, object) {
                 var position = [object.position[0] * step, object.position[1] * step];
@@ -354,7 +354,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     wall.children.push(model);
                 }
             });
-        }
+        }*/
 
         // 加载家具模型
         function loadFurniture(data) {
@@ -388,6 +388,11 @@ $this->params['breadcrumbs'][] = $this->title;
             graph.visible = true;
 
             $.each(walls.children, function (index, object) {
+                object.interactive = true;
+                object.buttonMode = true;
+            });
+
+            $.each(group.children, function (index, object) {
                 if (object.type === CONST.TYPE.SENSOR) {
                     object.removeAllListeners();
                     object
@@ -399,11 +404,6 @@ $this->params['breadcrumbs'][] = $this->title;
                     object.interactive = true;
                     object.buttonMode = true;
                 }
-            });
-
-            $.each(group.children, function (index, object) {
-                object.interactive = true;
-                object.buttonMode = true;
             });
         }
 
@@ -421,6 +421,10 @@ $this->params['breadcrumbs'][] = $this->title;
             }
 
             $.each(walls.children, function (index, object) {
+                object.interactive = false;
+            });
+
+            $.each(group.children, function (index, object) {
                 if (object.type === CONST.TYPE.SENSOR) {
                     object.removeAllListeners();
                     object
@@ -428,10 +432,6 @@ $this->params['breadcrumbs'][] = $this->title;
                 } else {
                     object.interactive = false;
                 }
-            });
-
-            $.each(group.children, function (index, object) {
-                object.interactive = false;
             });
 
         }
@@ -606,21 +606,11 @@ $this->params['breadcrumbs'][] = $this->title;
                 return;
             }
 
-            if (selected === undefined || selected.type !== CONST.TYPE.WALL) {
-                alert("请选择一面墙壁");
-                return;
-            }
-
             $("#canvas2d").unbind('mousedown', dragStart);
-            var parent = selected;
-            var position = [parent.position.x, parent.position.y];
-            var model = createDoorWindow(id, position, parent.rotation);
-            model.type = type;
-            model.id = id;
-            model.info = 'info'+position[0];
-            model.wall = parent;
-            parent.children.push(model);
-            selectMode(model, CONST.TYPE.SENSOR);
+            var model = createFurniture(id, [width2d/2, height2d/2], 0);
+            if (model !== null) {
+                selectMode(model, CONST.TYPE.SENSOR);
+            }
         }
 
         /**
@@ -656,7 +646,6 @@ $this->params['breadcrumbs'][] = $this->title;
             switch (selected.type) {
                 case CONST.TYPE.DOOR:
                 case CONST.TYPE.WINDOW:
-                case CONST.TYPE.SENSOR:
                     var wall = selected.wall;
                     var outBounds;
                     if (isZero(Math.sin(selected.rotation))) {
@@ -680,6 +669,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     }
                     break;
                 case CONST.TYPE.FURNITURE:
+                case CONST.TYPE.SENSOR:
                     if (isOut(selected.getBounds(), bounds)) {
                         selected.position.set(width2d / 2, height2d / 2);
                     }
@@ -697,7 +687,6 @@ $this->params['breadcrumbs'][] = $this->title;
                 switch (event.target.type) {
                     case CONST.TYPE.DOOR:
                     case CONST.TYPE.WINDOW:
-                    case CONST.TYPE.SENSOR:
                         if (isZero(Math.abs(Math.sin(selected.rotation)))) {
                             this.position.x = newPosition.x;
                         } else {
@@ -710,6 +699,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             object.position.y += newPosition.y - selected.position.y;
                         });
                     case CONST.TYPE.FURNITURE:
+                    case CONST.TYPE.SENSOR:
                         this.position.x = newPosition.x;
                         this.position.y = newPosition.y;
                         break;
@@ -722,7 +712,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
         // 传感器信息
         function onMouseMove( event ) {
-            alert(event.target.info);
+            alert(event.target.id);
         }
 
         // 创建墙壁
@@ -802,7 +792,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 var size = furniture.size.split(',');
                 model.width = size[0] * step;
                 model.height = size[1] * step;
-                model.type = CONST.TYPE.FURNITURE;
+                model.type = furniture.type;
                 model.id = id;
 
                 model
@@ -858,7 +848,6 @@ $this->params['breadcrumbs'][] = $this->title;
                 switch (selected.type) {
                     case CONST.TYPE.DOOR:
                     case CONST.TYPE.WINDOW:
-                    case CONST.TYPE.SENSOR:
                         alert("请对门窗所在墙壁进行操作");
                         break;
                     case CONST.TYPE.WALL:
@@ -869,6 +858,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             object.position.y = Math.abs(Math.sin(object.rotation)) * offset + selected.position.y;
                         });
                     case CONST.TYPE.FURNITURE:
+                    case CONST.TYPE.SENSOR:
                         selected.rotation = (selected.rotation + Math.PI / 2) % CONST.PI_2;
                         break;
                     default:
@@ -891,7 +881,6 @@ $this->params['breadcrumbs'][] = $this->title;
                 switch (selected.type) {
                     case CONST.TYPE.DOOR:
                     case CONST.TYPE.WINDOW:
-                    case CONST.TYPE.SENSOR:
                         var object = selected.wall.children;
                         object.splice(object.indexOf(selected), 1);
                         walls.removeChild(selected);
@@ -903,6 +892,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         walls.removeChild(selected);
                         break;
                     case CONST.TYPE.FURNITURE:
+                    case CONST.TYPE.SENSOR:
                         group.removeChild(selected);
                         break;
                     default:

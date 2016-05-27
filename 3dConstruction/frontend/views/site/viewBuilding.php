@@ -183,6 +183,12 @@ $this->params['breadcrumbs'][] = $this->title;
                         } else {
                             change = false;
                         }
+                    } else {
+                        if (data.floor !== <?= $building->floor?>) {
+                            if(confirm("楼层数不一致,是否继续?点击确定更改楼层数,点击取消不更改!")) {
+                                changeFloor = true;
+                            }
+                        }
                     }
 
                     if (change) {

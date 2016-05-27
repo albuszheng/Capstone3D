@@ -390,10 +390,6 @@ SceneLoad.prototype = {
                     if (object.windows !== undefined) {
                         loadDoorWindow(object.windows, wall, CONST.TYPE.WINDOW);
                     }
-
-                    if (object.sensors !== undefined) {
-                        loadSensor(object.sensors, wall, CONST.TYPE.SENSOR);
-                    }
                 }
             });
         }
@@ -473,7 +469,7 @@ SceneLoad.prototype = {
             return model;
         }
 
-        // 加载传感器
+    /*    // 加载传感器
         function loadSensor(data, wall, type) {
             $.each(data, function (index, object) {
                 var position = [object.position[0] * step, object.position[1] * step];
@@ -514,7 +510,7 @@ SceneLoad.prototype = {
             }
 
             return model;
-        }
+        }*/
 
         // 加载家具模型
         function loadFurniture(data) {
@@ -538,16 +534,25 @@ SceneLoad.prototype = {
                 var size = furniture.size.split(',');
                 model.width = size[0] * step;
                 model.height = size[1] * step;
-                model.type = CONST.TYPE.FURNITURE;
+                model.type = furniture.type;
                 model.id = id;
-                model.interactive = false;
-                model.buttonMode = false;
 
-                model
-                    .on('mousedown', onDragStart)
-                    .on('mouseup', onDragEnd)
-                    .on('mouseupoutside', onDragEnd)
-                    .on('mousemove', onDragMove);
+                if (model.type === CONST.TYPE.SENSOR) {
+                    model.interactive = true;
+                    model.buttonMode = true;
+
+                    model
+                        .on('mousedown', onMouseMove);
+                } else {
+                    model.interactive = false;
+                    model.buttonMode = false;
+
+                    model
+                        .on('mousedown', onDragStart)
+                        .on('mouseup', onDragEnd)
+                        .on('mouseupoutside', onDragEnd)
+                        .on('mousemove', onDragMove);
+                }
 
                 group.addChild(model);
             }
@@ -587,7 +592,6 @@ SceneLoad.prototype = {
             switch (selected.type) {
                 case CONST.TYPE.DOOR:
                 case CONST.TYPE.WINDOW:
-                case CONST.TYPE.SENSOR:
                     var wall = selected.wall;
                     var outBounds;
                     if (isZero(Math.sin(selected.rotation))) {
@@ -611,6 +615,7 @@ SceneLoad.prototype = {
                     }
                     break;
                 case CONST.TYPE.FURNITURE:
+                case CONST.TYPE.SENSOR:
                     if (isOut(selected.getBounds(), bounds)) {
                         selected.position.set(width / 2, height / 2);
                     }
@@ -629,7 +634,6 @@ SceneLoad.prototype = {
                 switch (event.target.type) {
                     case CONST.TYPE.DOOR:
                     case CONST.TYPE.WINDOW:
-                    case CONST.TYPE.SENSOR:
                         if (isZero(Math.abs(Math.sin(selected.rotation)))) {
                             this.position.x = newPosition.x;
                         } else {
@@ -642,6 +646,7 @@ SceneLoad.prototype = {
                             object.position.y += newPosition.y - selected.position.y;
                         });
                     case CONST.TYPE.FURNITURE:
+                    case CONST.TYPE.SENSOR:
                         this.position.x = newPosition.x;
                         this.position.y = newPosition.y;
                         break;

@@ -99,9 +99,9 @@ SceneExport.prototype = {
                         windows.push("\n" + DoorWindowString(object, "window"));
                     }
 
-                    if (object.type === CONST.TYPE.SENSOR) {
-                        sensors.push("\n" + DoorWindowString(object, "sensor"));
-                    }
+                    //if (object.type === CONST.TYPE.SENSOR) {
+                    //    sensors.push("\n" + DoorWindowString(object, "sensor"));
+                    //}
                 }
             }
 
@@ -117,9 +117,9 @@ SceneExport.prototype = {
                 '           ],',
                 '           "windows": [',
                             windows,
-                '           ],',
-                '           "sensors": [',
-                            sensors,
+                //'           ],',
+                //'           "sensors": [',
+                //            sensors,
                 '           ]',
                 '       }'
             ].join( '\n' );
@@ -224,8 +224,8 @@ SceneExport.prototype = {
                 '           "doors": [',
                 '           ],',
                 '           "windows": [',
-                '           ],',
-                '           "sensors": [',
+                //'           ],',
+                //'           "sensors": [',
                 '           ]',
                 '       }'
             ].join( '\n' );
@@ -300,8 +300,8 @@ SceneExport.prototype = {
             var output = [
                 '       {',
                 '           "room_no": "' + room.room_no + '",',
-                '           "size": "' + room.size.toFixed(2) + '",',
-                '           "position": "' + room.position.toFixed(2) + '",',
+                '           "size": "' + room.size + '",',
+                '           "position": "' + room.position + '",',
                 '           "data": ' + room.data,
                 '       }'
             ].join( '\n' );
@@ -390,8 +390,8 @@ SceneExport.prototype = {
                 '       {',
                 '           "floor_no": "' + room.floor_no + '",',
                 '           "room_no": "' + room.room_no + '",',
-                '           "size": "' + room.size.toFixed(2) + '",',
-                '           "position": "' + room.position.toFixed(2) + '",',
+                '           "size": "' + room.size + '",',
+                '           "position": "' + room.position + '",',
                 '           "data": ' + data,
                 '       }'
             ].join('\n');
