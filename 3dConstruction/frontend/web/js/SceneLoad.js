@@ -1081,7 +1081,7 @@ SceneLoad.prototype = {
         var scene = new THREE.Scene();
 
         var camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
-        camera.position.set(0, 700, 1400);
+        camera.position.set(0, 960, 1080);
         camera.lookAt(new THREE.Vector3());
 
         // roll-over helpers

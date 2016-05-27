@@ -109,7 +109,7 @@ SceneExport.prototype = {
                 '       {',
                 '           "type": "wall",',
                 '           "id": "' + wall.id + '",',
-                '           "size": ['+ wall.width/scale + ',' + wall.height/scale + '],',
+                '           "size": ['+ (wall.width/scale).toFixed(2) + ',' + (wall.height/scale).toFixed(2) + '],',
                 '           "position": ' + Vector2String(wall.position, scale) + ',',
                 '           "rotation": ' + wall.rotation/Math.PI + ',',
                 '           "doors": [',
@@ -167,7 +167,7 @@ SceneExport.prototype = {
 
         function Vector2String( v, sca ) {
             var scale = sca || 1;
-            return "[" + v.x / scale + "," + v.y / scale + "]";
+            return "[" + (v.x / scale).toFixed(2) + "," + (v.y / scale).toFixed(2) + "]";
 
         }
 
@@ -218,8 +218,8 @@ SceneExport.prototype = {
                 '       {',
                 '           "type": "wall",',
                 '           "id": "4",',
-                '           "size": ['+ (width-0.1) + ',' + 0.1 + '],',
-                '           "position": [' + x + ',' + y + "],",
+                '           "size": ['+ (width-0.1).toFixed(2) + ',' + 0.1 + '],',
+                '           "position": [' + x.toFixed(2) + ',' + y.toFixed(2) + "],",
                 '           "rotation": ' + rotation + ',',
                 '           "doors": [',
                 '           ],',
@@ -300,8 +300,8 @@ SceneExport.prototype = {
             var output = [
                 '       {',
                 '           "room_no": "' + room.room_no + '",',
-                '           "size": "' + room.size + '",',
-                '           "position": "' + room.position + '",',
+                '           "size": "' + room.size.toFixed(2) + '",',
+                '           "position": "' + room.position.toFixed(2) + '",',
                 '           "data": ' + room.data,
                 '       }'
             ].join( '\n' );
@@ -311,7 +311,7 @@ SceneExport.prototype = {
 
         function Vector2String( x, y, sca ) {
             var scale = sca || 1;
-            return x / scale + "," + y / scale;
+            return (x / scale).toFixed(2) + "," + (y / scale).toFixed(2);
 
         }
 
@@ -390,8 +390,8 @@ SceneExport.prototype = {
                 '       {',
                 '           "floor_no": "' + room.floor_no + '",',
                 '           "room_no": "' + room.room_no + '",',
-                '           "size": "' + room.size + '",',
-                '           "position": "' + room.position + '",',
+                '           "size": "' + room.size.toFixed(2) + '",',
+                '           "position": "' + room.position.toFixed(2) + '",',
                 '           "data": ' + data,
                 '       }'
             ].join('\n');
