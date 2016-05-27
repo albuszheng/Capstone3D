@@ -387,7 +387,7 @@ class SiteController extends Controller
     public function actionImportBuilding() {
         if (Yii::$app->request->isAjax) {
             $data = Yii::$app->request->post();
-            $building_data = $data['data'];
+            $building_data = Json::decode($data['data']);
             $rooms = $building_data['room'];
             $floor = $building_data['floor'];
             $building = Building::findById($data['id']);

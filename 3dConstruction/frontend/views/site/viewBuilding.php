@@ -54,7 +54,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-        camera.position.set( 5, 6, 15 );
+        camera.position.set( 4, 4, 13 );
         camera.lookAt( new THREE.Vector3(0, 3, 0) );
 
         var renderer = new THREE.WebGLRenderer();
@@ -78,7 +78,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
         var raycaster = new THREE.Raycaster();
 
-        var texture = new THREE.TextureLoader().load( "img/floor.png" );
+        var texture = new THREE.TextureLoader().load( "img/build4.png" );
 
         for (var i = 1; i <= <?= $building->floor?>; i++) {
             var mesh = addMesh(i, new THREE.Vector3(0,i*0.8-0.8,0));
@@ -111,7 +111,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
                     INTERSECTED = intersects[ 0 ].object;
                     INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
-                    INTERSECTED.material.emissive.setHex( 0x00ff00 );
+                    INTERSECTED.material.emissive.setHex( 0x1BE634 );
                 }
             } else {
                 if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
@@ -134,6 +134,9 @@ $this->params['breadcrumbs'][] = $this->title;
             var material = new THREE.MeshLambertMaterial( {  map: texture } );
             var mesh = new THREE.Mesh(geometry, material);
             mesh.floorid = id;
+            mesh.material.map.wrapS = THREE.RepeatWrapping;
+            mesh.material.map.wrapT = THREE.RepeatWrapping;
+            mesh.material.map.repeat.set(3, 1);
             mesh.position.copy(position);
             scene.add(mesh);
             return mesh;
@@ -145,7 +148,7 @@ $this->params['breadcrumbs'][] = $this->title;
             var texture = new THREE.TextureLoader().load( "img/nav.png" );
             var matArray = [];
             var mapMaterial = new THREE.MeshBasicMaterial({map:texture});
-            var roofMaterial = new THREE.MeshBasicMaterial({map:new THREE.TextureLoader().load( "img/1257081.png" )});
+            var roofMaterial = new THREE.MeshBasicMaterial({map:new THREE.TextureLoader().load( "img/roof3.png" )});
             matArray.push(mapMaterial);
             matArray.push(mapMaterial);
             matArray.push(roofMaterial);
@@ -185,7 +188,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     if (change) {
                         $.ajax({
                             type: 'post',
-                            data: {data:data, id: <?= $building->id?>, changeFloor: changeFloor},
+                            data: {data:JSON.stringify(data), id: <?= $building->id?>, changeFloor: changeFloor},
                             url: 'index.php?r=site/import-building',
                             success: function (data) {
                                 if (data.result) {

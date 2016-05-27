@@ -952,13 +952,13 @@ SceneLoad.prototype = {
 
             var graphics = new PIXI.Graphics();
             //graphics.lineStyle(4, 0x99CCFF, 1);
-            graphics.beginFill(0xCCFFFF, 1);
+            graphics.beginFill(0xB2F7C4, 1);
             graphics.drawRect(0, 0, size[0]*step, size[1]*step);
             //graphics.drawRect(2, 2, size[0]*step-4, size[1]*step-4);
             graphics.endFill();
             room.addChildAt(graphics, 0);
 
-            var roomText = new PIXI.Text(room_no, {fill: '#66CCFF'});
+            var roomText = new PIXI.Text(room_no, {fill: '#1BE634'});
             room.addChildAt(roomText, 1);
 
             group.addChild(room);
@@ -968,14 +968,14 @@ SceneLoad.prototype = {
         function onMouseOver() {
             var new_style = {
                 font : 'bold italic 28px Arial',
-                fill : '#0099CC'
+                fill : '#26E6A8'
             };
             this.getChildAt(1).style = new_style;
 
         }
 
         function onMouseOut() {
-            this.getChildAt(1).style = {fill: '#66CCFF'};
+            this.getChildAt(1).style = {fill: '#1BE634'};
         }
 
         function onMouseClick() {
@@ -1086,7 +1086,7 @@ SceneLoad.prototype = {
 
         // roll-over helpers
         var rollOverGeo = new THREE.BoxGeometry(100, 200, 100);
-        var rollOverMaterial = new THREE.MeshBasicMaterial({color: 0x99CC66, opacity: 0.5, transparent: true});
+        var rollOverMaterial = new THREE.MeshBasicMaterial({color: 0x66CCCC, opacity: 0.6, transparent: true});
         var rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
         rollOverMesh.visible = false;
         scene.add(rollOverMesh);
@@ -1099,7 +1099,7 @@ SceneLoad.prototype = {
         mapMaterial.map.wrapS = THREE.RepeatWrapping;
         mapMaterial.map.wrapT = THREE.RepeatWrapping;
         mapMaterial.map.repeat.set(1,2);
-        var roofMaterial = new THREE.MeshBasicMaterial({map:new THREE.TextureLoader().load( "img/1257081.jpg" )});
+        var roofMaterial = new THREE.MeshBasicMaterial({map:new THREE.TextureLoader().load( "img/roof3.png" )});
         matArray.push(mapMaterial);
         matArray.push(mapMaterial);
         matArray.push(roofMaterial);
@@ -1130,8 +1130,8 @@ SceneLoad.prototype = {
         //var geometry = new THREE.PlaneBufferGeometry(1000,1000);
         //geometry.rotateX(-Math.PI / 2);
 
-        var planMaterial1 = new THREE.MeshBasicMaterial({color: 0x99CCFF});
-        var planMaterial2 = new THREE.MeshBasicMaterial({color: 0xCCFFFF});
+        var planMaterial1 = new THREE.MeshBasicMaterial({color: 0x82E676});
+        var planMaterial2 = new THREE.MeshBasicMaterial({color: 0xCCEAC4});
         for (var i = 0; i < 10; i++) {
             for (var j = (i+1) % 2; j < 10; j = j + 2) {
                 var planGeometry = new THREE.PlaneGeometry(97, 97);
@@ -1176,14 +1176,14 @@ SceneLoad.prototype = {
                 viewMode();
                 saveBuilding();
             });
-            save.class="btn btn-default btn-sm";
+            save.setAttribute('class', 'btn btn-default btn-sm');
             var saveText = document.createTextNode('保存');
             save.appendChild(saveText);
             canvas.appendChild(save);
 
             // 编辑
             var edit = document.createElement('button');
-            edit.class="btn btn-default btn-sm"
+            edit.setAttribute('class', 'btn btn-default btn-sm');
             edit.addEventListener('click', function () {
                 editMode();
             });
@@ -1193,7 +1193,7 @@ SceneLoad.prototype = {
 
             // 退出
             var exit = document.createElement('button');
-            exit.class="btn btn-default btn-sm";
+            exit.setAttribute('class', 'btn btn-default btn-sm');
             exit.addEventListener('click', function () {
                 if (isEdit) {
                     if(confirm("是否保存当前场景?")) {
