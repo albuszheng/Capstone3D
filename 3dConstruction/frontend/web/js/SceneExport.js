@@ -86,7 +86,6 @@ SceneExport.prototype = {
         function WallString(wall) {
             var doors = [];
             var windows = [];
-            var sensors = [];
 
             for (var i = 0; i < wall.children.length; i++) {
                 var object = wall.getChildAt(i);
@@ -98,10 +97,6 @@ SceneExport.prototype = {
                     if (object.type === CONST.TYPE.WINDOW) {
                         windows.push("\n" + DoorWindowString(object, "window"));
                     }
-
-                    //if (object.type === CONST.TYPE.SENSOR) {
-                    //    sensors.push("\n" + DoorWindowString(object, "sensor"));
-                    //}
                 }
             }
 
@@ -117,9 +112,6 @@ SceneExport.prototype = {
                 '           ],',
                 '           "windows": [',
                             windows,
-                //'           ],',
-                //'           "sensors": [',
-                //            sensors,
                 '           ]',
                 '       }'
             ].join( '\n' );
@@ -224,8 +216,6 @@ SceneExport.prototype = {
                 '           "doors": [',
                 '           ],',
                 '           "windows": [',
-                //'           ],',
-                //'           "sensors": [',
                 '           ]',
                 '       }'
             ].join( '\n' );
@@ -288,7 +278,7 @@ SceneExport.prototype = {
                 '       {',
                 '           "id": "' + room.id + '",',
                 '           "room_no": "' + room.getChildAt(1).text + '",',
-                '           "size": "' + Vector2String(room.width, room.height, scale) + '",',
+                '           "size": "' + room._width/scale + "," + room._height/scale + '",',
                 '           "position": "' + Vector2String(room.position.x, room.position.y, scale) + '"',
                 '       }'
             ].join( '\n' );

@@ -399,7 +399,7 @@ class SiteController extends Controller
                 $result = $delRooms[$j]->delete();
             }
 
-            if ($data['changeFloor'] == true) {
+            if ($data['changeFloor'] == 'true') {
                 $building->floor = $floor;
 
                 for ($i=0; $i<count($rooms); $i++) {
@@ -550,7 +550,7 @@ class SiteController extends Controller
      */
     public function actionManageModule()
     {
-        if (Yii::$app->user->can('modelManagement')) {
+        if (Yii::$app->user->can('moduleManagement')) {
             $modules = Module::findAllModules();
             return $this->render('moduleManagement', [
                 'modules' => $modules,
@@ -577,7 +577,7 @@ class SiteController extends Controller
      */
     public function actionManageModel()
     {
-        if (Yii::$app->user->can('modelManagement')) {
+        if (Yii::$app->user->can('moduleManagement')) {
             $dataProvider = new ActiveDataProvider([
                 'query' => Model::find(),
                 'pagination' => [
@@ -632,7 +632,7 @@ class SiteController extends Controller
 
     public function actionDeleteModel()
     {
-        if (Yii::$app->user->can('modelManagement')) {
+        if (Yii::$app->user->can('moduleManagement')) {
             if (Yii::$app->request->isAjax) {
                 $data = Yii::$app->request->post();
                 $id = $data['id'];
@@ -646,7 +646,7 @@ class SiteController extends Controller
 
     public function actionAddModel()
     {
-        if (Yii::$app->user->can('modelManagement')) {
+        if (Yii::$app->user->can('moduleManagement')) {
             if (Yii::$app->request->isAjax) {
                 $data = Yii::$app->request->post();
                 $model = new Model();
@@ -665,7 +665,7 @@ class SiteController extends Controller
 
     public function actionUpdateModel()
     {
-        if (Yii::$app->user->can('modelManagement')) {
+        if (Yii::$app->user->can('moduleManagement')) {
             if (Yii::$app->request->isAjax) {
                 $data = Yii::$app->request->post();
                 $result = Model::updateModel($data);

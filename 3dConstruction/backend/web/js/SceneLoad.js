@@ -143,12 +143,6 @@ SceneLoad.prototype = {
                         });
                     }
 
-                    if (object.sensors !== undefined) {
-                        $.each(object.sensors, function(index, model) {
-                            wallBSP = loadSensor(model, wallBSP, rotation, group);
-                        });
-                    }
-
                     var wall = wallBSP.toMesh();
                     wall.geometry.computeFaceNormals();
                     wall.geometry.computeVertexNormals();
@@ -217,7 +211,7 @@ SceneLoad.prototype = {
             return wallBSP;
         }
 
-        // 加载传感器
+/*        // 加载传感器
         function loadSensor(model, wallBSP, wallrotation, group) {
             var sensor = findModelById(model.id);
 
@@ -228,17 +222,12 @@ SceneLoad.prototype = {
                     2,
                     model.position[1] - floor_height/2 + Math.cos(rotation) * 0.05];
                 var rotation3D = [-Math.PI/2 , 0, rotation];
-                var size = sensor.size.split(',');
-                //var bspposition = convertBSPPosition(rotation3D[2], position3D, size);
                 loadModel(model.id, position3D, rotation3D, group);
-
-                //var modelBSP = new ThreeBSP(addWall(size, bspposition, wallrotation));
-                //wallBSP = wallBSP.subtract(modelBSP);
             }
 
             return wallBSP;
 
-        }
+        }*/
 
         // 加载家具模型
         function loadObject(data) {
@@ -257,13 +246,13 @@ SceneLoad.prototype = {
                 var loader = new THREE.ColladaLoader();
                 loader.load(
                     'model/' + model.url3d,
-                    function ( collada ) {
+                    function (collada) {
                         var voxel = collada.scene;
                         voxel.rotation.fromArray(rotation);
                         voxel.position.fromArray(position);
                         voxel.scale.fromArray(model.scale.split(','));
                         voxel.id = id;
-                        scene.add( voxel );
+                        scene.add(voxel);
                     }
                 );
             }
@@ -526,24 +515,19 @@ SceneLoad.prototype = {
             var furniture = findModelById(id);
 
             if (furniture !== null) {
-                var texture = PIXI.Texture.fromImage('model/plan/' + furniture.url2d);
-                var model = new PIXI.Sprite(texture);
-                model.anchor.set(0, 1);
-                model.position.set(position[0], position[1]);
-                model.rotation = rotation * Math.PI;
-                var size = furniture.size.split(',');
-                model.width = size[0] * step;
-                model.height = size[1] * step;
-                model.type = furniture.type;
-                model.id = id;
-
-                if (model.type === CONST.TYPE.SENSOR) {
-                    model.interactive = true;
-                    model.buttonMode = true;
-
-                    model
-                        .on('mousedown', onMouseMove);
+                if ((furniture.type === CONST.TYPE.SENSOR) && (!hasSensor)) {
                 } else {
+                    var texture = PIXI.Texture.fromImage('model/plan/' + furniture.url2d);
+                    var model = new PIXI.Sprite(texture);
+                    model.anchor.set(0, 1);
+                    model.position.set(position[0], position[1]);
+                    model.rotation = rotation * Math.PI;
+                    var size = furniture.size.split(',');
+                    model.width = size[0] * step;
+                    model.height = size[1] * step;
+                    model.type = furniture.type;
+                    model.id = id;
+
                     model.interactive = false;
                     model.buttonMode = false;
 
@@ -552,9 +536,10 @@ SceneLoad.prototype = {
                         .on('mouseup', onDragEnd)
                         .on('mouseupoutside', onDragEnd)
                         .on('mousemove', onDragMove);
+
+                    group.addChild(model);
                 }
 
-                group.addChild(model);
             }
         }
 
@@ -571,7 +556,8 @@ SceneLoad.prototype = {
         // 传感器信息
         function onMouseMove( event ) {
             //event.preventDefault();
-            alert(event.target.info);
+            console.log(event.target);
+            alert(event.target.id);
         }
 
         // 开始模型拖动事件
@@ -615,7 +601,6 @@ SceneLoad.prototype = {
                     }
                     break;
                 case CONST.TYPE.FURNITURE:
-                case CONST.TYPE.SENSOR:
                     if (isOut(selected.getBounds(), bounds)) {
                         selected.position.set(width / 2, height / 2);
                     }
@@ -646,7 +631,6 @@ SceneLoad.prototype = {
                             object.position.y += newPosition.y - selected.position.y;
                         });
                     case CONST.TYPE.FURNITURE:
-                    case CONST.TYPE.SENSOR:
                         this.position.x = newPosition.x;
                         this.position.y = newPosition.y;
                         break;
@@ -681,7 +665,6 @@ SceneLoad.prototype = {
         stage.addChildAt(group, 1);
 
         if (canEdit) {
-            // var btn_group = document.getElementById("button-group");
             // 保存
             var save = document.createElement('button');
             save.addEventListener('click', function(){

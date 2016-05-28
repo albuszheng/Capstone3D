@@ -77,7 +77,7 @@ class m130524_201442_init extends Migration
             ['1', '地板0', null, null, 'null', null, '0'],
             ['2', '地板1', null, null, 'floor-wood.jpg', null, '0'],
             ['3', '地板2', null, null, 'wood-2.jpg', null, '0'],
-            ['4', '墙', null, null, 'white.jpg', null, '1'],
+            ['4', '墙', null, null, 'wall.jpg', null, '1'],
             ['5', '门', '1,2.1,0.1', '0.02,0.02,0.02', 'door.png', 'door.dae', '2'],
             ['6', '窗', '1.44,0.96,0.1', '0.02,0.02,0.02', 'window.png', 'window.dae', '3'],
             ['7', '床', '3,2.5', '0.03,0.03,0.03', 'bed.png', 'bed.dae', '4'],
@@ -86,8 +86,8 @@ class m130524_201442_init extends Migration
             ['10', '电视', '4,1', '0.04,0.04,0.04', 'TV.png', 'TV.dae', '4'],
             ['11', '桌子', '3,3', '0.04,0.04,0.04', 'table.png', 'table.dae', '4'],
             ['12', '沙发', '4,1.5', '0.04,0.04,0.04', 'sofa.png', 'sofa.dae', '4'],
-            ['13', '温度传感器', '0.2,0.3,0.1', '0.06,0.05,0.06', 'sensor.png', 'sensor.dae', '5'],
-            ['14', '湿度传感器', '0.2,0.3,0.1', '0.06,0.05,0.06', 'sensor.png', 'sensor.dae', '5']
+            ['13', '温度传感器', '0.2,0.3', '0.06,0.05,0.06', 'sensor.png', 'sensor.dae', '5'],
+            ['14', '湿度传感器', '0.2,0.3', '0.06,0.05,0.06', 'sensor.png', 'sensor.dae', '5']
         ]);
 
         // table module
@@ -101,8 +101,8 @@ class m130524_201442_init extends Migration
         $this->batchInsert('{{%module}}', [
             'id', 'name', 'size', 'data'
         ], [
-            ['1', '两室一厅', '20,20', '{"version":"1.0.0","type":"scene","floor":{"type":"floor","width":20,"height":20,"id":"1"},"wall":[{"type":"wall","id":"4","size":[19.9,0.1],"position":[0.1,10],"rotation":1.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[19.9,10],"rotation":0.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,19.9],"rotation":1,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,0.1],"rotation":0,"doors":[],"windows":[{"type":"window","id":"6","position":[14.5927734375,0.1],"rotation":0},{"type":"window","id":"6","position":[3.7177734375,0.1],"rotation":0}],"sensors":[]},{"type":"wall","id":"4","size":[8.21875,0.1],"position":[11.6865234375,4.1875],"rotation":0.5,"doors":[{"type":"door","id":"5","position":[11.6865234375,4.1875],"rotation":0.5}],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[8.1875,0.1],"position":[15.7802734375,8.25],"rotation":0,"doors":[],"windows":[],"sensors":[{"type":"sensor","id":"13","position":[18.4990234375,8.25],"rotation":0}]},{"type":"wall","id":"4","size":[8.15625,0.1],"position":[7.2490234375,4.1875],"rotation":0.5,"doors":[{"type":"door","id":"5","position":[7.2490234375,5.71875],"rotation":0.5}],"windows":[],"sensors":[{"type":"sensor","id":"13","position":[7.2490234375,7.90625],"rotation":0.5}]},{"type":"wall","id":"4","size":[7.156249999999999,0.1],"position":[3.7490234375,8.3125],"rotation":0,"doors":[],"windows":[{"type":"window","id":"6","position":[3.7490234375,8.3125],"rotation":0}],"sensors":[]}],"objects":[{"type":"furniture","id":"7","position":[14.5302734375,1.03125],"rotation":0.5},{"type":"furniture","id":"7","position":[1.5927734375,0.7499999999999999],"rotation":0.5},{"type":"furniture","id":"9","position":[4.9365234375,1.34375],"rotation":0},{"type":"furniture","id":"8","position":[17.5927734375,2.0625],"rotation":0},{"type":"furniture","id":"9","position":[12.9677734375,1.625],"rotation":0},{"type":"furniture","id":"11","position":[14.6865234375,17.34375],"rotation":0},{"type":"furniture","id":"10","position":[17.8740234375,6.03125],"rotation":1},{"type":"furniture","id":"12","position":[5.9052734375,16.5625],"rotation":1},{"type":"furniture","id":"10","position":[1.8740234375,13.46875],"rotation":0}]}'],
-            ['2', '三室一厅', '30,30', '{"version":"1.0.0","type":"scene","floor":{"type":"floor","width":30,"height":30,"id":"1"},"wall":[{"type":"wall","id":"4","size":[29.899999999999995,0.1],"position":[0.1,15],"rotation":1.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[29.899999999999995,0.1],"position":[29.899999999999995,15],"rotation":0.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[29.899999999999995,0.1],"position":[15,29.899999999999995],"rotation":1,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[29.899999999999995,0.1],"position":[15,0.1],"rotation":0,"doors":[],"windows":[{"type":"window","id":"6","position":[14.5927734375,0.1],"rotation":0},{"type":"window","id":"6","position":[3.7177734375,0.1],"rotation":0}],"sensors":[]},{"type":"wall","id":"4","size":[8.21875,0.1],"position":[11.6865234375,4.1875],"rotation":0.5,"doors":[{"type":"door","id":"5","position":[11.6865234375,4.1875],"rotation":0.5}],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[8.1875,0.1],"position":[15.7802734375,8.25],"rotation":0,"doors":[],"windows":[],"sensors":[{"type":"sensor","id":"13","position":[18.4990234375,8.25],"rotation":0}]},{"type":"wall","id":"4","size":[8.15625,0.1],"position":[7.249023437499999,4.1875],"rotation":0.5,"doors":[{"type":"door","id":"5","position":[7.249023437499999,5.71875],"rotation":0.5}],"windows":[],"sensors":[{"type":"sensor","id":"13","position":[7.249023437499999,7.90625],"rotation":0.5}]},{"type":"wall","id":"4","size":[7.15625,0.1],"position":[3.7490234374999996,8.3125],"rotation":0,"doors":[],"windows":[{"type":"window","id":"6","position":[3.7490234374999996,8.3125],"rotation":0}],"sensors":[]},{"type":"wall","id":"4","size":[8.0625,0.1],"position":[19.82666015625,4.171875],"rotation":0.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[0,0.1],"position":[23.953125,0.234375],"rotation":0,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[7.78125,0.1],"position":[21.70166015625,25.96875],"rotation":0.5,"doors":[],"windows":[{"type":"window","id":"6","position":[21.70166015625,25.96875],"rotation":0.5}],"sensors":[]},{"type":"wall","id":"4","size":[8.296875,0.1],"position":[25.77978515625,22.078125],"rotation":0,"doors":[{"type":"door","id":"5","position":[27.60791015625,22.078125],"rotation":0}],"windows":[],"sensors":[{"type":"sensor","id":"13","position":[22.59228515625,22.078125],"rotation":0}]}],"objects":[{"type":"furniture","id":"7","position":[14.530273437499998,1.03125],"rotation":0.5},{"type":"furniture","id":"7","position":[1.5927734375,0.75],"rotation":0.5},{"type":"furniture","id":"9","position":[4.9365234375,1.34375],"rotation":0},{"type":"furniture","id":"8","position":[17.5927734375,2.0625],"rotation":0},{"type":"furniture","id":"9","position":[12.9677734375,1.625],"rotation":0},{"type":"furniture","id":"11","position":[16.54541015625,14.625],"rotation":0},{"type":"furniture","id":"10","position":[17.8740234375,6.03125],"rotation":1},{"type":"furniture","id":"12","position":[7.40478515625,26.4375],"rotation":1},{"type":"furniture","id":"10","position":[3.56103515625,22.546875],"rotation":0},{"type":"furniture","id":"7","position":[22.73291015625,29.15625],"rotation":0},{"type":"furniture","id":"8","position":[23.67041015625,24.796875],"rotation":1.5},{"type":"furniture","id":"11","position":[23.01416015625,18.375],"rotation":0}]}'],
+            ['1', '两室一厅', '20,20', '{"version":"1.0.0","type":"scene","floor":{"type":"floor","width":20,"height":20,"id":"3"},"wall":[{"type":"wall","id":"4","size":[19.9,0.1],"position":[0.1,10],"rotation":1.5,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[19.9,10],"rotation":0.5,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,19.9],"rotation":1,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,0.1],"rotation":0,"doors":[],"windows":[{"type":"window","id":"6","position":[14.6,0.1],"rotation":0},{"type":"window","id":"6","position":[3.7,0.1],"rotation":0}]},{"type":"wall","id":"4","size":[8.2,0.1],"position":[11.7,4.2],"rotation":0.5,"doors":[{"type":"door","id":"5","position":[11.7,4.2],"rotation":0.5}],"windows":[]},{"type":"wall","id":"4","size":[8.2,0.1],"position":[15.78,8.25],"rotation":0,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[8.2,0.1],"position":[7.2,4.2],"rotation":0.5,"doors":[{"type":"door","id":"5","position":[7.25,5.7],"rotation":0.5}],"windows":[]},{"type":"wall","id":"4","size":[7.15,0.1],"position":[3.65,8.28],"rotation":0,"doors":[],"windows":[{"type":"window","id":"6","position":[3.65,8.28],"rotation":0}]}],"objects":[{"type":"furniture","id":"7","position":[14.53,1.03],"rotation":0.5},{"type":"furniture","id":"7","position":[1.59,0.75],"rotation":0.5},{"type":"furniture","id":"9","position":[4.94,1.34],"rotation":0},{"type":"furniture","id":"8","position":[17.59,2.06],"rotation":0},{"type":"furniture","id":"9","position":[12.97,1.62],"rotation":0},{"type":"furniture","id":"11","position":[14.68,17.34],"rotation":0},{"type":"furniture","id":"10","position":[17.87,6.03],"rotation":1},{"type":"furniture","id":"12","position":[5.9,16.56],"rotation":1},{"type":"furniture","id":"10","position":[1.87,13.47],"rotation":0}]}'],
+            ['2', '三室一厅', '30,30', '{"version":"1.0.0","type":"scene","floor":{"type":"floor","width":30,"height":30,"id":"3"},"wall":[{"type":"wall","id":"4","size":[29.9,0.1],"position":[0.1,15],"rotation":1.5,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[29.9,0.1],"position":[29.9,15],"rotation":0.5,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[29.9,0.1],"position":[15,29.9],"rotation":1,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[29.9,0.1],"position":[15,0.1],"rotation":0,"doors":[],"windows":[{"type":"window","id":"6","position":[14.6,0.1],"rotation":0},{"type":"window","id":"6","position":[3.7,0.1],"rotation":0}]},{"type":"wall","id":"4","size":[8.2,0.1],"position":[11.7,4.2],"rotation":0.5,"doors":[{"type":"door","id":"5","position":[11.7,4.2],"rotation":0.5}],"windows":[]},{"type":"wall","id":"4","size":[8.2,0.1],"position":[15.78,8.25],"rotation":0,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[8.2,0.1],"position":[7.2,4.2],"rotation":0.5,"doors":[{"type":"door","id":"5","position":[7.25,5.7],"rotation":0.5}],"windows":[]},{"type":"wall","id":"4","size":[7.15,0.1],"position":[3.69,8.23],"rotation":0,"doors":[],"windows":[{"type":"window","id":"6","position":[3.69,8.23],"rotation":0}]},{"type":"wall","id":"4","size":[8.06,0.1],"position":[19.83,4.17],"rotation":0.5,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[0,0.1],"position":[23.95,0.23],"rotation":0,"doors":[],"windows":[]},{"type":"wall","id":"4","size":[7.78,0.1],"position":[21.7,25.96],"rotation":0.5,"doors":[],"windows":[{"type":"window","id":"6","position":[21.7,25.97],"rotation":0.5}]},{"type":"wall","id":"4","size":[8.29,0.1],"position":[25.78,22.08],"rotation":0,"doors":[{"type":"door","id":"5","position":[27.61,22.08],"rotation":0}],"windows":[]}],"objects":[{"type":"furniture","id":"7","position":[14.53,1.03],"rotation":0.5},{"type":"furniture","id":"7","position":[1.59,0.75],"rotation":0.5},{"type":"furniture","id":"9","position":[4.93,1.34],"rotation":0},{"type":"furniture","id":"8","position":[17.59,2.06],"rotation":0},{"type":"furniture","id":"9","position":[12.97,1.62],"rotation":0},{"type":"furniture","id":"11","position":[16.55,14.62],"rotation":0},{"type":"furniture","id":"10","position":[17.87,6.03],"rotation":1},{"type":"furniture","id":"12","position":[7.4,26.43],"rotation":1},{"type":"furniture","id":"10","position":[3.56,22.54],"rotation":0},{"type":"furniture","id":"7","position":[22.73,29.15],"rotation":0},{"type":"furniture","id":"8","position":[23.67,24.79],"rotation":1.5},{"type":"furniture","id":"11","position":[23.01,18.37],"rotation":0}]}'],
             ['3', '两室一厅-小', '20,20', '{"version":"1.0.0","type":"scene","floor":{"type":"floor","width":20,"height":20,"id":"1"},"wall":[{"type":"wall","id":"4","size":[19.9,0.1],"position":[0.1,10],"rotation":1.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[10,0.1],"position":[19.9,14.9],"rotation":0.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[19.9,0.1],"position":[10,19.9],"rotation":1,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[9.9,0.1],"position":[5,0.1],"rotation":0,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[9.9,0.1],"position":[10,5],"rotation":0.5,"doors":[],"windows":[],"sensors":[]},{"type":"wall","id":"4","size":[9.9,0.1],"position":[15,9.9],"rotation":0,"doors":[],"windows":[],"sensors":[]}],"objects":[]}']
         ]);
 
@@ -214,6 +214,47 @@ class m130524_201442_init extends Migration
             'user',
             'id',
             'NO ACTION'
+        );
+
+        // table sensor
+        $this->createTable('{{%sensor}}', [
+            'id' => $this->primaryKey(),
+            'model_id' => $this->integer(),
+            'param1' => $this->string(),
+            'param2' => $this->string(),
+            'room_id' => $this->integer(),
+            'position' => $this->string(),
+            'data' => $this->string(),
+        ], $tableOptions);
+
+        $this->createIndex(
+            'idx-sensor-model_id',
+            'sensor',
+            'model_id'
+        );
+
+        $this->addForeignKey(
+            'fk-sensor-model_id',
+            'sensor',
+            'model_id',
+            'model',
+            'id',
+            'NO ACTION'
+        );
+
+        $this->createIndex(
+            'idx-sensor-room_id',
+            'sensor',
+            'room_id'
+        );
+
+        $this->addForeignKey(
+            'fk-sensor-room_id',
+            'sensor',
+            'room_id',
+            'room',
+            'id',
+            'SET NULL'
         );
 
         // table goods
@@ -406,6 +447,12 @@ class m130524_201442_init extends Migration
 
         $this->truncateTable('{{%goods}}');
         $this->dropTable('{{%goods}}');
+
+        $this->dropForeignKey('fk-sensor-model_id', 'sensor');
+        $this->dropIndex('idx-sensor-model_id', 'sensor');
+        $this->dropForeignKey('fk-sensor-room_id', 'sensor');
+        $this->dropIndex('idx-sensor-room_id', 'sensor');
+        $this->dropTable('{{%sensor}}');
 
         $this->dropForeignKey('fk-room-last_modify_id', 'room');
         $this->dropIndex('idx-room-last_modify_id', 'room');
