@@ -45,21 +45,21 @@ $this->params['breadcrumbs'][] = $this->title;
                 <!-- </div> -->
                 </div>
 
-                <div class="btn-group btn-group-sm btn-group-vertical model-list">
-                    <button id="1" onclick="addFloor(this.id)" class="btn btn-sm btn-default">地板0</button>
-                    <button id="2" onclick="addFloor(this.id)" class="btn btn-sm btn-default">地板1</button>
-                    <button id="3" onclick="addFloor(this.id)" class="btn btn-sm btn-default">地板2</button>
-                    <button id="4" onclick="addWall(this.id)" class="btn btn-sm btn-default">墙壁</button>
-                    <button id="5" onclick="addDoorWindow(this.id, CONST.TYPE.DOOR)" class="btn btn-sm btn-default">门</button>
-                    <button id="6" onclick="addDoorWindow(this.id, CONST.TYPE.WINDOW)" class="btn btn-sm btn-default">窗</button>
-                    <button id="7" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">床</button>
-                    <button id="8" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">衣橱</button>
-                    <button id="9" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">床头柜</button>
-                    <button id="12" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">沙发</button>
-                    <button id="11" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">桌子</button>
-                    <button id="10" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">电视</button>
-                    <button id="13" onclick="addSensor(this.id)" class="btn btn-sm btn-default">温度传感器</button>
-                    <button id="14" onclick="addSensor(this.id)" class="btn btn-sm btn-default">湿度传感器</button>
+                <div class="btn-group btn-group-sm btn-group-vertical model-list" id="models-btn">
+<!--                    <button id="1" onclick="addFloor(this.id)" class="btn btn-sm btn-default">地板0</button>-->
+<!--                    <button id="2" onclick="addFloor(this.id)" class="btn btn-sm btn-default">地板1</button>-->
+<!--                    <button id="3" onclick="addFloor(this.id)" class="btn btn-sm btn-default">地板2</button>-->
+<!--                    <button id="4" onclick="addWall(this.id)" class="btn btn-sm btn-default">墙壁</button>-->
+<!--                    <button id="5" onclick="addDoorWindow(this.id, CONST.TYPE.DOOR)" class="btn btn-sm btn-default">门</button>-->
+<!--                    <button id="6" onclick="addDoorWindow(this.id, CONST.TYPE.WINDOW)" class="btn btn-sm btn-default">窗</button>-->
+<!--                    <button id="7" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">床</button>-->
+<!--                    <button id="8" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">衣橱</button>-->
+<!--                    <button id="9" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">床头柜</button>-->
+<!--                    <button id="12" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">沙发</button>-->
+<!--                    <button id="11" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">桌子</button>-->
+<!--                    <button id="10" onclick="addFurniture(this.id)" class="btn btn-sm btn-default">电视</button>-->
+<!--                    <button id="13" onclick="addSensor(this.id)" class="btn btn-sm btn-default">温度传感器</button>-->
+<!--                    <button id="14" onclick="addSensor(this.id)" class="btn btn-sm btn-default">湿度传感器</button>-->
                 </div>
                 <br/>
                 <div class="btn-group btn-group-vertical model-control">
@@ -145,6 +145,49 @@ $this->params['breadcrumbs'][] = $this->title;
                 }
 
             });
+
+            var models_btn = document.getElementById('models-btn');
+            models_btn.innerHTML="";
+            for (var i = 0; i < models.length; i++) {
+                var button = createModelButton(models_btn, models[i].name);
+                button.id = models[i].id;
+
+                switch (models[i].type) {
+                    case CONST.TYPE.FLOOR:
+                        button.addEventListener('click', function () {
+                            addFloor(this.id);
+                        }, false);
+                        break;
+                    case CONST.TYPE.WALL:
+                        button.addEventListener('click', function () {
+                            addWall(this.id);
+                        }, false);
+                        break;
+                    case CONST.TYPE.DOOR:
+                        button.addEventListener('click', function () {
+                            addDoorWindow(this.id, CONST.TYPE.DOOR)
+                        }, false);
+                        break;
+                    case CONST.TYPE.WINDOW:
+                        button.addEventListener('click', function () {
+                            addDoorWindow(this.id, CONST.TYPE.WINDOW)
+                        }, false);
+                        break;
+                    case CONST.TYPE.FURNITURE:
+                        button.addEventListener('click', function () {
+                            addFurniture(this.id)
+                        }, false);
+                        break;
+                    case CONST.TYPE.SENSOR:
+                        button.addEventListener('click', function () {
+                            addSensor(this.id)
+                        }, false);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
             if (data) {
                 if (data.type === "scene") {
                     load(data);
@@ -161,6 +204,16 @@ $this->params['breadcrumbs'][] = $this->title;
         } else {
             document.getElementById('webgl-output').innerHTML='No Room';
         }
+    }
+
+    function createModelButton(element, name) {
+        var model = document.createElement('button');
+        var modelText = document.createTextNode(name);
+
+        model.appendChild(modelText);
+        element.appendChild(model);
+        model.setAttribute("class","btn btn-sm btn-default");
+        return model;
     }
 
     // 网格线

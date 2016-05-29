@@ -14,6 +14,7 @@ use yii\db\ActiveRecord;
  * @property string $url2d
  * @property string $url3d
  * @property integer $type
+ * @property string $param
  */
 class Model extends ActiveRecord
 {
@@ -22,6 +23,7 @@ class Model extends ActiveRecord
     const TYPE_DOOR = 2; //门
     const TYPE_WINDOW = 3; //窗
     const TYPE_FURNITURE = 4; //家具
+    const TYPE_SENSOR = 5; //传感器
 
     /**
      * @return string the name of the table associated with this ActiveRecord class.
@@ -76,6 +78,16 @@ class Model extends ActiveRecord
         $model->url3d = $data['url3d'];
         $model->type = $data['type'];
         return $model->save();
+    }
+
+    /**
+     * Finds all sensor model
+     *
+     * @return static[]
+     */
+    public static function findAllSensors()
+    {
+        return static::findAll(['type' => self::TYPE_SENSOR]);
     }
 
 }

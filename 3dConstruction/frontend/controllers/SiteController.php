@@ -677,6 +677,41 @@ class SiteController extends Controller
     }
 
     /**
+     * Manage sensor.
+     *
+     * @return mixed
+     */
+    public function actionManageSensor()
+    {
+        if (Yii::$app->user->can('sensorManagement')) {
+            $sensors = Model::findAllSensors();
+            return $this->render('sensorManagement', [
+                'sensors' => $sensors,
+            ]);
+        }
+    }
+
+    public function actionAddSensor()
+    {
+        if (Yii::$app->user->can('sensorManagement')) {
+            if (Yii::$app->request->isAjax) {
+                $data = Yii::$app->request->post();
+                $sensor = new Model();
+                $sensor->name = $data['name'];
+                $sensor->size = '0.2,0.3';
+                $sensor->scale = '0.06,0.05,0.06';
+                $sensor->url2d = 'sensor.png';
+                $sensor->url3d = 'sensor.dae';
+                $sensor->type = Model::TYPE_SENSOR;
+                $sensor->param = $data['params'];
+                $result = $sensor->save();
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ['result' => $result];
+            }
+        }
+    }
+
+    /**
      * Requests password reset.
      *
      * @return mixed

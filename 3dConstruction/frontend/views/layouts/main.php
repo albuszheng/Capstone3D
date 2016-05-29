@@ -61,6 +61,7 @@ AppAsset::register($this);
             $menuItems[] = ['label' => '客房服务', 'url' => ['/site/room-service']];
         } else if (Yii::$app->user->can('engineer')) {
             $menuItems[] = ['label' => '模板管理', 'url' => ['/site/manage-module']];
+            $menuItems[] = ['label' => '传感器管理', 'url' => ['/site/manage-sensor']];
         }
 
 

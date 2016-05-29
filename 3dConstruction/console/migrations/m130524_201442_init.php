@@ -69,25 +69,26 @@ class m130524_201442_init extends Migration
             'url2d' => $this->string()->notNull(),
             'url3d' => $this->string(),
             'type' => $this->smallInteger()->notNull(),
+            'param' => $this->string(),
         ], $tableOptions);
 
         $this->batchInsert('{{%model}}', [
-            'id', 'name', 'size', 'scale', 'url2d', 'url3d', 'type'
+            'id', 'name', 'size', 'scale', 'url2d', 'url3d', 'type', 'param'
         ], [
-            ['1', '地板0', null, null, 'null', null, '0'],
-            ['2', '地板1', null, null, 'floor-wood.jpg', null, '0'],
-            ['3', '地板2', null, null, 'wood-2.jpg', null, '0'],
-            ['4', '墙', null, null, 'wall.jpg', null, '1'],
-            ['5', '门', '1,2.1,0.1', '0.02,0.02,0.02', 'door.png', 'door.dae', '2'],
-            ['6', '窗', '1.44,0.96,0.1', '0.02,0.02,0.02', 'window.png', 'window.dae', '3'],
-            ['7', '床', '3,2.5', '0.03,0.03,0.03', 'bed.png', 'bed.dae', '4'],
-            ['8', '橱柜', '1.5,1', '0.05,0.05,0.06', 'cabinet.png', 'cabinet.dae', '4'],
-            ['9', '抽屉', '1,0.5', '0.02,0.02,0.02', 'drawer.png', 'drawer.dae', '4'],
-            ['10', '电视', '4,1', '0.04,0.04,0.04', 'TV.png', 'TV.dae', '4'],
-            ['11', '桌子', '3,3', '0.04,0.04,0.04', 'table.png', 'table.dae', '4'],
-            ['12', '沙发', '4,1.5', '0.04,0.04,0.04', 'sofa.png', 'sofa.dae', '4'],
-            ['13', '温度传感器', '0.2,0.3', '0.06,0.05,0.06', 'sensor.png', 'sensor.dae', '5'],
-            ['14', '湿度传感器', '0.2,0.3', '0.06,0.05,0.06', 'sensor.png', 'sensor.dae', '5']
+            ['1', '地板0', null, null, 'null', null, '0', null],
+            ['2', '地板1', null, null, 'floor-wood.jpg', null, '0', null],
+            ['3', '地板2', null, null, 'wood-2.jpg', null, '0', null],
+            ['4', '墙', null, null, 'wall.jpg', null, '1', null],
+            ['5', '门', '1,2.1,0.1', '0.02,0.02,0.02', 'door.png', 'door.dae', '2', null],
+            ['6', '窗', '1.44,0.96,0.1', '0.02,0.02,0.02', 'window.png', 'window.dae', '3', null],
+            ['7', '床', '3,2.5', '0.03,0.03,0.03', 'bed.png', 'bed.dae', '4', null],
+            ['8', '橱柜', '1.5,1', '0.05,0.05,0.06', 'cabinet.png', 'cabinet.dae', '4', null],
+            ['9', '抽屉', '1,0.5', '0.02,0.02,0.02', 'drawer.png', 'drawer.dae', '4', null],
+            ['10', '电视', '4,1', '0.04,0.04,0.04', 'TV.png', 'TV.dae', '4', null],
+            ['11', '桌子', '3,3', '0.04,0.04,0.04', 'table.png', 'table.dae', '4', null],
+            ['12', '沙发', '4,1.5', '0.04,0.04,0.04', 'sofa.png', 'sofa.dae', '4', null],
+            ['13', '温度传感器', '0.2,0.3', '0.06,0.05,0.06', 'sensor.png', 'sensor.dae', '5', 'param1:1;param2:2'],
+            ['14', '湿度传感器', '0.2,0.3', '0.06,0.05,0.06', 'sensor.png', 'sensor.dae', '5', 'param1:a'],
         ]);
 
         // table module
@@ -220,8 +221,6 @@ class m130524_201442_init extends Migration
         $this->createTable('{{%sensor}}', [
             'id' => $this->primaryKey(),
             'model_id' => $this->integer(),
-            'param1' => $this->string(),
-            'param2' => $this->string(),
             'room_id' => $this->integer(),
             'position' => $this->string(),
             'data' => $this->string(),
