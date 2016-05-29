@@ -223,6 +223,7 @@ class m130524_201442_init extends Migration
             'model_id' => $this->integer(),
             'room_id' => $this->integer(),
             'position' => $this->string(),
+            'rotation' => $this->float()->defaultValue(0),
             'data' => $this->string(),
         ], $tableOptions);
 

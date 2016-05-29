@@ -3,8 +3,10 @@
 /* @var $this yii\web\View */
 /* @var $room \common\models\Room */
 /* @var $modules \common\models\Module[] */
+/* @var $sensors \common\models\Sensor[] */
 
 use yii\helpers\Html;
+use yii\helpers\Json;
 use frontend\assets\ThreeAsset;
 
 ThreeAsset::register($this);
@@ -120,9 +122,10 @@ $this->params['breadcrumbs'][] = $this->title;
     var rot = document.getElementById("rot");
     var step = Math.min(width2d, height2d);
     var models = [];
+    var delSensors = [];
     var data = null;
 
-    var stage, floor, walls, group, graph;
+    var stage, floor, walls, group, sensors, graph;
     var selected = undefined;
     var isEdit = false;
 
@@ -190,7 +193,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
             if (data) {
                 if (data.type === "scene") {
-                    load(data);
+                    load(data, <?= Json::encode($sensors)?>);
                 }
             } else {
                 var room_size = <?= (isset($room->size) && !(is_null($room->size))) ? "'" . $room->size . "'" : '0,0' ?>;
@@ -247,13 +250,25 @@ $this->params['breadcrumbs'][] = $this->title;
 
         var exporter = new SceneExport();
         var sceneJSON = exporter.parse(floor, walls, group, step);
+        var sensorJSON = exporter.parseSensor(sensors.children, step);
+        if (delSensors.length == 0) {
+            delSensors.push(0);
+        }
+        console.log(sensorJSON);
+        console.log(delSensors);
+
         $.ajax({
             type:'post',
-            data:{id:<?= $room->id ?>, data:JSON.stringify(sceneJSON)},
+            data:{id:<?= $room->id ?>, data:JSON.stringify(sceneJSON), sensors:JSON.stringify(sensorJSON), delSensors: delSensors},
             url:'<?php echo Yii::$app->getUrlManager()->createUrl('/site/update-room') ?>',
             async : false,
             success:function(data) {
                 if (data.result === true) {
+                    var ids = data.ids;
+                    for (var i = 0; i < sensors.children.length; i++) {
+                        sensors.getChildAt(i).sensor_id = ids[i]['id'];
+                        sensors.getChildAt(i).info = ids[i]['data'];
+                    }
                     console.log('save success');
                 } else {
                     console.log('save fail');
@@ -274,9 +289,13 @@ $this->params['breadcrumbs'][] = $this->title;
     /**
      * 加载场景
      */
-    function load(scene, width, height) {
+    function load(scene, sensorData, width, height) {
         if (scene === undefined) {
             scene = data;
+        }
+
+        if (sensorData === undefined) {
+            sensorData = <?= Json::encode($sensors)?>;
         }
 
         var width = width || scene.floor.width;
@@ -290,10 +309,11 @@ $this->params['breadcrumbs'][] = $this->title;
         }
 
         var loader = new SceneLoad();
-        stage = loader.load2d(scene, width2d, height2d, document.getElementById('canvas2d'), models, step);
+        stage = loader.load2d(scene, width2d, height2d, document.getElementById('canvas2d'), models, step, sensorData);
         floor = stage.getChildAt(0);
         walls = stage.getChildAt(1);
         group = stage.getChildAt(2);
+        sensors = stage.getChildAt(3);
 
         createLine();
         updateInfo();
@@ -312,17 +332,17 @@ $this->params['breadcrumbs'][] = $this->title;
         });
 
         $.each(group.children, function (index, object) {
-            if (object.type === CONST.TYPE.SENSOR) {
-                object.removeAllListeners();
-                object
-                    .on('mousedown', onDragStart)
-                    .on('mouseup', onDragEnd)
-                    .on('mouseupoutside', onDragEnd)
-                    .on('mousemove', onDragMove);
-            } else {
                 object.interactive = true;
                 object.buttonMode = true;
-            }
+        });
+
+        $.each(sensors.children, function (index, object) {
+            object.removeAllListeners();
+            object
+                .on('mousedown', onDragStart)
+                .on('mouseup', onDragEnd)
+                .on('mouseupoutside', onDragEnd)
+                .on('mousemove', onDragMove);
         });
     }
 
@@ -344,13 +364,13 @@ $this->params['breadcrumbs'][] = $this->title;
         });
 
         $.each(group.children, function (index, object) {
-            if (object.type === CONST.TYPE.SENSOR) {
-                object.removeAllListeners();
-                object
-                    .on('mousedown', onMouseMove);
-            } else {
-                object.interactive = false;
-            }
+            object.interactive = false;
+        });
+
+        $.each(sensors.children, function (index, object) {
+            object.removeAllListeners();
+            object
+                .on('mousedown', onMouseMove);
         });
 
     }
@@ -366,6 +386,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
         var exporter = new SceneExport();
         var sceneJSON = exporter.parse(floor, walls, group, step, true);
+        var sensorJSON = exporter.parseSensor(sensors.children, step);
+//        console.log(sensorJSON);
 
         // $('#2dbutton').css('visibility', 'hidden');
         // $('#3dbutton').css('visibility', 'visible');
@@ -376,17 +398,17 @@ $this->params['breadcrumbs'][] = $this->title;
         $('#canvas2d').css('display', 'none');
         $('#canvas3d').css('display', 'inline-block');
         document.getElementById('to2dbutton').onclick = function() {
-          to2d(sceneJSON);
+          to2d(sceneJSON, sensorJSON['sensors']);
         };
 
         var loader = new SceneLoad();
-        loader.load3d(sceneJSON, width3d, height3d, document.getElementById('canvas3d'), models);
+        loader.load3d(sceneJSON, width3d, height3d, document.getElementById('canvas3d'), models, sensorJSON['sensors']);
     }
 
     /**
      * 查看2d场景
      */
-    function to2d(data) {
+    function to2d(data, sensorData) {
         // $('#2dbutton').css('visibility', 'visible');
         // $('#3dbutton').css('visibility', 'hidden');
         $('#to2dbutton').attr('disabled','disabled');
@@ -397,10 +419,11 @@ $this->params['breadcrumbs'][] = $this->title;
         $('#canvas2d').css('display', 'inline-block');
 
         var loader = new SceneLoad();
-        stage = loader.load2d(data, width2d, height2d, document.getElementById('canvas2d'), models);
+        stage = loader.load2d(data, width2d, height2d, document.getElementById('canvas2d'), models, null, sensorData);
         floor = stage.getChildAt(0);
         walls = stage.getChildAt(1);
         group = stage.getChildAt(2);
+        sensors = stage.getChildAt(3);
 
         step = Math.min(width2d/data.floor.width, height2d/data.floor.height);
         createLine();
@@ -417,6 +440,7 @@ $this->params['breadcrumbs'][] = $this->title;
         floor = stage.getChildAt(0);
         walls = stage.getChildAt(1);
         group = stage.getChildAt(2);
+        sensors = stage.getChildAt(3);
         createLine();
         edit();
     }
@@ -525,8 +549,6 @@ $this->params['breadcrumbs'][] = $this->title;
         var position = [];
         var rotation = 0;
         var size = [];
-        console.log(x+" " +y);
-        console.log(e);
 
         if (Math.abs(x - mouseX) < Math.abs(y - mouseY)) {
             x = mouseX;
@@ -589,7 +611,7 @@ $this->params['breadcrumbs'][] = $this->title;
         }
 
         $("#canvas2d").unbind('mousedown', dragStart);
-        var model = createFurniture(id, [width2d/2, height2d/2], 0);
+        var model = createFurniture(id, [width2d/2, height2d/2], 0, sensors);
         if (model !== null) {
             selectMode(model, CONST.TYPE.SENSOR);
             updateInfo(selected);
@@ -607,7 +629,7 @@ $this->params['breadcrumbs'][] = $this->title;
         }
 
         $("#canvas2d").unbind('mousedown', dragStart);
-        var model = createFurniture(id, [width2d/2, height2d/2], 0);
+        var model = createFurniture(id, [width2d/2, height2d/2], 0, group);
         if (model !== null) {
             selectMode(model, CONST.TYPE.FURNITURE);
             updateInfo(selected);
@@ -655,6 +677,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 }
                 break;
             case CONST.TYPE.FURNITURE:
+            case CONST.TYPE.SENSOR:
                 if (isOut(selected.getBounds(), bounds)) {
                     selected.position.set(width2d / 2, height2d / 2);
                 }
@@ -685,6 +708,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         object.position.y += newPosition.y - selected.position.y;
                     });
                 case CONST.TYPE.FURNITURE:
+                case CONST.TYPE.SENSOR:
                     this.position.x = newPosition.x;
                     this.position.y = newPosition.y;
                     break;
@@ -700,8 +724,7 @@ $this->params['breadcrumbs'][] = $this->title;
     // 传感器信息
     function onMouseMove( event ) {
         //event.preventDefault();
-        console.log(event.target);
-        alert(event.target.id);
+        alert(event.target.info);
     }
 
     // 创建墙壁
@@ -766,7 +789,7 @@ $this->params['breadcrumbs'][] = $this->title;
     }
 
     // 创建家具模型
-    function createFurniture(id, position, rotation) {
+    function createFurniture(id, position, rotation, container) {
         var furniture = findModelById(id);
         var model = null;
 
@@ -790,7 +813,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 .on('mouseupoutside', onDragEnd)
                 .on('mousemove', onDragMove);
 
-            group.addChild(model);
+            container.addChild(model);
         }
 
         return model;
@@ -819,6 +842,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         object.position.y = Math.abs(Math.sin(object.rotation)) * offset + selected.position.y;
                     });
                 case CONST.TYPE.FURNITURE:
+                case CONST.TYPE.SENSOR:
                     selected.rotation = (selected.rotation + Math.PI / 2) % CONST.PI_2;
                     updateInfo(selected);
                     break;
@@ -857,6 +881,13 @@ $this->params['breadcrumbs'][] = $this->title;
                     group.removeChild(selected);
                     updateInfo();
                     break;
+                case CONST.TYPE.SENSOR:
+                    if (selected.sensor_id !== undefined) {
+                        delSensors.push(selected.sensor_id);
+                    }
+                    sensors.removeChild(selected);
+                    updateInfo();
+                    break;
                 default:
                     alert("unknown model");
                     break;
@@ -878,6 +909,7 @@ $this->params['breadcrumbs'][] = $this->title;
         floor.id = 1;
         walls.removeChildren(0, walls.children.length);
         group.removeChildren(0, group.children.length);
+        sensors.removeChildren(0, group.children.length);
         updateInfo();
     }
 

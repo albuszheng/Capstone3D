@@ -2,8 +2,10 @@
 
 /* @var $this yii\web\View */
 /* @var $room \common\models\Room */
+/* @var $sensors \common\models\Sensor[] */
 
 use yii\helpers\Html;
+use yii\helpers\Json;
 use frontend\assets\ThreeAsset;
 
 ThreeAsset::register($this);
@@ -46,6 +48,7 @@ $this->params['breadcrumbs'][] = $this->title;
     var models = [];
     var viewMode = 1; //0:2d  1:3d
     var data = null;
+    var sensors = <?= Json::encode($sensors)?>;
 
     var width2d = $('#canvas2d').width();
     var width3d = $('#canvas3d').width();
@@ -90,7 +93,7 @@ $this->params['breadcrumbs'][] = $this->title;
             }
 
             var loader = new SceneLoad();
-            loader.load2d(data, width2d, height2d, canvas2d, models);
+            loader.load2d(data, width2d, height2d, canvas2d, models, null, sensors);
 
             viewMode = 0;
             $('#to2dbutton').attr('disabled','disabled');
@@ -110,7 +113,7 @@ $this->params['breadcrumbs'][] = $this->title;
             }
 
             var loader = new SceneLoad();
-            loader.load3d(data, width3d, height3d, canvas3d, models);
+            loader.load3d(data, width3d, height3d, canvas3d, models, sensors);
             viewMode = 1;
             $('#to3dbutton').attr('disabled','disabled');
             $('#to3dbutton').addClass('active');

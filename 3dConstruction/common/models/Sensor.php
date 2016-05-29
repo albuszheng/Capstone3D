@@ -9,10 +9,9 @@ use yii\db\ActiveRecord;
  *
  * @property integer $id
  * @property integer $model_id
- * @property string $param1
- * @property string $param2
  * @property integer $room_id
  * @property string $position
+ * @property float $rotation
  * @property string $data
  */
 class Sensor extends ActiveRecord
@@ -29,13 +28,13 @@ class Sensor extends ActiveRecord
     public function rules()
     {
         return [
-            [['id', 'model_id'], 'required'],
+            ['model_id', 'required'],
             [['id', 'model_id', 'room_id'], 'integer'],
         ];
     }
 
     /**
-     * Finds model by id
+     * Finds sensor by id
      *
      * @param string $id
      * @return static|null
@@ -57,11 +56,28 @@ class Sensor extends ActiveRecord
         return $sensors;
     }
 
-    public static function updateSensor($id, $room_id, $position) {
+    /**
+     * Finds sensors by room_id
+     *
+     * @param $room_id
+     * @return static[]
+     */
+    public static function findSensorsByRoom($room_id)
+    {
+        return static::findAll(['room_id' => $room_id]);
+    }
+
+    public static function updateSensor($id, $room_id, $position, $rotation) {
         $sensor = self::findById($id);
         $sensor->room_id = $room_id;
         $sensor->position = $position;
-        return $sensor->save();
+        $sensor->rotation = $rotation;
+        return $sensor->save() ? $sensor : null;
+    }
+
+    public static function deleteById($id) {
+        $sensor = self::findById($id);
+        return $sensor->delete();
     }
 
 }

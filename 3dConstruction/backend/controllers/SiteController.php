@@ -3,6 +3,7 @@ namespace backend\controllers;
 
 use common\models\Config;
 use common\models\Operation;
+use common\models\Sensor;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
@@ -199,8 +200,10 @@ class SiteController extends Controller
 
         if (Yii::$app->user->can('viewRoom') || Yii::$app->user->can('viewOwnRoom', ['room_id' => $room_id])) {
             $room = Room::findById($room_id);
+            $sensors = Sensor::findSensorsByRoom($room_id);
             return $this->render('viewRoom', [
                 'room' => $room,
+                'sensors' => $sensors,
             ]);
         } else {
             Yii::$app->session->setFlash('error', 'no authority');

@@ -3,7 +3,7 @@ SceneLoad = function () {};
 SceneLoad.prototype = {
     constructor: SceneLoad,
 
-    load3d: function (data, width, height, canvas, models) {
+    load3d: function (data, width, height, canvas, models, sensors) {
         var clock = new THREE.Clock();
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 500);
@@ -83,6 +83,7 @@ SceneLoad.prototype = {
                 loadFloor(data.floor);
                 loadWall(data.wall);
                 loadObject(data.objects);
+                loadSensor(sensors);
             }
         }
 
@@ -211,24 +212,6 @@ SceneLoad.prototype = {
             return wallBSP;
         }
 
-/*        // 加载传感器
-        function loadSensor(model, wallBSP, wallrotation, group) {
-            var sensor = findModelById(model.id);
-
-            if (sensor !== null) {
-                var rotation = -model.rotation * Math.PI;
-                var position3D = [
-                    model.position[0] - floor_width/2 + Math.sin(rotation) * 0.05,
-                    2,
-                    model.position[1] - floor_height/2 + Math.cos(rotation) * 0.05];
-                var rotation3D = [-Math.PI/2 , 0, rotation];
-                loadModel(model.id, position3D, rotation3D, group);
-            }
-
-            return wallBSP;
-
-        }*/
-
         // 加载家具模型
         function loadObject(data) {
             $.each(data, function (index, object) {
@@ -237,6 +220,20 @@ SceneLoad.prototype = {
 
                 loadModel(object.id, position3D, rotation3D, scene);
             });
+        }
+
+
+        // 加载传感器
+        function loadSensor(data) {
+            $.each(data, function (index, object) {
+                var position = object.position.split(",");
+                var position3D = [position[0]-floor_width/2, 0, position[1]-floor_height/2];
+                var rotation3D = [-Math.PI/2 , 0, -object.rotation * Math.PI];
+
+                loadModel(object.model_id, position3D, rotation3D, scene);
+
+            });
+
         }
 
         // 加载模型
@@ -307,7 +304,7 @@ SceneLoad.prototype = {
 
     },
 
-    load2d: function (data, width, height, canvas, models, step) {
+    load2d: function (data, width, height, canvas, models, step, sensorData) {
         var step = step || Math.min(width, height);
 
         var renderer = PIXI.autoDetectRenderer(width, height, {'transparent': true});
@@ -329,6 +326,9 @@ SceneLoad.prototype = {
         var group = new PIXI.Container();
         stage.addChildAt(group, 2);
 
+        var sensors = new PIXI.Container();
+        stage.addChildAt(sensors, 3);
+
         animate();
         load(data);
 
@@ -343,10 +343,15 @@ SceneLoad.prototype = {
 
             walls.removeChildren(0, walls.children.length);
             group.removeChildren(0, group.children.length);
+            sensors.removeChildren(0, sensors.children.length);
 
             loadFloor(data.floor);
             loadWall(data.wall);
             loadFurniture(data.objects);
+
+            if (sensorData !== undefined) {
+                 loadSensor(sensorData);
+            }
 
         }
 
@@ -458,48 +463,40 @@ SceneLoad.prototype = {
             return model;
         }
 
-    /*    // 加载传感器
-        function loadSensor(data, wall, type) {
+        // 加载传感器
+        function loadSensor(data) {
             $.each(data, function (index, object) {
-                var position = [object.position[0] * step, object.position[1] * step];
-                var rotation = object.rotation * Math.PI;
-
-                var model = createSensor(object.id, position, rotation);
-                if (model !== null) {
-                    model.type = type;
-                    model.wall = wall;
-                    wall.children.push(model);
-                }
+                var position = object.position.split(',');
+                createSensor(object.model_id, object.id, position, object.rotation, object.data);
             });
         }
 
         // 创建传感器
-        function createSensor(id, position, rotation) {
-            var model = null;
+        function createSensor(id, sensor_id, position, rotation, data) {
             var sensor = findModelById(id);
 
             if (sensor !== null) {
                 var texture = PIXI.Texture.fromImage('model/plan/' + sensor.url2d);
-                model = new PIXI.Sprite(texture);
-                model.anchor.set(0, 0.5);
-                model.position.set(position[0], position[1]);
+                var model = new PIXI.Sprite(texture);
+                model.anchor.set(0, 1);
+                model.position.set(position[0] * step, position[1] * step);
                 var size = sensor.size.split(',');
                 model.width = size[0] * step;
-                model.height = size[2] * step * 2;
-                model.rotation = rotation;
+                model.height = size[1] * step;
+                model.rotation = rotation * Math.PI;
                 model.id = id;
-                model.info = 'info'+position[0];
+                model.sensor_id = sensor_id;
+                model.info = data;
+                model.type = sensor.type;
                 model.interactive = true;
                 model.buttonMode = true;
 
                 model
                     .on('mousedown', onMouseMove);
 
-                walls.addChild(model);
+                sensors.addChild(model);
             }
-
-            return model;
-        }*/
+        }
 
         // 加载家具模型
         function loadFurniture(data) {
@@ -515,8 +512,6 @@ SceneLoad.prototype = {
             var furniture = findModelById(id);
 
             if (furniture !== null) {
-                if ((furniture.type === CONST.TYPE.SENSOR) && (!hasSensor)) {
-                } else {
                     var texture = PIXI.Texture.fromImage('model/plan/' + furniture.url2d);
                     var model = new PIXI.Sprite(texture);
                     model.anchor.set(0, 1);
@@ -538,7 +533,6 @@ SceneLoad.prototype = {
                         .on('mousemove', onDragMove);
 
                     group.addChild(model);
-                }
 
             }
         }
@@ -556,8 +550,7 @@ SceneLoad.prototype = {
         // 传感器信息
         function onMouseMove( event ) {
             //event.preventDefault();
-            console.log(event.target);
-            alert(event.target.id);
+            alert(event.target.info);
         }
 
         // 开始模型拖动事件

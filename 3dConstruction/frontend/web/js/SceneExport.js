@@ -404,5 +404,49 @@ SceneExport.prototype = {
         ].join('\n');
 
         return JSON.parse(output);
+    },
+
+    parseSensor: function ( group, scale ) {
+        var sensors = [];
+        for (var i = 0; i < group.length; i++) {
+            var object = group[i];
+            if (object instanceof PIXI.Sprite) {
+                sensors.push("\n" + SensorString(object));
+            }
+        }
+
+        /**
+         * 将传感器类模型转换String格式
+         *
+         * @param sensor
+         * @returns {string}
+         * @constructor
+         */
+        function SensorString(sensor) {
+
+            var output = [
+                '       {',
+                '           "model_id": "' + sensor.id + '",',
+                '           "id": "' + sensor.sensor_id + '",',
+                '           "position": "' + (sensor.position.x / scale).toFixed(2) + "," + (sensor.position.y / scale).toFixed(2) + '",',
+                '           "rotation": ' + sensor.rotation/Math.PI + ',',
+                '           "data": "' + sensor.info + '"',
+                '       }'
+            ].join( '\n' );
+
+            return output;
+        }
+
+        var output = [
+            '{',
+            '   "version": "' + CONST.VERSION + '",',
+            '   "type": "sensor",',
+            '   "sensors": [',
+            sensors,
+            '   ]',
+            '}'
+        ].join('\n');
+
+        return JSON.parse(output);
     }
 }

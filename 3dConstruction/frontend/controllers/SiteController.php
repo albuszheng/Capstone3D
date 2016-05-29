@@ -8,6 +8,7 @@ use common\models\Module;
 use common\models\Order;
 use common\models\OrderDetail;
 use common\models\OrderForm;
+use common\models\Sensor;
 use Yii;
 use common\models\LoginForm;
 use common\models\User;
@@ -461,8 +462,10 @@ class SiteController extends Controller
 
         if (Yii::$app->user->can('viewRoom') || Yii::$app->user->can('viewOwnRoom', ['room_id' => $room_id])) {
             $room = Room::findById($room_id);
+            $sensors = Sensor::findSensorsByRoom($room_id);
             return $this->render('viewRoom', [
-               'room' => $room,
+                'room' => $room,
+                'sensors' => $sensors,
             ]);
         } else {
             Yii::$app->session->setFlash('error', 'no authority');
@@ -519,9 +522,11 @@ class SiteController extends Controller
             if ($room_id) {
                 $room = Room::findById($room_id);
                 $modules = Module::findBySize($room->size);
+                $sensors = Sensor::findSensorsByRoom($room_id);
                 return $this->render('editRoom', [
                     'room' => $room,
                     'modules' => $modules,
+                    'sensors' => $sensors,
                 ]);
             } else {
                 Yii::$app->session->setFlash('error', 'no room');
@@ -537,9 +542,47 @@ class SiteController extends Controller
             $data = Yii::$app->request->post();
             $room_id = $data['id'];
             $room_data = $data['data'];
+            $sensors = Json::decode($data['sensors'])['sensors'];
+            $delSensors = $data['delSensors'];
+            $ids = [];
+
+            for ($i=0; $i<count($sensors); $i++) {
+                $sensor = $sensors[$i];
+
+                if ($sensor['id'] == 'undefined') {
+                    $newSensor = new Sensor();
+                    $newSensor->model_id = $sensor['model_id'];
+                    $newSensor->room_id = $room_id;
+                    $newSensor->position = $sensor['position'];
+                    $newSensor->rotation = $sensor['rotation'];
+                    $newSensor->data = mt_rand(1,10);
+                    $result = $newSensor->save();
+                    $ids[$i] = [
+                        'id' => $newSensor->id,
+                        'data' => $newSensor->data,
+                    ];
+                } else {
+                    $updateSensor = Sensor::updateSensor($sensor['id'], $room_id, $sensor['position'], $sensor['rotation']);
+                    if ($updateSensor) {
+                        $ids[$i] = [
+                            'id' => $updateSensor->id,
+                            'data' => $updateSensor->data,
+                        ];
+                    } else {
+                        $result = false;
+                    }
+                }
+            }
+            if ($delSensors[0] != 0) {
+                for ($j=0; $j<count($delSensors); $j++) {
+                    $result = Sensor::deleteById($delSensors[$j]);
+                }
+            }
+
+
             $result = Room::updateRoom($room_id, $room_data);
             Yii::$app->response->format = Response::FORMAT_JSON;
-            return ['result' => $result];
+            return ['result' => $result, 'ids' => $ids];
         }
     }
 
