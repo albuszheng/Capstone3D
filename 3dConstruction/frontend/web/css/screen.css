@@ -406,7 +406,7 @@ ul.nav-menu li a.active {
 }
 
 .control-group .model-list {
-  margin-left: 35px;
+  margin-left: 10px;
 }
 
 .view-change button.active {
@@ -420,4 +420,8 @@ ul.nav-menu li a.active {
   padding-right: 1px;
   padding-top: 5px;
   padding-bottom: 5px;
+}
+
+.alert.alert-dismissible {
+  display: none;
 }
