@@ -83,24 +83,20 @@ $this->params['breadcrumbs'][] = $this->title;
         var room_id = $('#room-id').val();
         var user_id = $('#user-id').val();
 
-        // var jsonString = "{\"user_id\":"+user_id+"}";        
-        // console.log(jsonString);
         $.ajax({
             type: 'post',
-            data: {id:room_id, data:{user_id:user_id}},
+            data: {id:room_id, user_id:user_id},
             url: 'index.php?r=site/register-room',
             success: function(result) {
                 if (result.result === true) {
                     $('.alert').addClass("alert-success")
                     $('.alert.info').append(result.message);
-                    // $('.alert.info').text("Success!");
 
                     console.log("success");
                 } else {
                     console.log("fail");
 
                     $('.alert').addClass("alert-warning")
-                    // $('.alert.info').text("Warning!");
                     $('.alert.info').append(result.message);
                 }
             },
