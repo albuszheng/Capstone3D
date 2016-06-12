@@ -21,7 +21,7 @@ use common\models\Building;
 use common\models\Module;
 
 /**
- * Site controller
+ * 
  */
 class SiteController extends Controller
 {
@@ -57,7 +57,8 @@ class SiteController extends Controller
     }
 
     /**
-     * @inheritdoc
+     * [actions description]
+     * @return [type] [description]
      */
     public function actions()
     {
@@ -165,6 +166,10 @@ class SiteController extends Controller
         }
     }
 
+    /**
+     * [actionGetFloorData description]
+     * @return [type] [description]
+     */
     public function actionGetFloorData() {
         if (Yii::$app->user->can('viewFloor')) {
             if (Yii::$app->request->isAjax) {
