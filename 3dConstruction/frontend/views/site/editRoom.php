@@ -47,7 +47,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 <!-- </div> -->
                 </div>
 
-                <div class="btn-group btn-group-sm btn-group-vertical model-list" id="models-btn">
+                <div class="btn-group btn-group-sm btn-group-vertical model-list" id="models-btn" style="margin-left: 5px">
 <!--                    <button id="1" onclick="addFloor(this.id)" class="btn btn-sm btn-default">地板0</button>-->
 <!--                    <button id="2" onclick="addFloor(this.id)" class="btn btn-sm btn-default">地板1</button>-->
 <!--                    <button id="3" onclick="addFloor(this.id)" class="btn btn-sm btn-default">地板2</button>-->
@@ -921,7 +921,7 @@ $this->params['breadcrumbs'][] = $this->title;
             return;
         }
 
-        pos.innerHTML = "position:" + model.position.x + "," + model.position.y;
+        pos.innerHTML = "position:" + model.position.x.toFixed(2) + "," + model.position.y.toFixed(2);
         model.rotation = model.rotation % CONST.PI_2;
         rot.innerHTML = "rotation:" + model.rotation/(Math.PI/2)*90+"°";
     }
